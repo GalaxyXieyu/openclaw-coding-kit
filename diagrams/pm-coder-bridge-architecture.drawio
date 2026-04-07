@@ -1,0 +1,114 @@
+<mxGraphModel dx="1720" dy="1064" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <mxCell id="9" value="" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+      <mxGeometry x="0" y="0" width="1600" height="1000" as="geometry" />
+    </mxCell>
+    <mxCell id="2" value="&lt;b&gt;OpenClaw × Codex 协作开发架构&lt;/b&gt;&lt;br/&gt;群聊协作 + PM 编排 + Codex 本地深度开发 + ACP 进度回传" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;fontColor=#0f172a;fontSize=20;align=center;verticalAlign=middle;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="60" y="20" width="1480" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="3" value="实线：执行&#xa;虚线：回传" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#cbd5e1;fontColor=#334155;fontSize=12;align=left;verticalAlign=middle;spacingLeft=12;" vertex="1" parent="1">
+      <mxGeometry x="1360" y="104" width="180" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="10" value="协作入口&#xa;客户沟通 / 飞书群 / 共享工作区" style="swimlane;rounded=1;whiteSpace=wrap;html=0;startSize=42;fillColor=#fff7ed;strokeColor=#f97316;fontColor=#7c2d12;fontSize=16;" vertex="1" parent="1">
+      <mxGeometry x="60" y="120" width="300" height="720" as="geometry" />
+    </mxCell>
+    <mxCell id="11" value="客户 / 业务方&#xa;提需求、追进度、改需求、看结果" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#fb923c;fontColor=#7c2d12;fontSize=15;align=center;verticalAlign=middle;" vertex="1" parent="10">
+      <mxGeometry x="20" y="50" width="260" height="86" as="geometry" />
+    </mxCell>
+    <mxCell id="12" value="Feishu 群 + OpenClaw 会话&#xa;自然语言沟通入口&#xa;业务 / PM / 客户共用同一协作面" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#fb923c;fontColor=#7c2d12;fontSize=15;align=center;verticalAlign=middle;" vertex="1" parent="10">
+      <mxGeometry x="20" y="184" width="260" height="108" as="geometry" />
+    </mxCell>
+    <mxCell id="13" value="飞书共享工作区&#xa;PROJECT / REQUIREMENTS&#xa;ROADMAP / STATE&#xa;TaskList：任务、评论、完成态" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#fb923c;fontColor=#7c2d12;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="10">
+      <mxGeometry x="20" y="352" width="260" height="126" as="geometry" />
+    </mxCell>
+    <mxCell id="14" value="这一层保留“人话沟通”体验&#xa;需求变化先进入群和文档&#xa;不会直接污染执行上下文" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#fffbeb;strokeColor=#f59e0b;fontColor=#92400e;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="10">
+      <mxGeometry x="20" y="554" width="260" height="108" as="geometry" />
+    </mxCell>
+
+    <mxCell id="20" value="PM 编排层&#xa;需求结构化 / 上下文组织 / 派发入口" style="swimlane;rounded=1;whiteSpace=wrap;html=0;startSize=42;fillColor=#eef2ff;strokeColor=#6366f1;fontColor=#312e81;fontSize=16;" vertex="1" parent="1">
+      <mxGeometry x="430" y="120" width="300" height="720" as="geometry" />
+    </mxCell>
+    <mxCell id="21" value="pm skill&#xa;任务编排入口&#xa;create / plan / refine&#xa;run / complete" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#818cf8;fontColor=#312e81;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="20">
+      <mxGeometry x="20" y="50" width="260" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="22" value="PM 上下文资产&#xa;pm.json + current-context&#xa;agent 绑定 / workspace&#xa;handoff bundle" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#818cf8;fontColor=#312e81;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="20">
+      <mxGeometry x="20" y="352" width="260" height="118" as="geometry" />
+    </mxCell>
+    <mxCell id="23" value="PM 的职责不是写代码&#xa;而是把模糊需求变成稳定执行输入" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#eef6ff;strokeColor=#3b82f6;fontColor=#1e3a8a;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="20">
+      <mxGeometry x="20" y="554" width="260" height="108" as="geometry" />
+    </mxCell>
+
+    <mxCell id="30" value="Codex 工程层&#xa;本地开发 / ACP 会话 / 测试验证" style="swimlane;rounded=1;whiteSpace=wrap;html=0;startSize=42;fillColor=#ecfeff;strokeColor=#06b6d4;fontColor=#164e63;fontSize=16;" vertex="1" parent="1">
+      <mxGeometry x="800" y="120" width="300" height="720" as="geometry" />
+    </mxCell>
+    <mxCell id="31" value="coder skill&#xa;规范化执行入口&#xa;先读 PM 上下文&#xa;再决定实现路径" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#4ade80;fontColor=#14532d;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="30">
+      <mxGeometry x="20" y="50" width="260" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="32" value="ACPX / ACP Coding Session&#xa;隔离长时执行会话&#xa;避免主会话&#xa;上下文爆炸" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#4ade80;fontColor=#14532d;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="30">
+      <mxGeometry x="20" y="248" width="260" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="33" value="本地 Codex Workspace&#xa;直接用本地 repo / IDE / test / env&#xa;代码实现、调试、验证都在这里完成&#xa;复杂问题可以贴着真实工程落地" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#4ade80;fontColor=#14532d;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="30">
+      <mxGeometry x="20" y="446" width="260" height="118" as="geometry" />
+    </mxCell>
+    <mxCell id="34" value="Codex 的额外优势&#xa;可挂载各种 skills&#xa;可用 subagent 并行拆任务&#xa;适合深挖复杂问题和本地联调" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#f0fdf4;strokeColor=#16a34a;fontColor=#166534;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="30">
+      <mxGeometry x="20" y="594" width="260" height="124" as="geometry" />
+    </mxCell>
+
+    <mxCell id="40" value="Bridge 回传层&#xa;子会话观察 / 进度回推 / 结果沉淀" style="swimlane;rounded=1;whiteSpace=wrap;html=0;startSize=42;fillColor=#f5f3ff;strokeColor=#8b5cf6;fontColor=#4c1d95;fontSize=16;" vertex="1" parent="1">
+      <mxGeometry x="1170" y="120" width="300" height="720" as="geometry" />
+    </mxCell>
+    <mxCell id="41" value="acp-progress-bridge plugin&#xa;发现 child session&#xa;轮询 acp-stream.jsonl" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#a78bfa;fontColor=#4c1d95;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="40">
+      <mxGeometry x="20" y="50" width="260" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="42" value="父会话可见进度&#xa;已接单 / 正在分析&#xa;阶段进展 / 完成摘要&#xa;Feishu 群里默认可见" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#a78bfa;fontColor=#4c1d95;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="40">
+      <mxGeometry x="20" y="248" width="260" height="118" as="geometry" />
+    </mxCell>
+    <mxCell id="43" value="结果回写任务 / 文档&#xa;pm comment / update-description&#xa;complete&#xa;沉淀回 TaskList 和 STATE" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#a78bfa;fontColor=#4c1d95;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="40">
+      <mxGeometry x="20" y="446" width="260" height="118" as="geometry" />
+    </mxCell>
+    <mxCell id="44" value="没有这层也能派发&#xa;但用户感知会退化成“黑盒开发”" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#faf5ff;strokeColor=#7c3aed;fontColor=#5b21b6;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="40">
+      <mxGeometry x="20" y="600" width="260" height="108" as="geometry" />
+    </mxCell>
+
+    <mxCell id="50" value="为什么这个组合有效：&#xa;PM 负责把需求变成结构化输入，Codex 负责在本地工程里把事情做成，Bridge 负责把执行状态重新带回群和文档。" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#f8fafc;strokeColor=#94a3b8;fontColor=#0f172a;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+      <mxGeometry x="60" y="870" width="1410" height="78" as="geometry" />
+    </mxCell>
+
+    <mxCell id="101" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#f97316;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="11" target="12">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="102" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#6366f1;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="12" target="21">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="103" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#6366f1;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="13" target="22">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="104" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#6366f1;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="21" target="31">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="105" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#22c55e;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="31" target="32">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="106" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#22c55e;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="32" target="33">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="107" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#8b5cf6;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="41" target="42">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="108" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#8b5cf6;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="42" target="43">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="109" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#8b5cf6;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="32" target="42">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="110" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#8b5cf6;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" parent="1" source="42" target="12">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="111" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=0;strokeColor=#8b5cf6;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" edge="1" parent="1" source="43" target="13">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

@@ -1,0 +1,88 @@
+{
+  "id": "acp-progress-bridge",
+  "name": "ACP Progress Bridge",
+  "version": "0.1.0",
+  "description": "Relay ACP child-session progress and completion into internal parent-session updates. Default scope is Codex ACP children reporting back to Feishu group or main parent sessions.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable ACP child-session polling and parent-session bridge delivery."
+      },
+      "parentSessionPrefixes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": ["agent:*:feishu:group:", "agent:*:main"],
+        "description": "Parent session-key prefixes that may receive internal [[acp_bridge_update]] messages. Defaults cover Feishu group sessions and local main sessions."
+      },
+      "childSessionPrefixes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": ["agent:codex:acp:"],
+        "description": "ACP child-session prefixes to watch. Default is Codex-first; add other providers only if they emit compatible ACP progress/done events."
+      },
+      "pollIntervalMs": {
+        "type": "number",
+        "default": 3000,
+        "description": "Polling interval for session-store and ACP stream discovery."
+      },
+      "firstProgressDelayMs": {
+        "type": "number",
+        "default": 5000,
+        "description": "Minimum delay before the first progress relay after a child run is discovered."
+      },
+      "progressDebounceMs": {
+        "type": "number",
+        "default": 45000,
+        "description": "Minimum spacing between subsequent progress relays for the same child run."
+      },
+      "maxProgressUpdatesPerRun": {
+        "type": "number",
+        "default": 6,
+        "description": "Maximum number of progress relays sent for one child run."
+      },
+      "settleAfterDoneMs": {
+        "type": "number",
+        "default": 4000,
+        "description": "Delay after a done event before final completion delivery, giving transcript/assistant tail time to settle."
+      },
+      "replayCompletedWithinMs": {
+        "type": "number",
+        "default": 300000,
+        "description": "Recent completion replay window. Older finished runs discovered late are marked handled instead of replayed."
+      },
+      "finalAssistantTailChars": {
+        "type": "number",
+        "default": 5000,
+        "description": "Maximum assistant tail characters attached to completion bridge updates."
+      },
+      "deliverProgress": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether progress bridge updates should be delivered back through the parent session."
+      },
+      "deliverCompletion": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether completion bridge updates should be delivered back through the parent session."
+      }
+    },
+    "additionalProperties": false
+  },
+  "uiHints": {
+    "enabled": { "label": "Enabled" },
+    "parentSessionPrefixes": { "label": "Parent Session Prefixes" },
+    "childSessionPrefixes": { "label": "Child Session Prefixes" },
+    "pollIntervalMs": { "label": "Poll Interval (ms)" },
+    "firstProgressDelayMs": { "label": "First Progress Delay (ms)" },
+    "progressDebounceMs": { "label": "Progress Debounce (ms)" },
+    "maxProgressUpdatesPerRun": { "label": "Max Progress Updates Per Run" },
+    "settleAfterDoneMs": { "label": "Completion Settle Delay (ms)" },
+    "replayCompletedWithinMs": { "label": "Replay Recent Completions (ms)" },
+    "finalAssistantTailChars": { "label": "Final Assistant Tail Chars" },
+    "deliverProgress": { "label": "Deliver Progress Replies" },
+    "deliverCompletion": { "label": "Deliver Completion Replies" }
+  }
+}

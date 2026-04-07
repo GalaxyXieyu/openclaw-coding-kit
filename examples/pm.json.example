@@ -1,0 +1,28 @@
+{
+  "repo_root": "REPLACE_WITH_ABSOLUTE_REPO_PATH",
+  "project": {
+    "name": "示例项目",
+    "agent": "your-agent-id"
+  },
+  "task": {
+    "backend": "local",
+    "tasklist_name": "示例项目",
+    "prefix": "T",
+    "kind": "task"
+  },
+  "doc": {
+    "backend": "repo",
+    "folder_name": "示例项目",
+    "project_title": "PROJECT",
+    "requirements_title": "REQUIREMENTS",
+    "roadmap_title": "ROADMAP",
+    "state_title": "STATE"
+  },
+  "coder": {
+    "backend": "acp",
+    "agent_id": "codex",
+    "timeout": 900,
+    "thinking": "high",
+    "session_key": "main"
+  }
+}
