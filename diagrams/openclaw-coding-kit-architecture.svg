@@ -1,0 +1,139 @@
+<svg width="1365" height="768" viewBox="0 0 1365 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1365" height="768" fill="#F7F7F5"/>
+
+  <rect x="127" y="27" width="1103" height="53" rx="10" fill="#ECEDEE" stroke="#A7B7D3"/>
+  <text x="678.5" y="57" text-anchor="middle" fill="#2E3B4E" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">OpenClaw × Codex 协作开发架构</text>
+  <text x="678.5" y="78" text-anchor="middle" fill="#2E3B4E" font-family="Arial, Helvetica, sans-serif" font-size="11">群聊协作 + PM 编排 + Codex 本地深度开发 + ACP 进度回传</text>
+
+  <rect x="1094" y="89" width="136" height="28" rx="6" fill="#F6F7FB" stroke="#CFD6EA"/>
+  <text x="1162" y="107" text-anchor="middle" fill="#7E8798" font-family="Arial, Helvetica, sans-serif" font-size="10">真协作 · 真执行</text>
+
+  <rect x="127" y="103" width="223" height="472" rx="18" fill="#FFF8F2" stroke="#F28A3C" stroke-width="1.5"/>
+  <rect x="127" y="103" width="223" height="29" rx="18" fill="#FFF1E6" stroke="#F28A3C" stroke-width="1.5"/>
+  <text x="238.5" y="123" text-anchor="middle" fill="#A95A1B" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">协作入口</text>
+
+  <rect x="142" y="140" width="193" height="64" rx="13" fill="#FFFDFB" stroke="#F5A363"/>
+  <text x="238.5" y="170" text-anchor="middle" fill="#B86822" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">客户 / 业务方</text>
+  <text x="238.5" y="188" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">提需求、追进度、改需求、看结果</text>
+
+  <rect x="142" y="240" width="193" height="82" rx="13" fill="#FFFDFB" stroke="#F5A363"/>
+  <text x="238.5" y="272" text-anchor="middle" fill="#B86822" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">Feishu 群 + OpenClaw 会话</text>
+  <text x="238.5" y="292" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">自然语言协作入口</text>
+  <text x="238.5" y="309" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">业务 / PM / 客户共用协作面</text>
+
+  <rect x="142" y="365" width="193" height="94" rx="13" fill="#FFFDFB" stroke="#F5A363"/>
+  <text x="238.5" y="396" text-anchor="middle" fill="#B86822" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">飞书共享工作区</text>
+  <text x="238.5" y="416" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">PROJECT / REQUIREMENTS</text>
+  <text x="238.5" y="433" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">ROADMAP / STATE</text>
+  <text x="238.5" y="450" text-anchor="middle" fill="#A56A34" font-family="Arial, Helvetica, sans-serif" font-size="12">TaskList: 任务、评论、完成态</text>
+
+  <rect x="142" y="493" width="193" height="70" rx="13" fill="#FFFDFB" stroke="#F0C879" stroke-dasharray="3 3"/>
+  <text x="238.5" y="525" text-anchor="middle" fill="#C3841F" font-family="Arial, Helvetica, sans-serif" font-size="12">这一层保留“人话沟通”体验</text>
+  <text x="238.5" y="543" text-anchor="middle" fill="#C3841F" font-family="Arial, Helvetica, sans-serif" font-size="12">需求变化优先进入群和文档</text>
+
+  <rect x="402" y="103" width="223" height="472" rx="18" fill="#F6F7FF" stroke="#8A97FF" stroke-width="1.5"/>
+  <rect x="402" y="103" width="223" height="29" rx="18" fill="#EEF0FF" stroke="#8A97FF" stroke-width="1.5"/>
+  <text x="513.5" y="123" text-anchor="middle" fill="#4A58C9" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">PM 编排层</text>
+
+  <rect x="418" y="140" width="191" height="76" rx="13" fill="#FCFCFF" stroke="#9AA7FF"/>
+  <text x="513.5" y="168" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">pm skill</text>
+  <text x="513.5" y="188" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="12">任务编排入口</text>
+  <text x="513.5" y="205" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="12">create / plan / refine</text>
+
+  <rect x="418" y="365" width="191" height="94" rx="13" fill="#FCFCFF" stroke="#9AA7FF"/>
+  <text x="513.5" y="396" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">PM 上下文交接</text>
+  <text x="513.5" y="416" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="12">pm.json + current-context</text>
+  <text x="513.5" y="433" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="12">agent 绑定 / workspace</text>
+  <text x="513.5" y="450" text-anchor="middle" fill="#5F6BDB" font-family="Arial, Helvetica, sans-serif" font-size="12">handoff bundle</text>
+
+  <rect x="418" y="493" width="191" height="70" rx="13" fill="#FCFCFF" stroke="#7DB5FF" stroke-dasharray="3 3"/>
+  <text x="513.5" y="525" text-anchor="middle" fill="#5A8FDE" font-family="Arial, Helvetica, sans-serif" font-size="12">PM 的职责不是写代码</text>
+  <text x="513.5" y="543" text-anchor="middle" fill="#5A8FDE" font-family="Arial, Helvetica, sans-serif" font-size="12">而是把模糊需求变成稳定执行输入</text>
+
+  <rect x="678" y="103" width="223" height="472" rx="18" fill="#F4FFFB" stroke="#53C5E8" stroke-width="1.5"/>
+  <rect x="678" y="103" width="223" height="29" rx="18" fill="#E8FBFF" stroke="#53C5E8" stroke-width="1.5"/>
+  <text x="789.5" y="123" text-anchor="middle" fill="#2C7EA2" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Codex 工程层</text>
+
+  <rect x="694" y="140" width="191" height="76" rx="13" fill="#FBFFFD" stroke="#73DAA1"/>
+  <text x="789.5" y="168" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">coder skill</text>
+  <text x="789.5" y="188" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">规范化执行入口</text>
+  <text x="789.5" y="205" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">先读 PM 上下文，再决定实现路径</text>
+
+  <rect x="694" y="286" width="191" height="82" rx="13" fill="#FBFFFD" stroke="#73DAA1"/>
+  <text x="789.5" y="317" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">ACPX / ACP Coding Session</text>
+  <text x="789.5" y="337" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">隔离长时执行会话</text>
+  <text x="789.5" y="354" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">一键生成主会话上下文载体</text>
+
+  <rect x="694" y="419" width="191" height="94" rx="13" fill="#FBFFFD" stroke="#73DAA1"/>
+  <text x="789.5" y="449" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">本地 Codex Workspace</text>
+  <text x="789.5" y="468" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">真提问本地 repo / IDE / test / env</text>
+  <text x="789.5" y="485" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">代码实现、调试、验证都在这里完成</text>
+  <text x="789.5" y="502" text-anchor="middle" fill="#3C9A63" font-family="Arial, Helvetica, sans-serif" font-size="12">复杂问题可以贴着真实工程落地</text>
+
+  <rect x="694" y="531" width="191" height="32" rx="13" fill="#FBFFFD" stroke="#73DAA1" stroke-dasharray="3 3"/>
+  <text x="789.5" y="552" text-anchor="middle" fill="#55A87A" font-family="Arial, Helvetica, sans-serif" font-size="12">Codex 的额外优势：可继续钻 skills / subagent / 本地环境</text>
+
+  <rect x="954" y="103" width="223" height="472" rx="18" fill="#FCF8FF" stroke="#A58BFF" stroke-width="1.5"/>
+  <rect x="954" y="103" width="223" height="29" rx="18" fill="#F3ECFF" stroke="#A58BFF" stroke-width="1.5"/>
+  <text x="1065.5" y="123" text-anchor="middle" fill="#6B56C7" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Bridge 回传层</text>
+
+  <rect x="969" y="140" width="193" height="76" rx="13" fill="#FFFDFE" stroke="#B5A3FF"/>
+  <text x="1065.5" y="169" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">acp-progress-bridge plugin</text>
+  <text x="1065.5" y="188" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">发现 child session</text>
+  <text x="1065.5" y="205" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">轮询 acp-stream.jsonl</text>
+
+  <rect x="969" y="286" width="193" height="94" rx="13" fill="#FFFDFE" stroke="#B5A3FF"/>
+  <text x="1065.5" y="317" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">父会话可见进度</text>
+  <text x="1065.5" y="337" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">已接单 / 正在分析</text>
+  <text x="1065.5" y="354" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">阶段进展 / 完成摘要</text>
+  <text x="1065.5" y="371" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">Feishu 群里默认可见</text>
+
+  <rect x="969" y="419" width="193" height="94" rx="13" fill="#FFFDFE" stroke="#B5A3FF"/>
+  <text x="1065.5" y="449" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">结果回写任务 / 文档</text>
+  <text x="1065.5" y="469" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">pm comment / update-description</text>
+  <text x="1065.5" y="486" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">complete</text>
+  <text x="1065.5" y="503" text-anchor="middle" fill="#7A61DD" font-family="Arial, Helvetica, sans-serif" font-size="12">沉淀回 TaskList 和 STATE</text>
+
+  <rect x="969" y="531" width="193" height="32" rx="13" fill="#FFFDFE" stroke="#B5A3FF" stroke-dasharray="3 3"/>
+  <text x="1065.5" y="552" text-anchor="middle" fill="#8A79D8" font-family="Arial, Helvetica, sans-serif" font-size="12">没有这层也能派发，但用户感知会更像“黑盒开发”</text>
+
+  <rect x="127" y="660" width="1103" height="58" rx="10" fill="#ECEDEE" stroke="#A7B7D3"/>
+  <text x="678.5" y="690" text-anchor="middle" fill="#3C4A5D" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">为什么这个组合有效</text>
+  <text x="678.5" y="710" text-anchor="middle" fill="#3C4A5D" font-family="Arial, Helvetica, sans-serif" font-size="12">PM 负责把需求变成结构化输入，Codex 负责在本地工程里把事情做成，Bridge 负责把执行状态重新带回群和文档。</text>
+
+  <path d="M239 204V240" stroke="#F28A3C" stroke-width="2.2"/>
+  <path d="M239 229L234 239H244L239 229Z" fill="#F28A3C"/>
+
+  <path d="M335 281H418" stroke="#7D7DFF" stroke-width="2.2"/>
+  <path d="M407 276L417 281L407 286Z" fill="#7D7DFF"/>
+
+  <path d="M335 412H418" stroke="#7D7DFF" stroke-width="2.2" stroke-dasharray="6 6"/>
+  <path d="M407 407L417 412L407 417Z" fill="#7D7DFF"/>
+
+  <path d="M514 365V216" stroke="#7D7DFF" stroke-width="2.2"/>
+  <path d="M509 226L514 216L519 226Z" fill="#7D7DFF"/>
+
+  <path d="M609 178H694" stroke="#6B79FF" stroke-width="2.2"/>
+  <path d="M683 173L693 178L683 183Z" fill="#6B79FF"/>
+
+  <path d="M790 216V286" stroke="#39C573" stroke-width="2.2"/>
+  <path d="M785 276L790 286L795 276Z" fill="#39C573"/>
+
+  <path d="M790 368V419" stroke="#39C573" stroke-width="2.2"/>
+  <path d="M785 409L790 419L795 409Z" fill="#39C573"/>
+
+  <path d="M625 281H694" stroke="#8A6DFF" stroke-width="2.2" stroke-dasharray="6 6"/>
+  <path d="M684 276L694 281L684 286Z" fill="#8A6DFF"/>
+
+  <path d="M885 327H969" stroke="#8A6DFF" stroke-width="2.2" stroke-dasharray="6 6"/>
+  <path d="M959 322L969 327L959 332Z" fill="#8A6DFF"/>
+
+  <path d="M885 466H969" stroke="#8A6DFF" stroke-width="2.2" stroke-dasharray="6 6"/>
+  <path d="M959 461L969 466L959 471Z" fill="#8A6DFF"/>
+
+  <path d="M1066 216V286" stroke="#8A6DFF" stroke-width="2.2"/>
+  <path d="M1061 276L1066 286L1071 276Z" fill="#8A6DFF"/>
+
+  <path d="M1066 380V419" stroke="#8A6DFF" stroke-width="2.2"/>
+  <path d="M1061 409L1066 419L1071 409Z" fill="#8A6DFF"/>
+</svg>

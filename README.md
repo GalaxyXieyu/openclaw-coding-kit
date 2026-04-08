@@ -1,28 +1,59 @@
 # OpenClaw Coding Kit
 
-`OpenClaw Coding Kit` 是一套面向复杂项目交付的协作工程资产。
+[![Repository](https://img.shields.io/badge/GitHub-openclaw--coding--kit-181717?logo=github)](https://github.com/GalaxyXieyu/openclaw-coding-kit)
+![Python](https://img.shields.io/badge/python-%3E%3D3.9-3776AB?logo=python&logoColor=white)
+![Node.js](https://img.shields.io/badge/node-%3E%3D22-5FA04E?logo=node.js&logoColor=white)
+![OpenClaw](https://img.shields.io/badge/openclaw-2026.3.22-0F172A)
+![Mode](https://img.shields.io/badge/mode-local--first%20%E2%86%92%20integrated-7C3AED)
 
-它把 `PM`、`coder`、`OpenClaw`、`ACPX`、`progress bridge` 和可选的 `Feishu` 集成收敛成一条更稳定的执行链路，让需求澄清、任务分发、编码执行和结果回流不再散落在多个临时会话里。
+> A production-minded collaboration kit for running `PM + coder + OpenClaw + ACPX + progress bridge` as one stable delivery loop.
 
-## Overview
+`OpenClaw Coding Kit` is not a one-off demo scaffold.  
+It packages a repeatable working model for complex delivery: requirement intake, task routing, coding execution, progress relay, and optional Feishu synchronization.
 
-这个仓库解决的不是“如何再包一层 AI 脚手架”，而是更实际的问题：
+![OpenClaw Coding Kit Architecture](./diagrams/openclaw-coding-kit-architecture.svg)
 
-- 需求沟通、任务拆解、代码执行混在一个长会话里，容易上下文污染
-- PM 侧和 coder 侧没有共享事实源，任务状态容易漂移
-- 多会话、多子任务并发后，进度和结果难以稳定回流
+## Why This Exists
 
-这套 kit 的核心做法是：
+Most AI coding setups break down for the same reasons:
 
-- 用 `PM` 承接需求、任务、文档和上下文组织
-- 用 `coder` 承接 ACP coding session 的实现与验证
-- 用 `acp-progress-bridge` 负责把子会话进度与完成结果回推到父会话
-- 在集成模式下，用 `Feishu task/doc` 作为团队可见的协作 truth
-- 在本地模式下，用 `local task + repo docs` 先完成最小闭环
+- business discussion and implementation details collapse into one polluted session
+- PM-side context and coder-side execution do not share the same truth
+- progress from sub-sessions is hard to route back into the parent workflow
+- installation instructions, runtime config, and actual operator flow drift apart over time
 
-## Architecture
+This repository addresses that by separating roles and making the execution path explicit:
 
-GitHub 直接预览版本：
+- `PM` owns task intake, context refresh, document sync, and routing
+- `coder` owns implementation and validation inside ACP sessions
+- `acp-progress-bridge` owns progress/completion relay only
+- `Feishu task/doc` is optional collaboration truth in integrated mode
+- `local task + repo docs` provides a low-friction local-first mode
+
+## What You Get
+
+| Area | Included | Purpose |
+|---|---|---|
+| Task orchestration | `skills/pm` | task intake, context refresh, doc sync, GSD routing |
+| Execution worker | `skills/coder` | canonical ACP coding worker |
+| Feishu bridge reuse | `skills/openclaw-lark-bridge` | calls Feishu tools from a running OpenClaw gateway |
+| Progress relay | `plugins/acp-progress-bridge` | sends child-session progress and completion back to the parent |
+| Config references | `examples/*` | minimal and extended config snippets |
+| Verification | `tests/*` | repo-local validation baseline |
+
+## Best For
+
+Use this repository when you want:
+
+- a local-first validation path before touching real collaboration systems
+- a clearer boundary between PM reasoning and coder execution
+- a repeatable OpenClaw + Codex + ACP workflow instead of one long improvised session
+- optional Feishu integration without making Feishu a hard prerequisite for smoke checks
+
+This repository is not trying to replace OpenClaw itself.  
+It is an operator kit layered on top of OpenClaw.
+
+## Architecture At A Glance
 
 ```mermaid
 flowchart LR
@@ -40,28 +71,18 @@ flowchart LR
     T -. backend .-> X[Local Task + Repo Docs\nor Feishu Task + Docs]
 ```
 
-可编辑架构源文件见：
+Editable diagram sources:
 
+- [`diagrams/openclaw-coding-kit-architecture.svg`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/diagrams/openclaw-coding-kit-architecture.svg)
 - [`diagrams/openclaw-coding-kit-architecture.drawio`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/diagrams/openclaw-coding-kit-architecture.drawio)
-
-## What You Get
-
-| Capability | Purpose |
-|---|---|
-| `skills/pm` | 任务入口、上下文刷新、文档同步、GSD 路由 |
-| `skills/coder` | ACP coding session 的标准执行 worker |
-| `skills/openclaw-lark-bridge` | 复用 OpenClaw Gateway 内已加载的飞书工具 |
-| `plugins/acp-progress-bridge` | 子会话进度与完成结果回推 |
-| `examples/*` | 最小配置与增强配置片段 |
-| `tests/*` | repo-local 验证基线 |
 
 ## Operating Modes
 
-### 1. Local-First
+### Local-First
 
-先验证仓库和执行链路是否健康，不依赖真实 Feishu。
+Start here if your goal is to verify the repository, not the whole collaboration stack.
 
-典型配置：
+Recommended config:
 
 ```json
 {
@@ -70,55 +91,58 @@ flowchart LR
 }
 ```
 
-适合：
+Good for:
 
-- 先验证安装是否可靠
-- 先跑通 PM / coder / GSD 路由
-- 先在本地完成 smoke check
+- smoke checks
+- PM/coder/GSD routing validation
+- bootstrap verification
+- installation debugging without Feishu
 
-### 2. Integrated
+### Integrated
 
-把仓库资产接入真实 `Codex + OpenClaw + Feishu` 环境。
+Use this when you want the real collaboration loop:
 
-适合：
-
-- 多人协作
-- 群聊驱动任务
-- 真实 task/doc 同步
-- 需要 progress bridge 和授权链路
+- Codex + OpenClaw runtime
+- agent binding and ACP execution
+- Feishu bot / group / task / doc integration
+- progress bridge and authorization flows
 
 ## Quick Start
 
-如果你只想先验证这套 kit 能不能跑，不要一上来就接 Feishu。先跑这 3 步：
+If you want the fastest meaningful validation path, do not start with Feishu. Run:
 
 ```bash
 python3 -m py_compile skills/pm/scripts/*.py skills/coder/scripts/*.py
 python3 skills/pm/scripts/pm.py init --project-name demo --task-backend local --doc-backend repo --dry-run
 python3 skills/pm/scripts/pm.py context --refresh
-```
-
-通过以后再继续：
-
-```bash
 python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 ```
 
-完整安装与远端接入流程看：
+Once that passes, move to:
+
+1. runtime and dependency checks
+2. OpenClaw / Codex asset deployment
+3. config wiring
+4. optional Feishu setup
+5. real backend initialization
+
+Full operator flow:
 
 - [`INSTALL.md`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/INSTALL.md)
 
-## Installation Path
+## Installation Strategy
 
-推荐的 operator 顺序是：
+Recommended order:
 
-1. 先装运行时：`python3 >= 3.9`、`node >= 22`、`openclaw = 2026.3.22`
-2. 先跑 repo-local smoke
-3. 再部署 `pm` / `coder` / `openclaw-lark-bridge` / `acp-progress-bridge`
-4. 再写 `openclaw.json` / `pm.json`
-5. 如果目标包含 Feishu，再做 bot、群、权限、OAuth
-6. 最后才做真实 backend 初始化和 E2E
+1. install runtime prerequisites first
+2. verify repo-local smoke path
+3. deploy `pm`, `coder`, `openclaw-lark-bridge`, and `acp-progress-bridge`
+4. wire `openclaw.json` and `pm.json`
+5. only then add Feishu bot, group, permissions, and OAuth when required
+6. finish with real backend initialization and E2E verification
 
-这条顺序是刻意的。先把本地链路和运行时搞定，再接外部系统，排错成本最低。
+That order is intentional.  
+It keeps runtime problems, config problems, and collaboration-system problems from collapsing into one debugging session.
 
 ## Repository Layout
 
@@ -138,35 +162,31 @@ openclaw-coding-kit/
   tests/
   diagrams/
     openclaw-coding-kit-architecture.drawio
+    openclaw-coding-kit-architecture.svg
 ```
 
-## Design Rules
+## Design Principles
 
-- `PM` 是 tracked work front door，不直接替代 coder
-- `coder` 负责执行，不拥有 task/doc truth
-- `GSD` 负责 roadmap / phase planning，不替代 PM
-- `bridge` 只负责 relay，不拥有业务状态
-- 默认先走 `local/repo`，再接真实 Feishu
-- `openclaw` 默认基线固定为 `2026.3.22`，不要默认升到 `2026.4.5+`
+- `PM` is the tracked-work front door
+- `coder` executes; it does not own task/doc truth
+- `GSD` owns roadmap/phase planning, not task/doc truth
+- `bridge` is a relay, not a source of truth
+- default to `local/repo` first, real Feishu second
+- keep the OpenClaw baseline on `2026.3.22`, not `2026.4.5+`
 
-## Runtime Boundaries
+## Feishu Integration Notes
 
-安装和排错时，要明确区分两类状态：
+If you enable `@larksuite/openclaw-lark`:
 
-- repo-local：代码、示例配置、测试、仓库文档
-- user-global：OpenClaw profile、session store、secret、OAuth token、运行态缓存
+- bot creation, sensitive permission approval, version publishing, and `/auth` / `/feishu auth` still include manual user steps
+- PM now supports common `env` / `file` / `exec` SecretRef resolution for `appSecret`
+- do not keep both built-in `plugins.entries.feishu` and `openclaw-lark` enabled at the same time
 
-不要把 repo 里的示例配置和用户环境里的真实配置混成一份 source of truth。
+That last point matters. Duplicate Feishu tool registration can cause tool conflicts and, in heavier environments, even destabilize CLI introspection.
 
-## Feishu Notes
+Detailed install and permission guidance:
 
-如果你启用了 `@larksuite/openclaw-lark`：
-
-- 机器人创建、敏感权限确认、版本发布、`/auth` / `/feishu auth` 仍然有用户手动步骤
-- 如果 `appSecret` 使用 SecretRef，PM 现在已经支持 `env` / `file` / `exec` 解析
-- 不要同时启用内置 `plugins.entries.feishu` 和 `openclaw-lark`，否则可能出现 Feishu 工具重复注册，严重时会拖垮 CLI
-
-更细的安装和权限说明都在 [`INSTALL.md`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/INSTALL.md)。
+- [`INSTALL.md`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/INSTALL.md)
 
 ## Compatibility
 
@@ -175,7 +195,7 @@ openclaw-coding-kit/
 | Python | `>= 3.9` |
 | Node.js | `>= 22` |
 | OpenClaw | `2026.3.22` |
-| PM state dir | 默认新目录名为 `openclaw-coding-kit`，同时兼容旧的 `openclaw-pm-coder-kit` |
+| PM state dir | prefers `openclaw-coding-kit`, still falls back to legacy `openclaw-pm-coder-kit` |
 
 ## Included References
 
@@ -185,10 +205,10 @@ openclaw-coding-kit/
 
 ## Security
 
-不要提交：
+Do not commit:
 
-- 真实 `appId` / `appSecret`
-- OAuth token / device auth 状态
-- 真实群 ID、allowlist、用户标识
-- 真实 tasklist guid / doc token
-- 本地 session、bridge 运行态缓存
+- real `appId` / `appSecret`
+- OAuth token or device auth state
+- real group IDs, allowlists, user identifiers
+- real tasklist GUIDs or document tokens
+- local session stores or runtime caches
