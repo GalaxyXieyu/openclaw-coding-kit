@@ -22,7 +22,13 @@ class PmLocalCliTest(unittest.TestCase):
             config = {
                 "repo_root": str(root),
                 "project": {"name": "demo"},
-                "task": {"backend": "local", "tasklist_name": "demo", "prefix": "T", "kind": "task"},
+                "task": {
+                    "backend": "local",
+                    "tasklist_name": "demo",
+                    "prefix": "T",
+                    "kind": "task",
+                    "completion_due_mode": "if_missing",
+                },
                 "doc": {"backend": "repo", "folder_name": "demo"},
                 "coder": {"backend": "codex-cli", "agent_id": "codex", "timeout": 60, "thinking": "high", "session_key": "main"},
             }
@@ -58,6 +64,7 @@ class PmLocalCliTest(unittest.TestCase):
             self.assertEqual(completed["task_id"], "T1")
             task = run("get", "--task-id", "T1", "--include-completed")
             self.assertTrue(bool(task["completed_at"]))
+            self.assertEqual(task["due"]["timestamp"], task["completed_at"])
             self.assertEqual(len(task["attachments"]), 1)
             self.assertTrue(any("done locally" in str(item.get("content") or "") for item in task["comments"]))
 

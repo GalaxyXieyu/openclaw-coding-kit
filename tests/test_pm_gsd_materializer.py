@@ -105,6 +105,10 @@ class PmGsdMaterializerTest(unittest.TestCase):
                 build_gsd_task_contract=build_gsd_task_contract,
                 create_task=create_task,
                 patch_task=patch_task,
+                build_completion_changes=lambda task, completed_at: {
+                    "completed_at": completed_at,
+                    "due": {"timestamp": completed_at, "is_all_day": False},
+                },
                 now_iso=lambda: "2026-04-07T12:00:00+08:00",
                 binding_index_path=root / ".pm" / "gsd-task-bindings.json",
                 write_repo_json=write_repo_json,
@@ -116,6 +120,7 @@ class PmGsdMaterializerTest(unittest.TestCase):
             binding_index = json.loads((root / ".pm" / "gsd-task-bindings.json").read_text(encoding="utf-8"))
             self.assertEqual(binding_index["bindings"][0]["contract"]["phase"], "5")
             self.assertTrue(any(call.get("completed_at") for call in calls["patch"]))
+            self.assertTrue(any(isinstance(call.get("due"), dict) and call["due"].get("timestamp") for call in calls["patch"]))
 
 
 if __name__ == "__main__":

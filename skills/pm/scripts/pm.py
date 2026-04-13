@@ -558,6 +558,38 @@ def patch_task(task_guid: str, changes: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def completion_due_mode() -> str:
+    task_cfg = ACTIVE_CONFIG.get("task")
+    if isinstance(task_cfg, dict):
+        mode = str(task_cfg.get("completion_due_mode") or "").strip().lower()
+        if mode in {"never", "if_missing", "always"}:
+            return mode
+        legacy_toggle = task_cfg.get("sync_completed_at_to_due")
+        if isinstance(legacy_toggle, bool):
+            return "if_missing" if legacy_toggle else "never"
+    return "never"
+
+
+def task_has_due(task: dict[str, Any]) -> bool:
+    due = task.get("due")
+    return isinstance(due, dict) and str(due.get("timestamp") or "").strip() not in {"", "0"}
+
+
+def build_completion_changes(task: dict[str, Any], *, completed_at: str) -> dict[str, Any]:
+    timestamp = str(completed_at or "").strip()
+    if not timestamp:
+        return {}
+    changes: dict[str, Any] = {"completed_at": timestamp}
+    mode = completion_due_mode()
+    should_sync_due = mode == "always" or (mode == "if_missing" and not task_has_due(task))
+    if should_sync_due:
+        changes["due"] = {
+            "timestamp": timestamp,
+            "is_all_day": False,
+        }
+    return changes
+
+
 def list_task_comments(task_guid: str, limit: int = 20) -> list[dict[str, Any]]:
     if not str(task_guid or "").strip():
         return []
@@ -835,6 +867,7 @@ def materialize_gsd_tasks(*, root: Path, phase: str = "") -> dict[str, Any]:
         build_gsd_task_contract=build_pm_gsd_task_contract,
         create_task=create_task,
         patch_task=patch_task,
+        build_completion_changes=lambda task, completed_at: build_completion_changes(task, completed_at=completed_at),
         now_iso=now_iso,
         binding_index_path=gsd_bindings_path(),
         write_repo_json=write_repo_json,
@@ -1503,6 +1536,7 @@ def build_cli_api() -> SimpleNamespace:
         attachment_auth_result=attachment_auth_result,
         build_auth_bundle=build_auth_bundle,
         build_auth_link=build_auth_link,
+        build_completion_changes=build_completion_changes,
         build_permission_bundle=build_permission_bundle,
         build_coder_context=build_coder_context,
         build_completion_comment=build_completion_comment,

@@ -17,6 +17,7 @@ BuildGsdTaskDescriptionFn = Callable[[str, dict[str, Any], Path], str]
 BuildGsdTaskContractFn = Callable[[Path, dict[str, Any]], dict[str, Any]]
 CreateTaskFn = Callable[..., dict[str, Any]]
 PatchTaskFn = Callable[[str, dict[str, Any]], dict[str, Any]]
+BuildCompletionChangesFn = Callable[[dict[str, Any], str], dict[str, Any]]
 NowIsoFn = Callable[[], str]
 WriteRepoJsonFn = Callable[[Path, dict[str, Any]], None]
 
@@ -39,6 +40,7 @@ def materialize_gsd_tasks(
     build_gsd_task_contract: BuildGsdTaskContractFn,
     create_task: CreateTaskFn,
     patch_task: PatchTaskFn,
+    build_completion_changes: BuildCompletionChangesFn | None,
     now_iso: NowIsoFn,
     binding_index_path: Path,
     write_repo_json: WriteRepoJsonFn,
@@ -136,7 +138,13 @@ def materialize_gsd_tasks(
                     }
                 )
             if bool(plan.get("has_summary")) and not str(task.get("completed_at") or "").strip():
-                patch_task(guid, {"completed_at": now_iso()})
+                completed_at = now_iso()
+                completion_changes = (
+                    build_completion_changes(task, completed_at)
+                    if build_completion_changes is not None
+                    else {"completed_at": completed_at}
+                )
+                patch_task(guid, completion_changes)
                 completed_synced.append(
                     {
                         "task_id": task_id,
@@ -179,7 +187,13 @@ def materialize_gsd_tasks(
             }
         )
         if bool(plan.get("has_summary")) and guid:
-            patch_task(guid, {"completed_at": now_iso()})
+            completed_at = now_iso()
+            completion_changes = (
+                build_completion_changes(task, completed_at)
+                if build_completion_changes is not None
+                else {"completed_at": completed_at}
+            )
+            patch_task(guid, completion_changes)
             completed_synced.append(
                 {
                     "task_id": task_id,

@@ -676,7 +676,8 @@ def build_command_handlers(api: Any) -> dict[str, CommandHandler]:
         comment_payload: dict[str, Any] | None = None
         if completion_comment:
             comment_payload = api.create_task_comment(guid, completion_comment)
-        payload = api.patch_task(guid, {"completed_at": api.now_iso()})
+        completed_at = api.now_iso()
+        payload = api.patch_task(guid, api.build_completion_changes(task, completed_at=completed_at))
         context = api.refresh_context_cache()
         return emit(
             {
