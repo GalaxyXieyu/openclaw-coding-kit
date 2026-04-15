@@ -49,6 +49,8 @@ class PmLocalCliTest(unittest.TestCase):
 
             created = run("create", "--summary", "Lifecycle task")
             self.assertEqual(created["task_id"], "T1")
+            task = run("get", "--task-id", "T1")
+            self.assertEqual(task["members"], [{"id": "local-user", "role": "assignee"}])
 
             upload = run("upload-attachments", "--task-id", "T1", "--file", str(evidence_file))
             self.assertEqual(upload["status"], "ok")

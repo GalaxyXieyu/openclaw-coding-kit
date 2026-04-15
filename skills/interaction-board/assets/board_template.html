@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>__TITLE__</title>
+  <style>__BOARD_CSS__</style>
+</head>
+<body>
+  <main class="board-app">
+    <section class="board-shell">
+      <div id="boardFrame" class="board-frame">
+        <div id="boardViewport" class="board-viewport">
+          <div id="boardStage" class="board-stage">
+            <svg id="edgeLayer" aria-hidden="true">
+              <defs>
+                <marker id="edgeArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 z" fill="currentColor"></path>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hud hud-dock" aria-label="Canvas controls">
+      <section id="dockPanel" class="dock-panel" aria-label="Board notes" hidden>
+        <div class="dock-panel-head">
+          <div>
+            <span class="dock-kicker">产品画布</span>
+            <p>默认只展示当前画布关系。统计、说明和待处理项都收进这里。</p>
+          </div>
+          <button id="resetLayout" type="button" class="panel-reset">重置布局</button>
+        </div>
+
+        <div class="metric-strip">
+          <div class="metric"><span>已注册</span><strong>__REGISTERED__</strong></div>
+          <div class="metric"><span>候选页</span><strong>__CANDIDATE__</strong></div>
+          <div class="metric"><span>关系边</span><strong>__EDGES__</strong></div>
+          <div class="metric"><span>冲突</span><strong>__CONFLICTS__</strong></div>
+          <div class="metric"><span>有截图</span><strong>__NODE_SHOTS__</strong></div>
+          <div class="metric"><span>快照数</span><strong>__SHOT_COUNT__</strong></div>
+        </div>
+
+        <div class="legend">
+          <span><i class="registered"></i> 已注册</span>
+          <span><i class="candidate"></i> 候选</span>
+          <span><i class="draft"></i> AI 草稿</span>
+          <span><i class="drag"></i> 可拖拽</span>
+        </div>
+
+        <div class="notes-grid">
+          <section class="note-card">
+            <h2>候选页提醒</h2>
+            <p>当前未注册但已经在 route constants / wrapper 页面中存在的节点：__CANDIDATE_TITLES__</p>
+          </section>
+          <section class="note-card">
+            <h2>待截图节点</h2>
+            <p>这些卡片当前没有命中真实截图源，所以只展示占位卡：__MISSING_TITLES__</p>
+          </section>
+          <section class="note-card">
+            <h2>冲突预览</h2>
+            <ul>__CONFLICT_PREVIEW__</ul>
+          </section>
+        </div>
+      </section>
+
+      <div class="dock-actions">
+        <button
+          id="togglePanel"
+          type="button"
+          class="dock-fab ghost"
+          aria-controls="dockPanel"
+          aria-expanded="false"
+          aria-label="Open canvas panel"
+        >
+          画布
+        </button>
+        <button id="openSearch" type="button" class="dock-button primary">
+          <span>搜索节点</span>
+          <kbd>⌘K</kbd>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <aside id="boardTooltip" class="tooltip" aria-hidden="true"></aside>
+
+  <dialog id="searchDialog" class="search-dialog">
+    <div class="search-panel">
+      <div class="search-panel-head">
+        <div>
+          <strong>搜索节点</strong>
+          <p>页面、路由、组件、截图标签、自动化场景</p>
+        </div>
+        <button id="closeSearch" class="search-close" type="button" aria-label="Close search">×</button>
+      </div>
+      <label class="search-input-shell" for="boardSearch">
+        <input id="boardSearch" type="search" placeholder="输入页面、组件、路由、截图来源" autocomplete="off" />
+      </label>
+      <p class="search-hint">Enter 打开首个结果，Esc 关闭，Ctrl/⌘ + K 快速唤起。</p>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </dialog>
+
+  <dialog id="nodeModal">
+    <div class="modal-shell">
+      <section class="modal-main">
+        <div class="modal-head">
+          <div>
+            <h2 id="modalTitle"></h2>
+            <p id="modalSubtitle"></p>
+          </div>
+          <button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button>
+        </div>
+        <div id="modalVersions" class="version-strip"></div>
+      </section>
+      <aside class="modal-side">
+        <section class="side-card">
+          <h3>页面备注</h3>
+          <ul id="modalRegions"></ul>
+        </section>
+        <section class="side-card">
+          <h3>来源锚点</h3>
+          <ul id="modalRefs"></ul>
+        </section>
+        <section class="side-card">
+          <h3>自动化场景</h3>
+          <ul id="modalScenarios"></ul>
+        </section>
+        <section class="side-card">
+          <h3>流向</h3>
+          <ul id="modalEdges"></ul>
+        </section>
+      </aside>
+    </div>
+  </dialog>
+
+  <script id="board-data" type="application/json">__DATA__</script>
+  <script>__BOARD_JS__</script>
+</body>
+</html>

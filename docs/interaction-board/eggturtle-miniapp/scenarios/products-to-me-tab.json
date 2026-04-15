@@ -1,0 +1,33 @@
+{
+  "scenario_id": "products-to-me-tab",
+  "engine": "miniapp-devtools",
+  "entry_node_id": "products",
+  "target_node_id": "me",
+  "target": {
+    "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+  },
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/scenario/products-to-me-tab.png"
+  },
+  "context": {
+    "storage": [],
+    "notes": "用于回放主 tab 切换，验证从默认 landing 进入我的页。"
+  },
+  "steps": [
+    {
+      "action": "relaunch",
+      "target": "/pages/products/index"
+    },
+    {
+      "action": "switchTab",
+      "target": "/pages/me/index"
+    }
+  ],
+  "assertions": [
+    {
+      "type": "path",
+      "value": "pages/me/index"
+    }
+  ]
+}

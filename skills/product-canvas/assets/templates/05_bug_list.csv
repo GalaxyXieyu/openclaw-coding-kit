@@ -1,0 +1,2 @@
+defect_id,severity,module,case_id,title,repro_steps,expected,actual,status,owner,eta,evidence_path
+BUG-001,P1,Auth,TC-002,error toast overlap,"login fail twice",single visible error,noisy duplicated toast,open,,,"out/product-canvas/<run_id>/auth-fail.png"

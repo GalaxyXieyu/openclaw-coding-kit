@@ -1,0 +1,3 @@
+run_id,case_id,priority,result,failure_type,owner,eta,evidence_path,screenshot_path,defect_id,actual_result,notes
+<run_id>,TC-001,P0,NOT_RUN,,,"out/product-canvas/<run_id>/",,,,
+<run_id>,TC-002,P0,NOT_RUN,,,"out/product-canvas/<run_id>/",,,,

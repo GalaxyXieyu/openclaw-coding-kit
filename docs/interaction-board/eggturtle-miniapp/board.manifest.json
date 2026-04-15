@@ -1,0 +1,3894 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-04-15T14:24:41+08:00",
+  "project": {
+    "name": "Eggturtle-breeding-library",
+    "repo_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "app_kind": "miniapp"
+  },
+  "sources": {
+    "app_config": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+    "page_paths": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+    "routes_map": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/routes.ts",
+    "doc_runbook": "/Volumes/DATABASE/code/Eggturtle-breeding-library/docs/miniapp-runbook.md",
+    "screenshot_roots": [
+      {
+        "label": "compare",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final"
+      },
+      {
+        "label": "style-pass2",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2"
+      },
+      {
+        "label": "style-pass3",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3"
+      },
+      {
+        "label": "weapp-smoke",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots"
+      },
+      {
+        "label": "weapp-fidelity",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots"
+      },
+      {
+        "label": "guiquan",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp"
+      },
+      {
+        "label": "gq-compose",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1"
+      },
+      {
+        "label": "gq-detail",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3"
+      },
+      {
+        "label": "share-dialog",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/20260325-154816"
+      },
+      {
+        "label": "preview",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-preview"
+      },
+      {
+        "label": "ui-ux-smoke",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke"
+      },
+      {
+        "label": "public-smoke",
+        "root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456"
+      }
+    ],
+    "board_root": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp"
+  },
+  "summary": {
+    "registered_count": 26,
+    "candidate_count": 0,
+    "draft_count": 0,
+    "edge_count": 93,
+    "conflict_count": 0,
+    "nodes_with_screenshots": 12,
+    "attached_screenshot_count": 29,
+    "nodes_with_scenarios": 6,
+    "attached_scenario_count": 8
+  },
+  "nodes": [
+    {
+      "node_id": "workspaceentry",
+      "route_key": "workspaceEntry",
+      "title": "选择空间",
+      "route": "pages/workspace-entry/index",
+      "aliases": [
+        "login",
+        "workspaceEntry"
+      ],
+      "package": "main",
+      "group": "entry",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/tenant/workspace-entry/screen.tsx",
+      "page_file": "apps/miniapp/src/pages/workspace-entry/index.tsx",
+      "config_file": "apps/miniapp/src/pages/workspace-entry/index.config.ts",
+      "regions": [
+        "租户恢复",
+        "空间切换",
+        "登录回流"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/workspaceentry.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 2
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 3
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 4
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/workspace-entry/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/workspace-entry/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "workspaceentry",
+        "title": "选择空间",
+        "status": "registered",
+        "group": "entry",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/workspaceentry.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/workspaceentry.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/workspaceentry.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/workspaceentry.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquan",
+      "route_key": "guiquan",
+      "title": "龟圈",
+      "route": "pages/guiquan/index",
+      "aliases": [
+        "guiquan"
+      ],
+      "package": "main",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/screen.tsx",
+      "page_file": "apps/miniapp/src/pages/guiquan/index.tsx",
+      "config_file": "apps/miniapp/src/pages/guiquan/index.config.ts",
+      "regions": [
+        "社区",
+        "繁育",
+        "账本",
+        "补给入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "guiquan",
+          "path": "screenshots/guiquan/guiquan.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp/guiquan-direct-entry.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp",
+          "matched_by": "alias:guiquan-direct-entry"
+        },
+        {
+          "label": "gq-compose",
+          "path": "screenshots/gq-compose/guiquan.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1/community-head.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1",
+          "matched_by": "alias:community"
+        },
+        {
+          "label": "gq-detail",
+          "path": "screenshots/gq-detail/guiquan.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3/community-olive.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3",
+          "matched_by": "alias:community"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 7
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 5
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/guiquan/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/guiquan/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "guiquan-to-community-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/guiquan-to-community-detail.json",
+            "capture_output": "../screenshots/scenario/guiquan-to-community-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/guiquan-community-detail/index"
+              }
+            ],
+            "role": "entry"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "guiquan",
+        "title": "龟圈",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "guiquan-to-community-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/guiquan-to-community-detail.json",
+            "capture_output": "../screenshots/scenario/guiquan-to-community-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/guiquan-community-detail/index"
+              }
+            ],
+            "role": "entry"
+          }
+        ],
+        "primary_image": {
+          "label": "gq-detail",
+          "relative_path": "screenshots/gq-detail/guiquan.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/gq-detail/guiquan.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3/community-olive.png",
+          "matched_by": "alias:community"
+        },
+        "images": [
+          {
+            "label": "gq-detail",
+            "relative_path": "screenshots/gq-detail/guiquan.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/gq-detail/guiquan.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3/community-olive.png",
+            "matched_by": "alias:community",
+            "image_mean": 233.05447611264344,
+            "image_stddev": 29.46009262006305
+          },
+          {
+            "label": "gq-compose",
+            "relative_path": "screenshots/gq-compose/guiquan.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/gq-compose/guiquan.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1/community-head.png",
+            "matched_by": "alias:community",
+            "image_mean": 234.9866369280712,
+            "image_stddev": 31.776707647044038
+          },
+          {
+            "label": "scenario:guiquan-to-community-detail",
+            "relative_path": "screenshots/scenario/guiquan-to-community-detail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+            "matched_by": "scenario:entry",
+            "image_mean": 248.03487260501478,
+            "image_stddev": 25.513197859044805
+          },
+          {
+            "label": "guiquan",
+            "relative_path": "screenshots/guiquan/guiquan.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquan/guiquan.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp/guiquan-direct-entry.png",
+            "matched_by": "alias:guiquan-direct-entry",
+            "image_mean": 255.0,
+            "image_stddev": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquancommunitydetail",
+      "route_key": "guiquanCommunityDetail",
+      "title": "社区详情",
+      "route": "subpackages/workspace/pages/guiquan-community-detail/index",
+      "aliases": [
+        "guiquanCommunityDetail"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-community-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-community-detail/index.config.ts",
+      "regions": [
+        "帖子内容",
+        "评论区",
+        "关联档案"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "gq-detail",
+          "path": "screenshots/gq-detail/guiquancommunitydetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3/community-detail-olive.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3",
+          "matched_by": "alias:community-detail"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 9
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 33
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-community-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-community-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "guiquan-to-community-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/guiquan-to-community-detail.json",
+            "capture_output": "../screenshots/scenario/guiquan-to-community-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/guiquan-community-detail/index"
+              }
+            ],
+            "role": "target"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "guiquancommunitydetail",
+        "title": "社区详情",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "guiquan-to-community-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/guiquan-to-community-detail.json",
+            "capture_output": "../screenshots/scenario/guiquan-to-community-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/guiquan-community-detail/index"
+              }
+            ],
+            "role": "target"
+          }
+        ],
+        "primary_image": {
+          "label": "scenario:guiquan-to-community-detail",
+          "relative_path": "screenshots/scenario/guiquan-to-community-detail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+          "matched_by": "scenario:target"
+        },
+        "images": [
+          {
+            "label": "scenario:guiquan-to-community-detail",
+            "relative_path": "screenshots/scenario/guiquan-to-community-detail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/guiquan-to-community-detail.png",
+            "matched_by": "scenario:target",
+            "image_mean": 248.03487260501478,
+            "image_stddev": 25.513197859044805
+          },
+          {
+            "label": "gq-detail",
+            "relative_path": "screenshots/gq-detail/guiquancommunitydetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/gq-detail/guiquancommunitydetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step3/community-detail-olive.png",
+            "matched_by": "alias:community-detail",
+            "image_mean": 229.91670616113743,
+            "image_stddev": 23.180355125028523
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquancommunitycompose",
+      "route_key": "guiquanCommunityCompose",
+      "title": "发帖",
+      "route": "subpackages/workspace/pages/guiquan-compose/index",
+      "aliases": [
+        "guiquanCommunityCompose"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/community-compose-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-compose/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-compose/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "gq-compose",
+          "path": "screenshots/gq-compose/guiquancommunitycompose.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1/community-compose.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1",
+          "matched_by": "alias:community-compose"
+        },
+        {
+          "label": "preview",
+          "path": "screenshots/preview/guiquancommunitycompose.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-preview/t166-guiquan-compose-preview-prod.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-preview",
+          "matched_by": "alias:t166-guiquan-compose-preview"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 8
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 32
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-compose/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-compose/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquancommunitycompose",
+        "title": "发帖",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "preview",
+          "relative_path": "screenshots/preview/guiquancommunitycompose.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/preview/guiquancommunitycompose.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-preview/t166-guiquan-compose-preview-prod.png",
+          "matched_by": "alias:t166-guiquan-compose-preview"
+        },
+        "images": [
+          {
+            "label": "preview",
+            "relative_path": "screenshots/preview/guiquancommunitycompose.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/preview/guiquancommunitycompose.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-preview/t166-guiquan-compose-preview-prod.png",
+            "matched_by": "alias:t166-guiquan-compose-preview",
+            "image_mean": 157.67902670891806,
+            "image_stddev": 123.61599862305859
+          },
+          {
+            "label": "gq-compose",
+            "relative_path": "screenshots/gq-compose/guiquancommunitycompose.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/gq-compose/guiquancommunitycompose.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/gq-ui-step1/community-compose.png",
+            "matched_by": "alias:community-compose",
+            "image_mean": 203.39343594283832,
+            "image_stddev": 41.60159926310427
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquanmarketplacedetail",
+      "route_key": "guiquanMarketplaceDetail",
+      "title": "listing 详情",
+      "route": "subpackages/workspace/pages/guiquan-marketplace-detail/index",
+      "aliases": [
+        "guiquanMarketplaceDetail"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/marketplace-detail-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace-detail/index.config.ts",
+      "regions": [
+        "详情区",
+        "出价区",
+        "联系入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquanmarketplacedetail.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 11
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 35
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquanmarketplacedetail",
+        "title": "listing 详情",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquanmarketplacedetail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquanmarketplacedetail.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquanmarketplacedetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquanmarketplacedetail.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquanmarketplace",
+      "route_key": "guiquanMarketplace",
+      "title": "租户市场",
+      "route": "subpackages/workspace/pages/guiquan-marketplace/index",
+      "aliases": [
+        "guiquanMarketplace"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/marketplace-list-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace/index.config.ts",
+      "regions": [
+        "列表页",
+        "竞拍入口",
+        "卖家信息"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquanmarketplace.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 10
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 34
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-marketplace/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquanmarketplace",
+        "title": "租户市场",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquanmarketplace.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquanmarketplace.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquanmarketplace.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquanmarketplace.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansellermarketplacedetail",
+      "route_key": "guiquanSellerMarketplaceDetail",
+      "title": "拍卖进度",
+      "route": "subpackages/workspace/pages/guiquan-seller-marketplace-detail/index",
+      "aliases": [
+        "guiquanSellerMarketplaceDetail"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/marketplace-seller-detail-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace-detail/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquansellermarketplacedetail.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 13
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 37
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansellermarketplacedetail",
+        "title": "拍卖进度",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquansellermarketplacedetail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansellermarketplacedetail.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquansellermarketplacedetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansellermarketplacedetail.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansellermarketplace",
+      "route_key": "guiquanSellerMarketplace",
+      "title": "我的拍卖",
+      "route": "subpackages/workspace/pages/guiquan-seller-marketplace/index",
+      "aliases": [
+        "guiquanSellerMarketplace"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/marketplace-seller-list-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquansellermarketplace.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 12
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 36
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-seller-marketplace/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansellermarketplace",
+        "title": "我的拍卖",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquansellermarketplace.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansellermarketplace.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquansellermarketplace.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansellermarketplace.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansupplyaddresses",
+      "route_key": "guiquanSupplyAddresses",
+      "title": "收货地址",
+      "route": "subpackages/workspace/pages/guiquan-supply-addresses/index",
+      "aliases": [
+        "guiquanSupplyAddresses"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/supply-addresses-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-addresses/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-addresses/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquansupplyaddresses.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 14
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 38
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-addresses/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-addresses/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansupplyaddresses",
+        "title": "收货地址",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquansupplyaddresses.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansupplyaddresses.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquansupplyaddresses.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansupplyaddresses.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansupplycart",
+      "route_key": "guiquanSupplyCart",
+      "title": "补给购物车",
+      "route": "subpackages/workspace/pages/guiquan-supply-cart/index",
+      "aliases": [
+        "guiquanSupplyCart"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-cart/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-cart/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "ui-ux-smoke",
+          "path": "screenshots/ui-ux-smoke/guiquansupplycart.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-cart-smoke.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke",
+          "matched_by": "alias:guiquan-supply-cart"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 15
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 39
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-cart/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-cart/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansupplycart",
+        "title": "补给购物车",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "ui-ux-smoke",
+          "relative_path": "screenshots/ui-ux-smoke/guiquansupplycart.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/ui-ux-smoke/guiquansupplycart.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-cart-smoke.png",
+          "matched_by": "alias:guiquan-supply-cart"
+        },
+        "images": [
+          {
+            "label": "ui-ux-smoke",
+            "relative_path": "screenshots/ui-ux-smoke/guiquansupplycart.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/ui-ux-smoke/guiquansupplycart.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-cart-smoke.png",
+            "matched_by": "alias:guiquan-supply-cart",
+            "image_mean": 240.2797675395285,
+            "image_stddev": 10.804730037769511
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansupplydetail",
+      "route_key": "guiquanSupplyDetail",
+      "title": "商品详情",
+      "route": "subpackages/workspace/pages/guiquan-supply-detail/index",
+      "aliases": [
+        "guiquanSupplyDetail"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-detail/index.config.ts",
+      "regions": [
+        "商品信息",
+        "订单动作",
+        "地址摘要"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/guiquansupplydetail.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 16
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 40
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansupplydetail",
+        "title": "商品详情",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/guiquansupplydetail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansupplydetail.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/guiquansupplydetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/guiquansupplydetail.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "guiquansupplyorders",
+      "route_key": "guiquanSupplyOrders",
+      "title": "补给订单",
+      "route": "subpackages/workspace/pages/guiquan-supply-orders/index",
+      "aliases": [
+        "guiquanSupplyOrders"
+      ],
+      "package": "workspace",
+      "group": "guiquan",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/guiquan/supply-orders-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-orders/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-orders/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "ui-ux-smoke",
+          "path": "screenshots/ui-ux-smoke/guiquansupplyorders.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-orders-smoke.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke",
+          "matched_by": "alias:guiquan-supply-orders"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 17
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 41
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-orders/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/guiquan-supply-orders/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "guiquansupplyorders",
+        "title": "补给订单",
+        "status": "registered",
+        "group": "guiquan",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "ui-ux-smoke",
+          "relative_path": "screenshots/ui-ux-smoke/guiquansupplyorders.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/ui-ux-smoke/guiquansupplyorders.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-orders-smoke.png",
+          "matched_by": "alias:guiquan-supply-orders"
+        },
+        "images": [
+          {
+            "label": "ui-ux-smoke",
+            "relative_path": "screenshots/ui-ux-smoke/guiquansupplyorders.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/ui-ux-smoke/guiquansupplyorders.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-smoke/guiquan-supply-orders-smoke.png",
+            "matched_by": "alias:guiquan-supply-orders",
+            "image_mean": 239.15211745610154,
+            "image_stddev": 20.34576520336286
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "products",
+      "route_key": "products",
+      "title": "宠物档案",
+      "route": "pages/products/index",
+      "aliases": [
+        "defaultPrivateLanding",
+        "home",
+        "products"
+      ],
+      "package": "main",
+      "group": "products",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/product/list/screen.tsx",
+      "page_file": "apps/miniapp/src/pages/products/index.tsx",
+      "config_file": "apps/miniapp/src/pages/products/index.config.ts",
+      "regions": [
+        "筛选区",
+        "宠物卡片",
+        "编辑入口",
+        "分享入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "compare",
+          "path": "screenshots/compare/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/products.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final",
+          "matched_by": "route-tail, alias:pages-products"
+        },
+        {
+          "label": "style-pass2",
+          "path": "screenshots/style-pass2/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/products.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2",
+          "matched_by": "alias:products"
+        },
+        {
+          "label": "style-pass3",
+          "path": "screenshots/style-pass3/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/products-h5-pass5.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3",
+          "matched_by": "alias:products"
+        },
+        {
+          "label": "weapp-smoke",
+          "path": "screenshots/weapp-smoke/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/products.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots",
+          "matched_by": "alias:products"
+        },
+        {
+          "label": "weapp-fidelity",
+          "path": "screenshots/weapp-fidelity/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/products-after-fidelity.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots",
+          "matched_by": "alias:products"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 4
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 5
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 6
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 6
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/products/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/products/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+            "capture_output": "../screenshots/scenario/products-to-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/product-detail/index"
+              }
+            ],
+            "role": "entry"
+          },
+          {
+            "scenario_id": "products-to-footprint-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-footprint-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-footprint-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/series/index"
+              }
+            ],
+            "role": "entry"
+          },
+          {
+            "scenario_id": "products-to-me-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-me-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-me-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/me/index"
+              }
+            ],
+            "role": "entry"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "products",
+        "title": "宠物档案",
+        "status": "registered",
+        "group": "products",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+            "capture_output": "../screenshots/scenario/products-to-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/product-detail/index"
+              }
+            ],
+            "role": "entry"
+          },
+          {
+            "scenario_id": "products-to-footprint-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-footprint-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-footprint-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/series/index"
+              }
+            ],
+            "role": "entry"
+          },
+          {
+            "scenario_id": "products-to-me-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-me-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-me-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/me/index"
+              }
+            ],
+            "role": "entry"
+          }
+        ],
+        "primary_image": {
+          "label": "weapp-fidelity",
+          "relative_path": "screenshots/weapp-fidelity/products.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-fidelity/products.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/products-after-fidelity.png",
+          "matched_by": "alias:products"
+        },
+        "images": [
+          {
+            "label": "weapp-fidelity",
+            "relative_path": "screenshots/weapp-fidelity/products.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-fidelity/products.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/products-after-fidelity.png",
+            "matched_by": "alias:products",
+            "image_mean": 194.12474773271586,
+            "image_stddev": 77.76499242538932
+          },
+          {
+            "label": "weapp-smoke",
+            "relative_path": "screenshots/weapp-smoke/products.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/products.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/products.png",
+            "matched_by": "alias:products",
+            "image_mean": 185.72859785927517,
+            "image_stddev": 93.63638259607713
+          },
+          {
+            "label": "style-pass2",
+            "relative_path": "screenshots/style-pass2/products.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass2/products.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/products.png",
+            "matched_by": "alias:products",
+            "image_mean": 229.70027443593793,
+            "image_stddev": 33.99319009962809
+          },
+          {
+            "label": "compare",
+            "relative_path": "screenshots/compare/products.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/compare/products.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/products.png",
+            "matched_by": "route-tail, alias:pages-products",
+            "image_mean": 163.6138187608863,
+            "image_stddev": 89.41429107267908
+          },
+          {
+            "label": "scenario:products-to-detail",
+            "relative_path": "screenshots/scenario/products-to-detail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+            "matched_by": "scenario:entry",
+            "image_mean": 255.0,
+            "image_stddev": 0.0
+          },
+          {
+            "label": "style-pass3",
+            "relative_path": "screenshots/style-pass3/products.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass3/products.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/products-h5-pass5.png",
+            "matched_by": "alias:products",
+            "image_mean": 29.643329383886254,
+            "image_stddev": 18.328562305557032
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "productdetail",
+      "route_key": "productDetail",
+      "title": "宠物详情",
+      "route": "subpackages/workspace/pages/product-detail/index",
+      "aliases": [
+        "productDetail"
+      ],
+      "package": "workspace",
+      "group": "products",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/product/detail/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/product-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/product-detail/index.config.ts",
+      "regions": [
+        "头图",
+        "详情信息",
+        "分享配置入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/productdetail.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 18
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 45
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/product-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/product-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+            "capture_output": "../screenshots/scenario/products-to-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/product-detail/index"
+              }
+            ],
+            "role": "target"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "productdetail",
+        "title": "宠物详情",
+        "status": "registered",
+        "group": "products",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-detail",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+            "capture_output": "../screenshots/scenario/products-to-detail.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "subpackages/workspace/pages/product-detail/index"
+              }
+            ],
+            "role": "target"
+          }
+        ],
+        "primary_image": {
+          "label": "scenario:products-to-detail",
+          "relative_path": "screenshots/scenario/products-to-detail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+          "matched_by": "scenario:target"
+        },
+        "images": [
+          {
+            "label": "scenario:products-to-detail",
+            "relative_path": "screenshots/scenario/products-to-detail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/scenario/products-to-detail.png",
+            "matched_by": "scenario:target",
+            "image_mean": 255.0,
+            "image_stddev": 0.0
+          },
+          {
+            "label": "planned",
+            "relative_path": "screenshots/productdetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/productdetail.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "producteditor",
+      "route_key": "productEditor",
+      "title": "宠物编辑",
+      "route": "subpackages/workspace/pages/product-editor/index",
+      "aliases": [
+        "productEditor"
+      ],
+      "package": "workspace",
+      "group": "products",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/product/editor/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/product-editor/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/product-editor/index.config.ts",
+      "regions": [
+        "基础资料",
+        "图片上传",
+        "保存动作"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/producteditor.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 30
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 46
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/product-editor/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/product-editor/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "producteditor",
+        "title": "宠物编辑",
+        "status": "registered",
+        "group": "products",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/producteditor.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/producteditor.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/producteditor.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/producteditor.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "quickrecord",
+      "route_key": "quickRecord",
+      "title": "快速记录",
+      "route": "subpackages/workspace/pages/quick-record/index",
+      "aliases": [
+        "quickRecord"
+      ],
+      "package": "workspace",
+      "group": "products",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/quick-record/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/quick-record/index.config.ts",
+      "regions": [
+        "记录表单",
+        "跳转编辑",
+        "提交结果"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/quickrecord.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 31
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 47
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/quick-record/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/quick-record/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "quickrecord",
+        "title": "快速记录",
+        "status": "registered",
+        "group": "products",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/quickrecord.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/quickrecord.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/quickrecord.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/quickrecord.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "shareconfig",
+      "route_key": "shareConfig",
+      "title": "分享配置",
+      "route": "subpackages/workspace/pages/share-config/index",
+      "aliases": [
+        "shareConfig"
+      ],
+      "package": "workspace",
+      "group": "products",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/tenant/share-config/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/share-config/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/share-config/index.config.ts",
+      "regions": [
+        "封面设置",
+        "水印设置",
+        "公开预览"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "share-dialog",
+          "path": "screenshots/share-dialog/shareconfig.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/20260325-154816/share-dialog-post-fix.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/20260325-154816",
+          "matched_by": "alias:share-dialog, share-dialog"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 25
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 29
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/share-config/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/share-config/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "shareconfig",
+        "title": "分享配置",
+        "status": "registered",
+        "group": "products",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "share-dialog",
+          "relative_path": "screenshots/share-dialog/shareconfig.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/share-dialog/shareconfig.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/20260325-154816/share-dialog-post-fix.png",
+          "matched_by": "alias:share-dialog, share-dialog"
+        },
+        "images": [
+          {
+            "label": "share-dialog",
+            "relative_path": "screenshots/share-dialog/shareconfig.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/share-dialog/shareconfig.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-ux-plan/20260325-154816/share-dialog-post-fix.png",
+            "matched_by": "alias:share-dialog, share-dialog",
+            "image_mean": 249.92740279598078,
+            "image_stddev": 3.356018605545406
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "footprint",
+      "route_key": "footprint",
+      "title": "足迹",
+      "route": "pages/series/index",
+      "aliases": [
+        "footprint",
+        "series"
+      ],
+      "package": "main",
+      "group": "footprint",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/series/screen.tsx",
+      "page_file": "apps/miniapp/src/pages/series/index.tsx",
+      "config_file": "apps/miniapp/src/pages/series/index.config.ts",
+      "regions": [
+        "待补区域备注"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "compare",
+          "path": "screenshots/compare/footprint.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/series.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final",
+          "matched_by": "route-tail, alias:pages-series"
+        },
+        {
+          "label": "weapp-smoke",
+          "path": "screenshots/weapp-smoke/footprint.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/series.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots",
+          "matched_by": "alias:series"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 19
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 28
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 7
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/series/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/series/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-footprint-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-footprint-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-footprint-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/series/index"
+              }
+            ],
+            "role": "target"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "footprint",
+        "title": "足迹",
+        "status": "registered",
+        "group": "footprint",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-footprint-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-footprint-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-footprint-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/series/index"
+              }
+            ],
+            "role": "target"
+          }
+        ],
+        "primary_image": {
+          "label": "weapp-smoke",
+          "relative_path": "screenshots/weapp-smoke/footprint.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/footprint.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/series.png",
+          "matched_by": "alias:series"
+        },
+        "images": [
+          {
+            "label": "weapp-smoke",
+            "relative_path": "screenshots/weapp-smoke/footprint.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/footprint.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/series.png",
+            "matched_by": "alias:series",
+            "image_mean": 234.6598642467168,
+            "image_stddev": 41.18075510079462
+          },
+          {
+            "label": "compare",
+            "relative_path": "screenshots/compare/footprint.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/compare/footprint.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/series.png",
+            "matched_by": "route-tail, alias:pages-series",
+            "image_mean": 240.44005397577675,
+            "image_stddev": 40.1868372097035
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "breederdetail",
+      "route_key": "breederDetail",
+      "title": "种龟详情",
+      "route": "subpackages/workspace/pages/breeders/detail/index",
+      "aliases": [
+        "breederDetail"
+      ],
+      "package": "workspace",
+      "group": "footprint",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/breeders/detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/breeders/detail/index.config.ts",
+      "regions": [
+        "家谱",
+        "繁育事件",
+        "配对历史"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "style-pass2",
+          "path": "screenshots/style-pass2/breederdetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/breeder-detail.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2",
+          "matched_by": "alias:breeder-detail"
+        },
+        {
+          "label": "style-pass3",
+          "path": "screenshots/style-pass3/breederdetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/breeder-detail-h5-pass6.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3",
+          "matched_by": "alias:breeder-detail"
+        },
+        {
+          "label": "weapp-smoke",
+          "path": "screenshots/weapp-smoke/breederdetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/breeder-detail.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots",
+          "matched_by": "alias:breeder-detail"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 29
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 44
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/breeders/detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/breeders/detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "breederdetail",
+        "title": "种龟详情",
+        "status": "registered",
+        "group": "footprint",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "weapp-smoke",
+          "relative_path": "screenshots/weapp-smoke/breederdetail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/breederdetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/breeder-detail.png",
+          "matched_by": "alias:breeder-detail"
+        },
+        "images": [
+          {
+            "label": "weapp-smoke",
+            "relative_path": "screenshots/weapp-smoke/breederdetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/breederdetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/breeder-detail.png",
+            "matched_by": "alias:breeder-detail",
+            "image_mean": 243.64214935131272,
+            "image_stddev": 25.43780254055926
+          },
+          {
+            "label": "style-pass2",
+            "relative_path": "screenshots/style-pass2/breederdetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass2/breederdetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/breeder-detail.png",
+            "matched_by": "alias:breeder-detail",
+            "image_mean": 242.87774841009437,
+            "image_stddev": 22.16745988823187
+          },
+          {
+            "label": "style-pass3",
+            "relative_path": "screenshots/style-pass3/breederdetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass3/breederdetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/breeder-detail-h5-pass6.png",
+            "matched_by": "alias:breeder-detail",
+            "image_mean": 46.476754344391786,
+            "image_stddev": 47.16764390174694
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "footprintbadges",
+      "route_key": "footprintBadges",
+      "title": "勋章柜",
+      "route": "subpackages/workspace/pages/footprint-badges/index",
+      "aliases": [
+        "footprintBadges"
+      ],
+      "package": "workspace",
+      "group": "footprint",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/subpackages/workspace/features/series/badges/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/footprint-badges/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/footprint-badges/index.config.ts",
+      "regions": [
+        "勋章概览",
+        "成长反馈"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/footprintbadges.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 20
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 30
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/footprint-badges/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/footprint-badges/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "footprintbadges",
+        "title": "勋章柜",
+        "status": "registered",
+        "group": "footprint",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/footprintbadges.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/footprintbadges.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/footprintbadges.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/footprintbadges.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "seriesmanage",
+      "route_key": "seriesManage",
+      "title": "系列管理",
+      "route": "subpackages/workspace/pages/series-manage/index",
+      "aliases": [
+        "seriesManage"
+      ],
+      "package": "workspace",
+      "group": "footprint",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/series/manage-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/series-manage/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/series-manage/index.config.ts",
+      "regions": [
+        "系列列表",
+        "系列编辑"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/seriesmanage.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 21
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 31
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/series-manage/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/series-manage/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "seriesmanage",
+        "title": "系列管理",
+        "status": "registered",
+        "group": "footprint",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/seriesmanage.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/seriesmanage.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/seriesmanage.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/seriesmanage.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "me",
+      "route_key": "me",
+      "title": "我的",
+      "route": "pages/me/index",
+      "aliases": [
+        "me"
+      ],
+      "package": "main",
+      "group": "account",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/me/screen.tsx",
+      "page_file": "apps/miniapp/src/pages/me/index.tsx",
+      "config_file": "apps/miniapp/src/pages/me/index.config.ts",
+      "regions": [
+        "身份卡",
+        "账号区",
+        "数据区",
+        "邀请区"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "compare",
+          "path": "screenshots/compare/me.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/me.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final",
+          "matched_by": "route-tail, alias:pages-me"
+        },
+        {
+          "label": "style-pass2",
+          "path": "screenshots/style-pass2/me.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/me.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2",
+          "matched_by": "alias:me"
+        },
+        {
+          "label": "weapp-fidelity",
+          "path": "screenshots/weapp-fidelity/me.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/me-after-fidelity.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots",
+          "matched_by": "alias:me"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 22
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 8
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/me/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/pages/me/index.config.ts",
+          "line": 2
+        }
+      ],
+      "board_meta": {
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-me-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-me-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-me-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/me/index"
+              }
+            ],
+            "role": "target"
+          }
+        ]
+      },
+      "card": {
+        "node_id": "me",
+        "title": "我的",
+        "status": "registered",
+        "group": "account",
+        "note": "",
+        "scenario_refs": [
+          {
+            "scenario_id": "products-to-me-tab",
+            "script_path": "",
+            "script_absolute_path": "",
+            "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-me-tab.json",
+            "capture_output": "../screenshots/scenario/products-to-me-tab.png",
+            "engine": "miniapp-devtools",
+            "target": {
+              "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+            },
+            "assertions": [
+              {
+                "type": "path",
+                "value": "pages/me/index"
+              }
+            ],
+            "role": "target"
+          }
+        ],
+        "primary_image": {
+          "label": "weapp-fidelity",
+          "relative_path": "screenshots/weapp-fidelity/me.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-fidelity/me.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/me-after-fidelity.png",
+          "matched_by": "alias:me"
+        },
+        "images": [
+          {
+            "label": "weapp-fidelity",
+            "relative_path": "screenshots/weapp-fidelity/me.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-fidelity/me.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-screenshots/me-after-fidelity.png",
+            "matched_by": "alias:me",
+            "image_mean": 244.32312913587816,
+            "image_stddev": 28.94152654990198
+          },
+          {
+            "label": "style-pass2",
+            "relative_path": "screenshots/style-pass2/me.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass2/me.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/me.png",
+            "matched_by": "alias:me",
+            "image_mean": 244.30658950054683,
+            "image_stddev": 33.361551419117426
+          },
+          {
+            "label": "compare",
+            "relative_path": "screenshots/compare/me.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/compare/me.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/me.png",
+            "matched_by": "route-tail, alias:pages-me",
+            "image_mean": 244.1260212865071,
+            "image_stddev": 35.366800626581075
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "accountcertificates",
+      "route_key": "accountCertificates",
+      "title": "证书中心",
+      "route": "subpackages/workspace/pages/account-certificates/index",
+      "aliases": [
+        "accountCertificates"
+      ],
+      "package": "workspace",
+      "group": "account",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/me/certificates-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/account-certificates/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/account-certificates/index.config.ts",
+      "regions": [
+        "证书中心",
+        "证书内容"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/accountcertificates.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 24
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 43
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/account-certificates/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/account-certificates/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "accountcertificates",
+        "title": "证书中心",
+        "status": "registered",
+        "group": "account",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/accountcertificates.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/accountcertificates.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/accountcertificates.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/accountcertificates.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "accountreferral",
+      "route_key": "accountReferral",
+      "title": "邀请中心",
+      "route": "subpackages/workspace/pages/account-referral/index",
+      "aliases": [
+        "accountReferral"
+      ],
+      "package": "workspace",
+      "group": "account",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/me/referral-screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/workspace/pages/account-referral/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/workspace/pages/account-referral/index.config.ts",
+      "regions": [
+        "邀请信息",
+        "奖励说明"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/accountreferral.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 23
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 42
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/account-referral/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/workspace/pages/account-referral/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "accountreferral",
+        "title": "邀请中心",
+        "status": "registered",
+        "group": "account",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "planned",
+          "relative_path": "screenshots/accountreferral.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/accountreferral.png",
+          "exists": false,
+          "source_path": "",
+          "matched_by": ""
+        },
+        "images": [
+          {
+            "label": "planned",
+            "relative_path": "screenshots/accountreferral.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/accountreferral.png",
+            "exists": false,
+            "source_path": "",
+            "matched_by": "",
+            "image_mean": null,
+            "image_stddev": null
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "publicsharedetail",
+      "route_key": "publicShareDetail",
+      "title": "公开档案",
+      "route": "subpackages/public/pages/share-detail/index",
+      "aliases": [
+        "publicShareDetail"
+      ],
+      "package": "public",
+      "group": "public",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/features/share/public-detail/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/public/pages/share-detail/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/public/pages/share-detail/index.config.ts",
+      "regions": [
+        "公开详情",
+        "事件区",
+        "回流入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "style-pass3",
+          "path": "screenshots/style-pass3/publicsharedetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/share-detail-h5-pass5.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3",
+          "matched_by": "alias:share-detail"
+        },
+        {
+          "label": "public-smoke",
+          "path": "screenshots/public-smoke/publicsharedetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456/02-tenant-public-detail.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456",
+          "matched_by": "alias:tenant-public-detail"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 27
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 24
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/public/pages/share-detail/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/public/pages/share-detail/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "publicsharedetail",
+        "title": "公开档案",
+        "status": "registered",
+        "group": "public",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "public-smoke",
+          "relative_path": "screenshots/public-smoke/publicsharedetail.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/public-smoke/publicsharedetail.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456/02-tenant-public-detail.png",
+          "matched_by": "alias:tenant-public-detail"
+        },
+        "images": [
+          {
+            "label": "public-smoke",
+            "relative_path": "screenshots/public-smoke/publicsharedetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/public-smoke/publicsharedetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456/02-tenant-public-detail.png",
+            "matched_by": "alias:tenant-public-detail",
+            "image_mean": 249.98725947627315,
+            "image_stddev": 20.470541701843818
+          },
+          {
+            "label": "style-pass3",
+            "relative_path": "screenshots/style-pass3/publicsharedetail.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass3/publicsharedetail.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/share-detail-h5-pass5.png",
+            "matched_by": "alias:share-detail",
+            "image_mean": 31.555051342812007,
+            "image_stddev": 18.294040791217878
+          }
+        ]
+      }
+    },
+    {
+      "node_id": "publicshare",
+      "route_key": "publicShare",
+      "title": "公开图鉴",
+      "route": "subpackages/public/pages/share/index",
+      "aliases": [
+        "publicShare"
+      ],
+      "package": "public",
+      "group": "public",
+      "status": "registered",
+      "screen_component": "apps/miniapp/src/subpackages/public/features/share/public-feed/screen.tsx",
+      "page_file": "apps/miniapp/src/subpackages/public/pages/share/index.tsx",
+      "config_file": "apps/miniapp/src/subpackages/public/pages/share/index.config.ts",
+      "regions": [
+        "公开列表",
+        "筛选",
+        "转化入口"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "compare",
+          "path": "screenshots/compare/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/share.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final",
+          "matched_by": "route-tail, alias:pages-share"
+        },
+        {
+          "label": "style-pass2",
+          "path": "screenshots/style-pass2/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/share-v2.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2",
+          "matched_by": "alias:share"
+        },
+        {
+          "label": "style-pass3",
+          "path": "screenshots/style-pass3/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/share-h5-pass5.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3",
+          "matched_by": "alias:share"
+        },
+        {
+          "label": "weapp-smoke",
+          "path": "screenshots/weapp-smoke/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/share-preview.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots",
+          "matched_by": "alias:share-preview, share-preview"
+        },
+        {
+          "label": "public-smoke",
+          "path": "screenshots/public-smoke/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456/01-tenant-public-feed.png",
+          "source_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456",
+          "matched_by": "alias:tenant-public-feed"
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/runtime/page-paths.ts",
+          "line": 26
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/app.config.ts",
+          "line": 24
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/public/pages/share/index.tsx",
+          "line": 1
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp/src/subpackages/public/pages/share/index.config.ts",
+          "line": 2
+        }
+      ],
+      "card": {
+        "node_id": "publicshare",
+        "title": "公开图鉴",
+        "status": "registered",
+        "group": "public",
+        "note": "",
+        "scenario_refs": [],
+        "primary_image": {
+          "label": "weapp-smoke",
+          "relative_path": "screenshots/weapp-smoke/publicshare.png",
+          "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/publicshare.png",
+          "exists": true,
+          "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/share-preview.png",
+          "matched_by": "alias:share-preview, share-preview"
+        },
+        "images": [
+          {
+            "label": "weapp-smoke",
+            "relative_path": "screenshots/weapp-smoke/publicshare.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/weapp-smoke/publicshare.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-weapp-smoke/20260321-211023/screenshots/share-preview.png",
+            "matched_by": "alias:share-preview, share-preview",
+            "image_mean": 242.95137285615374,
+            "image_stddev": 30.677092264374078
+          },
+          {
+            "label": "public-smoke",
+            "relative_path": "screenshots/public-smoke/publicshare.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/public-smoke/publicshare.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/ui-smoke/20260302-091456/01-tenant-public-feed.png",
+            "matched_by": "alias:tenant-public-feed",
+            "image_mean": 182.00635597511575,
+            "image_stddev": 85.89030455868912
+          },
+          {
+            "label": "style-pass2",
+            "relative_path": "screenshots/style-pass2/publicshare.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass2/publicshare.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass2/share-v2.png",
+            "matched_by": "alias:share",
+            "image_mean": 237.07643192773526,
+            "image_stddev": 39.748034856907246
+          },
+          {
+            "label": "compare",
+            "relative_path": "screenshots/compare/publicshare.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/compare/publicshare.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/manual-ui-compare/2026-03-22-15-01-58-final/share.png",
+            "matched_by": "route-tail, alias:pages-share",
+            "image_mean": 237.43300497225263,
+            "image_stddev": 37.727081767389585
+          },
+          {
+            "label": "style-pass3",
+            "relative_path": "screenshots/style-pass3/publicshare.png",
+            "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/screenshots/style-pass3/publicshare.png",
+            "exists": true,
+            "source_path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/out/miniapp-style-pass3/share-h5-pass5.png",
+            "matched_by": "alias:share",
+            "image_mean": 33.837448657188,
+            "image_stddev": 19.72374830045457
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "workspaceentry-products-redirect",
+      "from": "workspaceentry",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/tenant/workspace-entry/screen.tsx",
+          "line": 98
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquansupplydetail-navigateto",
+      "from": "guiquan",
+      "to": "guiquansupplydetail",
+      "trigger": "buildMiniappRoute:guiquan-supply-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 867
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquancommunitycompose-navigateto",
+      "from": "guiquan",
+      "to": "guiquancommunitycompose",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquanCommunityCompose",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 985
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-breederdetail-navigateto",
+      "from": "guiquan",
+      "to": "breederdetail",
+      "trigger": "buildMiniappRoute:breeder-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 999
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquanmarketplacedetail-navigateto",
+      "from": "guiquan",
+      "to": "guiquanmarketplacedetail",
+      "trigger": "buildMiniappRoute:guiquan-marketplace-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 1039
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-workspaceentry-redirect",
+      "from": "guiquan",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 1055
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-products-redirect",
+      "from": "guiquan",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 1062
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquan-navigateto",
+      "from": "guiquan",
+      "to": "guiquan",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/screen.tsx",
+          "line": 1099
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquancommunitydetail-navigateto",
+      "from": "guiquan",
+      "to": "guiquancommunitydetail",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquanCommunityDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/tabs/community-tab.tsx",
+          "line": 200
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-breederdetail-navigateto",
+      "from": "guiquan",
+      "to": "breederdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.breederDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/tabs/ledger-tab.tsx",
+          "line": 215
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquansupplycart-navigateto",
+      "from": "guiquan",
+      "to": "guiquansupplycart",
+      "trigger": "buildMiniappRoute:guiquan-supply-cart",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/tabs/supply-tab.tsx",
+          "line": 842
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquansupplyorders-navigateto",
+      "from": "guiquan",
+      "to": "guiquansupplyorders",
+      "trigger": "buildMiniappRoute:guiquan-supply-orders",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/tabs/supply-tab.tsx",
+          "line": 847
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquan-guiquansellermarketplace-navigateto",
+      "from": "guiquan",
+      "to": "guiquansellermarketplace",
+      "trigger": "buildMiniappRoute:guiquan-seller-marketplace",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/tabs/supply-tab.tsx",
+          "line": 904
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitydetail-guiquan-navigateto",
+      "from": "guiquancommunitydetail",
+      "to": "guiquan",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+          "line": 226
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitydetail-workspaceentry-redirect",
+      "from": "guiquancommunitydetail",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+          "line": 242
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitydetail-products-redirect",
+      "from": "guiquancommunitydetail",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+          "line": 247
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitydetail-guiquancommunitydetail-navigateto",
+      "from": "guiquancommunitydetail",
+      "to": "guiquancommunitydetail",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquanCommunityDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+          "line": 338
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitydetail-productdetail-navigateto",
+      "from": "guiquancommunitydetail",
+      "to": "productdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.productDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-detail-screen.tsx",
+          "line": 523
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitycompose-guiquan-relaunch",
+      "from": "guiquancommunitycompose",
+      "to": "guiquan",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquan",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-compose-screen.tsx",
+          "line": 284
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquancommunitycompose-guiquancommunitydetail-navigateto",
+      "from": "guiquancommunitycompose",
+      "to": "guiquancommunitydetail",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquanCommunityDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/community-compose-screen.tsx",
+          "line": 598
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquanmarketplacedetail-workspaceentry-redirect",
+      "from": "guiquanmarketplacedetail",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-detail-screen.tsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquanmarketplace-workspaceentry-redirect",
+      "from": "guiquanmarketplace",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-list-screen.tsx",
+          "line": 45
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquanmarketplace-guiquanmarketplacedetail-navigateto",
+      "from": "guiquanmarketplace",
+      "to": "guiquanmarketplacedetail",
+      "trigger": "buildMiniappRoute:guiquan-marketplace-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-list-screen.tsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansellermarketplacedetail-workspaceentry-redirect",
+      "from": "guiquansellermarketplacedetail",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-seller-detail-screen.tsx",
+          "line": 100
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansellermarketplace-workspaceentry-redirect",
+      "from": "guiquansellermarketplace",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-seller-list-screen.tsx",
+          "line": 69
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansellermarketplace-guiquansellermarketplacedetail-navigateto",
+      "from": "guiquansellermarketplace",
+      "to": "guiquansellermarketplacedetail",
+      "trigger": "buildMiniappRoute:guiquan-seller-marketplace-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/marketplace-seller-list-screen.tsx",
+          "line": 114
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyaddresses-workspaceentry-redirect",
+      "from": "guiquansupplyaddresses",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-addresses-screen.tsx",
+          "line": 55
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyaddresses-products-redirect",
+      "from": "guiquansupplyaddresses",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-addresses-screen.tsx",
+          "line": 60
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyaddresses-guiquan-navigateto",
+      "from": "guiquansupplyaddresses",
+      "to": "guiquan",
+      "trigger": "buildMiniappRoute:guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-addresses-screen.tsx",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplycart-workspaceentry-redirect",
+      "from": "guiquansupplycart",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+          "line": 241
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplycart-products-redirect",
+      "from": "guiquansupplycart",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+          "line": 246
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplycart-guiquan-navigateto",
+      "from": "guiquansupplycart",
+      "to": "guiquan",
+      "trigger": "buildMiniappRoute:guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+          "line": 305
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplycart-guiquansupplyaddresses-navigateto",
+      "from": "guiquansupplycart",
+      "to": "guiquansupplyaddresses",
+      "trigger": "buildMiniappRoute:guiquan-supply-addresses",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+          "line": 313
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplycart-guiquansupplyorders-navigateto",
+      "from": "guiquansupplycart",
+      "to": "guiquansupplyorders",
+      "trigger": "buildMiniappRoute:guiquan-supply-orders",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-cart-screen.tsx",
+          "line": 448
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-workspaceentry-redirect",
+      "from": "guiquansupplydetail",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 116
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-products-redirect",
+      "from": "guiquansupplydetail",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 121
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-guiquan-navigateto",
+      "from": "guiquansupplydetail",
+      "to": "guiquan",
+      "trigger": "buildMiniappRoute:guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 178
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-guiquansupplycart-navigateto",
+      "from": "guiquansupplydetail",
+      "to": "guiquansupplycart",
+      "trigger": "buildMiniappRoute:guiquan-supply-cart",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 292
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-guiquansupplyaddresses-navigateto",
+      "from": "guiquansupplydetail",
+      "to": "guiquansupplyaddresses",
+      "trigger": "buildMiniappRoute:guiquan-supply-addresses",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 296
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplydetail-guiquansupplyorders-navigateto",
+      "from": "guiquansupplydetail",
+      "to": "guiquansupplyorders",
+      "trigger": "buildMiniappRoute:guiquan-supply-orders",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-detail-screen.tsx",
+          "line": 300
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyorders-workspaceentry-redirect",
+      "from": "guiquansupplyorders",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-orders-screen.tsx",
+          "line": 198
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyorders-products-redirect",
+      "from": "guiquansupplyorders",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-orders-screen.tsx",
+          "line": 203
+        }
+      ]
+    },
+    {
+      "edge_id": "guiquansupplyorders-guiquan-navigateto",
+      "from": "guiquansupplyorders",
+      "to": "guiquan",
+      "trigger": "buildMiniappRoute:guiquan",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/guiquan/supply-orders-screen.tsx",
+          "line": 260
+        }
+      ]
+    },
+    {
+      "edge_id": "products-productdetail-navigateto",
+      "from": "products",
+      "to": "productdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.productDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/screen.tsx",
+          "line": 318
+        }
+      ]
+    },
+    {
+      "edge_id": "products-workspaceentry-redirect",
+      "from": "products",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/screen.tsx",
+          "line": 510
+        }
+      ]
+    },
+    {
+      "edge_id": "products-producteditor-navigateto",
+      "from": "products",
+      "to": "producteditor",
+      "trigger": "MINIAPP_PAGE_PATHS.productEditor",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/screen.tsx",
+          "line": 986
+        }
+      ]
+    },
+    {
+      "edge_id": "products-shareconfig-navigateto",
+      "from": "products",
+      "to": "shareconfig",
+      "trigger": "MINIAPP_PAGE_PATHS.shareConfig",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/screen.tsx",
+          "line": 1026
+        }
+      ]
+    },
+    {
+      "edge_id": "products-products-relaunch",
+      "from": "products",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/screen.tsx",
+          "line": 1144
+        }
+      ]
+    },
+    {
+      "edge_id": "products-quickrecord-navigateto",
+      "from": "products",
+      "to": "quickrecord",
+      "trigger": "buildMiniappRoute:quick-record",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/list/controller.ts",
+          "line": 146
+        }
+      ]
+    },
+    {
+      "edge_id": "productdetail-breederdetail-navigateto",
+      "from": "productdetail",
+      "to": "breederdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.breederDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/detail/screen.tsx",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "edge_id": "productdetail-productdetail-navigateto",
+      "from": "productdetail",
+      "to": "productdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.productDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/detail/screen.tsx",
+          "line": 118
+        }
+      ]
+    },
+    {
+      "edge_id": "productdetail-products-navigateto",
+      "from": "productdetail",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/detail/screen.tsx",
+          "line": 119
+        }
+      ]
+    },
+    {
+      "edge_id": "productdetail-producteditor-navigateto",
+      "from": "productdetail",
+      "to": "producteditor",
+      "trigger": "MINIAPP_PAGE_PATHS.productEditor",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/detail/screen.tsx",
+          "line": 128
+        }
+      ]
+    },
+    {
+      "edge_id": "productdetail-shareconfig-navigateto",
+      "from": "productdetail",
+      "to": "shareconfig",
+      "trigger": "MINIAPP_PAGE_PATHS.shareConfig",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/detail/screen.tsx",
+          "line": 143
+        }
+      ]
+    },
+    {
+      "edge_id": "producteditor-breederdetail-relaunch",
+      "from": "producteditor",
+      "to": "breederdetail",
+      "trigger": "buildMiniappRoute:breeder-detail",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/editor/screen.tsx",
+          "line": 47
+        }
+      ]
+    },
+    {
+      "edge_id": "producteditor-products-relaunch",
+      "from": "producteditor",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/editor/screen.tsx",
+          "line": 53
+        }
+      ]
+    },
+    {
+      "edge_id": "producteditor-products-relaunch",
+      "from": "producteditor",
+      "to": "products",
+      "trigger": "buildMiniappRoute:products",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/editor/screen.tsx",
+          "line": 57
+        }
+      ]
+    },
+    {
+      "edge_id": "producteditor-breederdetail-navigateto",
+      "from": "producteditor",
+      "to": "breederdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.breederDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/editor/screen.tsx",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "edge_id": "producteditor-productdetail-navigateto",
+      "from": "producteditor",
+      "to": "productdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.productDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/editor/screen.tsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "edge_id": "quickrecord-footprint-navigateto",
+      "from": "quickrecord",
+      "to": "footprint",
+      "trigger": "buildMiniappRoute:footprint",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+          "line": 56
+        }
+      ]
+    },
+    {
+      "edge_id": "quickrecord-breederdetail-navigateto",
+      "from": "quickrecord",
+      "to": "breederdetail",
+      "trigger": "buildMiniappRoute:breeder-detail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+          "line": 59
+        }
+      ]
+    },
+    {
+      "edge_id": "quickrecord-products-navigateto",
+      "from": "quickrecord",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "edge_id": "quickrecord-producteditor-navigateto",
+      "from": "quickrecord",
+      "to": "producteditor",
+      "trigger": "buildMiniappRoute:product-editor",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+          "line": 156
+        }
+      ]
+    },
+    {
+      "edge_id": "quickrecord-producteditor-navigateto",
+      "from": "quickrecord",
+      "to": "producteditor",
+      "trigger": "MINIAPP_PAGE_PATHS.productEditor",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/product/quick-record/screen.tsx",
+          "line": 167
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-workspaceentry-redirect",
+      "from": "footprint",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 161
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-footprint-navigateto",
+      "from": "footprint",
+      "to": "footprint",
+      "trigger": "MINIAPP_PAGE_PATHS.footprint",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 211
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-products-navigateto",
+      "from": "footprint",
+      "to": "products",
+      "trigger": "buildMiniappRoute:products",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 346
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-footprintbadges-navigateto",
+      "from": "footprint",
+      "to": "footprintbadges",
+      "trigger": "MINIAPP_PAGE_PATHS.footprintBadges",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 361
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-me-navigateto",
+      "from": "footprint",
+      "to": "me",
+      "trigger": "buildMiniappRoute:me",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 374
+        }
+      ]
+    },
+    {
+      "edge_id": "footprint-seriesmanage-navigateto",
+      "from": "footprint",
+      "to": "seriesmanage",
+      "trigger": "MINIAPP_PAGE_PATHS.seriesManage",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/screen.tsx",
+          "line": 382
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-breederdetail-navigateto",
+      "from": "breederdetail",
+      "to": "breederdetail",
+      "trigger": "MINIAPP_PAGE_PATHS.breederDetail",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 371
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-products-navigateto",
+      "from": "breederdetail",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 372
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-workspaceentry-redirect",
+      "from": "breederdetail",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 485
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-producteditor-navigateto",
+      "from": "breederdetail",
+      "to": "producteditor",
+      "trigger": "buildMiniappRoute:product-editor",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 566
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-shareconfig-navigateto",
+      "from": "breederdetail",
+      "to": "shareconfig",
+      "trigger": "MINIAPP_PAGE_PATHS.shareConfig",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 585
+        }
+      ]
+    },
+    {
+      "edge_id": "breederdetail-quickrecord-navigateto",
+      "from": "breederdetail",
+      "to": "quickrecord",
+      "trigger": "buildMiniappRoute:quick-record",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/breeder/detail/screen.tsx",
+          "line": 623
+        }
+      ]
+    },
+    {
+      "edge_id": "footprintbadges-workspaceentry-redirect",
+      "from": "footprintbadges",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/workspace/features/series/badges/screen.tsx",
+          "line": 54
+        }
+      ]
+    },
+    {
+      "edge_id": "footprintbadges-footprintbadges-navigateto",
+      "from": "footprintbadges",
+      "to": "footprintbadges",
+      "trigger": "MINIAPP_PAGE_PATHS.footprintBadges",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/workspace/features/series/badges/screen.tsx",
+          "line": 123
+        }
+      ]
+    },
+    {
+      "edge_id": "seriesmanage-workspaceentry-redirect",
+      "from": "seriesmanage",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/manage-screen.tsx",
+          "line": 458
+        }
+      ]
+    },
+    {
+      "edge_id": "seriesmanage-products-navigateto",
+      "from": "seriesmanage",
+      "to": "products",
+      "trigger": "buildMiniappRoute:products",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/series/controller.ts",
+          "line": 154
+        }
+      ]
+    },
+    {
+      "edge_id": "me-workspaceentry-redirect",
+      "from": "me",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/screen.tsx",
+          "line": 277
+        }
+      ]
+    },
+    {
+      "edge_id": "me-accountreferral-navigateto",
+      "from": "me",
+      "to": "accountreferral",
+      "trigger": "MINIAPP_PAGE_PATHS.accountReferral",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/screen.tsx",
+          "line": 286
+        }
+      ]
+    },
+    {
+      "edge_id": "me-accountcertificates-navigateto",
+      "from": "me",
+      "to": "accountcertificates",
+      "trigger": "MINIAPP_PAGE_PATHS.accountCertificates",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/screen.tsx",
+          "line": 291
+        }
+      ]
+    },
+    {
+      "edge_id": "me-products-redirect",
+      "from": "me",
+      "to": "products",
+      "trigger": "redirectToTarget:products",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/screen.tsx",
+          "line": 875
+        }
+      ]
+    },
+    {
+      "edge_id": "me-guiquansupplyaddresses-navigateto",
+      "from": "me",
+      "to": "guiquansupplyaddresses",
+      "trigger": "MINIAPP_PAGE_PATHS.guiquanSupplyAddresses",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/screen.tsx",
+          "line": 1069
+        }
+      ]
+    },
+    {
+      "edge_id": "accountcertificates-workspaceentry-redirect",
+      "from": "accountcertificates",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/certificates-screen.tsx",
+          "line": 46
+        }
+      ]
+    },
+    {
+      "edge_id": "accountreferral-workspaceentry-redirect",
+      "from": "accountreferral",
+      "to": "workspaceentry",
+      "trigger": "redirectToTarget:login",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/referral-screen.tsx",
+          "line": 43
+        }
+      ]
+    },
+    {
+      "edge_id": "accountreferral-accountreferral-navigateto",
+      "from": "accountreferral",
+      "to": "accountreferral",
+      "trigger": "MINIAPP_PAGE_PATHS.accountReferral",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/me/referral-screen.tsx",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "edge_id": "publicsharedetail-products-relaunch",
+      "from": "publicsharedetail",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.defaultPrivateLanding",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/features/share/public-detail/screen.tsx",
+          "line": 346
+        }
+      ]
+    },
+    {
+      "edge_id": "publicshare-workspaceentry-navigateto",
+      "from": "publicshare",
+      "to": "workspaceentry",
+      "trigger": "MINIAPP_PAGE_PATHS.login",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/public/features/share/public-feed/screen.tsx",
+          "line": 457
+        }
+      ]
+    },
+    {
+      "edge_id": "publicshare-products-relaunch",
+      "from": "publicshare",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.defaultPrivateLanding",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/public/features/share/public-feed/screen.tsx",
+          "line": 736
+        }
+      ]
+    },
+    {
+      "edge_id": "publicshare-products-relaunch",
+      "from": "publicshare",
+      "to": "products",
+      "trigger": "MINIAPP_PAGE_PATHS.products",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/public/features/share/public-feed/screen.tsx",
+          "line": 777
+        }
+      ]
+    },
+    {
+      "edge_id": "publicshare-workspaceentry-relaunch",
+      "from": "publicshare",
+      "to": "workspaceentry",
+      "trigger": "MINIAPP_PAGE_PATHS.login",
+      "kind": "reLaunch",
+      "source_refs": [
+        {
+          "path": "apps/miniapp/src/subpackages/public/features/share/public-feed/screen.tsx",
+          "line": 788
+        }
+      ]
+    }
+  ],
+  "conflicts": []
+}

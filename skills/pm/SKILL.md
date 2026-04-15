@@ -104,6 +104,13 @@ If the repo is not initialized yet or `.pm/current-context.json` is missing:
 python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --write-config
 ```
 
+默认会尝试把当前 repo 自动登记到 OpenClaw 根级 `project-review/main_review_sources.json`，供后续 `main` 周报/月报汇总使用。
+如果这个项目不想进入全局汇总，可显式关闭：
+
+```bash
+python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --no-main-review-source
+```
+
 如果要先确认会绑定/创建哪些清单、文档和 workspace，先用：
 
 ```bash
@@ -198,6 +205,15 @@ Completion:
 ```bash
 python3 skills/pm/scripts/pm.py complete --task-id T123 --content "<result summary>"
 ```
+
+Completion due sync config:
+
+- `pm.json.task.completion_due_mode` controls whether PM also copies `completed_at` into `due` when a task is completed.
+- `never` is the default and only writes `completed_at`.
+- `if_missing` writes `due.timestamp = completed_at` only when the task does not already have a due value.
+- `always` always overwrites `due` with the completion timestamp.
+- Legacy `pm.json.task.sync_completed_at_to_due` is still accepted for compatibility: `true -> if_missing`, `false -> never`.
+- This setting affects both `pm complete` and `pm materialize-gsd-tasks` when a GSD plan already has `SUMMARY.md`.
 
 ## Mandatory Behavioral Rules
 

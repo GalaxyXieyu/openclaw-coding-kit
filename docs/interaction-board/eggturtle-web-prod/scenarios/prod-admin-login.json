@@ -1,0 +1,37 @@
+{
+  "scenario_id": "prod-admin-login",
+  "engine": "web-playwright-spec",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-login",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site"
+  },
+  "context": {
+    "notes": "生产 Admin 登录页 smoke：验证 /login?redirect=%2Fdashboard 可打开，登录文案可见，并保存全页截图。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/login?redirect=%2Fdashboard"
+    },
+    {
+      "action": "wait",
+      "ms": 1000
+    }
+  ],
+  "assertions": [
+    {
+      "type": "selector",
+      "selector": "text=管理后台登录",
+      "min_count": 1
+    },
+    {
+      "type": "selector",
+      "selector": "text=仅超级管理员账号可访问",
+      "min_count": 1
+    }
+  ],
+  "capture": {
+    "output": "docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png"
+  }
+}

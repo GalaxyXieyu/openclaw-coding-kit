@@ -216,6 +216,24 @@ def _build_check(label: str, status: str, detail: str) -> dict[str, str]:
     }
 
 
+def _doc_update_rows(doc_updates: list[dict[str, Any]] | None, *, limit: int = 3) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in _normalize_items(doc_updates):
+        path = _text(item.get("path"))
+        summary = _text(item.get("summary"))
+        if not path or not summary:
+            continue
+        key = (path, summary)
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append({"path": path, "summary": summary})
+        if len(rows) >= limit:
+            break
+    return rows
+
+
 def _daily_audit_checks(bundle: dict[str, Any], docs_flags: list[str], findings: list[dict[str, Any]]) -> list[dict[str, str]]:
     audit = bundle.get("audit") if isinstance(bundle.get("audit"), dict) else {}
     signals = audit.get("signals") if isinstance(audit.get("signals"), dict) else {}
@@ -358,6 +376,7 @@ def _daily_next_actions(next_actions: list[str], audit_checks: list[dict[str, st
 def build_code_health_risk_card(bundle: dict[str, Any]) -> dict[str, Any]:
     findings = _normalize_items(bundle.get("findings"))
     docs_flags = [str(item).strip() for item in bundle.get("docs_flags") or [] if str(item).strip()]
+    doc_updates = _doc_update_rows(bundle.get("doc_updates"))
     changed_scope = bundle.get("changed_scope") if isinstance(bundle.get("changed_scope"), dict) else {}
     commits = _normalize_items(bundle.get("commits"))
     trigger = bundle.get("trigger") if isinstance(bundle.get("trigger"), dict) else {}
@@ -377,6 +396,7 @@ def build_code_health_risk_card(bundle: dict[str, Any]) -> dict[str, Any]:
         "severity_counts": _severity_counts(card_findings),
         "top_risks": _top_risks(card_findings),
         "docs_flags": docs_flags[:3],
+        "doc_updates": doc_updates,
         "changed_scope": {
             "file_count": int(changed_scope.get("file_count") or 0),
             "files": list(changed_scope.get("files") or []),
@@ -394,6 +414,7 @@ def build_code_health_risk_card(bundle: dict[str, Any]) -> dict[str, Any]:
 def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
     findings = _normalize_items(bundle.get("findings"))
     docs_flags = [str(item).strip() for item in bundle.get("docs_flags") or [] if str(item).strip()]
+    doc_updates = _doc_update_rows(bundle.get("doc_updates"))
     changed_scope = bundle.get("changed_scope") if isinstance(bundle.get("changed_scope"), dict) else {}
     commits = _normalize_items(bundle.get("commits"))
     trigger = bundle.get("trigger") if isinstance(bundle.get("trigger"), dict) else {}
@@ -423,6 +444,7 @@ def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
         "top_risks": focus_findings,
         "focus_findings": focus_findings,
         "docs_flags": docs_flag_texts[:3],
+        "doc_updates": doc_updates,
         "changed_scope": {
             "file_count": int(changed_scope.get("file_count") or 0),
             "files": list(changed_scope.get("files") or []),

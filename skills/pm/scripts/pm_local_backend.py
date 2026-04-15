@@ -10,6 +10,7 @@ from typing import Any
 
 from pm_config import pm_file
 from pm_io import load_json_file, now_iso, write_repo_json
+from pm_task_members import normalize_task_members
 
 LOCAL_BACKEND_FILE = "local-tasks.json"
 SLUG_RE = re.compile(r"[^a-z0-9]+")
@@ -151,11 +152,15 @@ def create_task(
     description: str,
     tasklists: list[dict[str, Any]] | None = None,
     current_user_id: str = "",
+    members: list[dict[str, Any]] | None = None,
     gsd_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     store = load_local_store()
     guid = f"local-task-{uuid.uuid4().hex[:12]}"
     created_at = now_iso()
+    resolved_members = normalize_task_members(members)
+    if not resolved_members and str(current_user_id or "").strip():
+        resolved_members = [{"id": str(current_user_id).strip(), "role": "assignee"}]
     task = {
         "guid": guid,
         "url": f"local://task/{guid}",
@@ -166,7 +171,7 @@ def create_task(
         "completed_at": "",
         "start": {},
         "due": {},
-        "members": ([{"id": current_user_id}] if str(current_user_id or "").strip() else []),
+        "members": resolved_members,
         "attachments": [],
         "comments": [],
         "tasklists": [copy.deepcopy(item) for item in (tasklists or []) if isinstance(item, dict)],

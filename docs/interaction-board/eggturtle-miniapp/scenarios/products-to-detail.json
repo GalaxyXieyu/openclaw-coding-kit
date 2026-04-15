@@ -1,0 +1,41 @@
+{
+  "scenario_id": "products-to-detail",
+  "engine": "miniapp-devtools",
+  "entry_node_id": "products",
+  "target_node_id": "productdetail",
+  "target": {
+    "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+  },
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/scenario/products-to-detail.png"
+  },
+  "context": {
+    "storage": [],
+    "notes": "产品卡片单击进入记录时间线，连点两下才进入详情页。"
+  },
+  "steps": [
+    {
+      "action": "relaunch",
+      "target": "/pages/products/index"
+    },
+    {
+      "action": "wait",
+      "selector": ".workspace-product-card--interactive",
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "selector": ".workspace-product-card--interactive",
+      "path": "subpackages/workspace/pages/product-detail/index",
+      "count": 2,
+      "interval_ms": 120
+    }
+  ],
+  "assertions": [
+    {
+      "type": "path",
+      "value": "subpackages/workspace/pages/product-detail/index"
+    }
+  ]
+}

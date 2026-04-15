@@ -1,0 +1,33 @@
+{
+  "scenario_id": "products-to-footprint-tab",
+  "engine": "miniapp-devtools",
+  "entry_node_id": "products",
+  "target_node_id": "footprint",
+  "target": {
+    "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+  },
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/scenario/products-to-footprint-tab.png"
+  },
+  "context": {
+    "storage": [],
+    "notes": "用于回放主 tab 切换，验证从默认 landing 进入足迹页。"
+  },
+  "steps": [
+    {
+      "action": "relaunch",
+      "target": "/pages/products/index"
+    },
+    {
+      "action": "switchTab",
+      "target": "/pages/series/index"
+    }
+  ],
+  "assertions": [
+    {
+      "type": "path",
+      "value": "pages/series/index"
+    }
+  ]
+}

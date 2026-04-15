@@ -99,6 +99,12 @@ class TaskReviewRiskCardTest(unittest.TestCase):
                 "commits": [{"hash": "abc123", "subject": "fix: update home"}],
                 "file_stats": [{"path": "src/pages/home/index.tsx", "line_count": 920}],
                 "reference_errors": [],
+                "doc_updates": [
+                    {
+                        "path": "docs/review.md",
+                        "summary": "补充 nightly review 的自动修复规则和文档回写口径",
+                    }
+                ],
                 "llm_reviews": {
                     "code-review": {
                         "lane": "code-review",
@@ -126,6 +132,10 @@ class TaskReviewRiskCardTest(unittest.TestCase):
         self.assertEqual([], card["actions"])
         self.assertEqual({"P0": 0, "P1": 1, "P2": 0}, card["severity_counts"])
         self.assertEqual(["AGENTS.md 需要更新"], card["docs_flags"])
+        self.assertEqual(
+            [{"path": "docs/review.md", "summary": "补充 nightly review 的自动修复规则和文档回写口径"}],
+            card["doc_updates"],
+        )
         self.assertEqual(["更新 home"], card["today_updates"])
         self.assertEqual(["src/pages/home/index.tsx", "docs/review.md"], card["file_highlights"][:2])
         checks = {item["label"]: item for item in card["audit_checks"]}

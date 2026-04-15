@@ -1,0 +1,323 @@
+from __future__ import annotations
+
+import copy
+import json
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+DEFAULT_NIGHTLY_CRON = "30 0 * * *"
+DEFAULT_NIGHTLY_TIMEZONE = "Asia/Shanghai"
+
+
+def _default_main_digest_config() -> dict[str, Any]:
+    return {
+        "main_target": {
+            "alias": "main",
+            "channel": "feishu",
+            "chat_id": "",
+            "chat_name": "",
+        },
+        "main_chat_id": "",
+        "main_chat_name": "",
+        "main_project_name": "全部项目",
+        "default_since": "7 days ago",
+        "sources": [],
+    }
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"invalid JSON object: {path}")
+    return payload
+
+
+def _seed_main_digest_config(template_path: Path | None = None) -> dict[str, Any]:
+    payload = _default_main_digest_config()
+    if template_path and template_path.exists():
+        try:
+            template = _load_json(template_path)
+        except Exception:
+            template = {}
+        for key in ("main_target", "main_chat_id", "main_chat_name", "main_project_name", "default_since"):
+            value = template.get(key)
+            if value in (None, "", []):
+                continue
+            payload[key] = value
+    return payload
+
+
+def _now_ms() -> int:
+    return int(datetime.now(timezone.utc).timestamp() * 1000)
+
+
+def _load_cron_jobs(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {"version": 1, "jobs": []}
+    payload = _load_json(path)
+    jobs = payload.get("jobs")
+    if not isinstance(jobs, list):
+        payload["jobs"] = []
+    payload.setdefault("version", 1)
+    return payload
+
+
+def _default_session_key(agent_id: str, group_id: str = "") -> str:
+    normalized_agent = str(agent_id or "main").strip() or "main"
+    normalized_group = str(group_id or "").strip()
+    if normalized_group:
+        return f"agent:{normalized_agent}:feishu:group:{normalized_group}"
+    if normalized_agent == "main":
+        return "agent:main:main"
+    return f"agent:{normalized_agent}:main"
+
+
+def _nightly_review_message(
+    *,
+    repo_root: Path,
+    pm_config_path: Path,
+    since: str,
+    reviewer_model: str,
+    auto_fix_mode: str,
+    send_if_possible: bool,
+    include_dirty: bool,
+) -> str:
+    command = [
+        "python3",
+        "skills/project-review/scripts/nightly_auto_review.py",
+        "--repo-root",
+        str(repo_root),
+        "--pm-config",
+        str(pm_config_path),
+        "--since",
+        since,
+        "--auto-fix-mode",
+        auto_fix_mode,
+        "--json",
+    ]
+    if reviewer_model:
+        command.extend(["--reviewer-model", reviewer_model])
+    if not send_if_possible:
+        command.append("--no-send")
+    if not include_dirty:
+        command.append("--no-dirty")
+    joined_command = " ".join(json.dumps(part, ensure_ascii=False) for part in command)
+    return "\n".join(
+        [
+            f"Nightly review for repo {repo_root}.",
+            "",
+            "Run this exact command from the repo root:",
+            joined_command,
+            "",
+            "Rules:",
+            "- Keep the run scoped to this repo only.",
+            "- If the project chat is not configured, still complete the local review and report `send_status=skipped`.",
+            "- Reply with review_id, auto-fix result, and what docs descriptions were updated.",
+        ]
+    )
+
+
+def resolve_main_review_registry_path(openclaw_config_path: Path) -> Path:
+    runtime_dir = openclaw_config_path.expanduser().resolve().parent / "project-review"
+    review_path = runtime_dir / "main_review_sources.json"
+    legacy_path = runtime_dir / "main_digest_sources.json"
+    if legacy_path.exists() and not review_path.exists():
+        return legacy_path
+    return review_path
+
+
+def resolve_main_digest_registry_path(openclaw_config_path: Path) -> Path:
+    return resolve_main_review_registry_path(openclaw_config_path)
+
+
+def resolve_cron_jobs_path(openclaw_config_path: Path) -> Path:
+    return openclaw_config_path.expanduser().resolve().parent / "cron" / "jobs.json"
+
+
+def register_main_review_source(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    project_name: str,
+    source_key: str,
+    enabled: bool = True,
+    dry_run: bool = False,
+    template_path: Path | None = None,
+) -> dict[str, Any]:
+    config_path = resolve_main_review_registry_path(openclaw_config_path)
+    existed = config_path.exists()
+    payload = _load_json(config_path) if existed else _seed_main_digest_config(template_path)
+    sources = payload.get("sources")
+    if not isinstance(sources, list):
+        sources = []
+        payload["sources"] = sources
+
+    normalized_repo_root = str(repo_root.expanduser().resolve())
+    normalized_key = str(source_key or "").strip() or repo_root.name
+    normalized_project_name = str(project_name or "").strip() or repo_root.name
+
+    existing: dict[str, Any] | None = None
+    for item in sources:
+        if not isinstance(item, dict):
+            continue
+        item_repo_root = str(item.get("repo_root") or "").strip()
+        item_key = str(item.get("key") or "").strip()
+        if item_repo_root == normalized_repo_root or (normalized_key and item_key == normalized_key):
+            existing = item
+            break
+
+    action = "created"
+    if existing is None:
+        entry = {
+            "key": normalized_key,
+            "project_name": normalized_project_name,
+            "repo_root": normalized_repo_root,
+            "enabled": bool(enabled),
+        }
+        sources.append(entry)
+        existing = entry
+    else:
+        action = "updated"
+        existing["key"] = str(existing.get("key") or normalized_key).strip() or normalized_key
+        existing["project_name"] = normalized_project_name
+        existing["repo_root"] = normalized_repo_root
+        if "enabled" not in existing:
+            existing["enabled"] = bool(enabled)
+
+    main_target = payload.get("main_target") if isinstance(payload.get("main_target"), dict) else {}
+    main_ready = bool(str(main_target.get("chat_id") or payload.get("main_chat_id") or "").strip())
+
+    if not dry_run:
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "status": "dry_run" if dry_run else "ok",
+        "action": action if existed else "bootstrapped",
+        "config_path": str(config_path),
+        "source": dict(existing),
+        "source_count": len([item for item in sources if isinstance(item, dict)]),
+        "main_ready": main_ready,
+        "created_config": not existed,
+    }
+
+
+def register_main_digest_source(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    project_name: str,
+    source_key: str,
+    enabled: bool = True,
+    dry_run: bool = False,
+    template_path: Path | None = None,
+) -> dict[str, Any]:
+    return register_main_review_source(
+        openclaw_config_path=openclaw_config_path,
+        repo_root=repo_root,
+        project_name=project_name,
+        source_key=source_key,
+        enabled=enabled,
+        dry_run=dry_run,
+        template_path=template_path,
+    )
+
+
+def register_nightly_review_job(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    pm_config_path: Path,
+    project_name: str,
+    agent_id: str = "",
+    group_id: str = "",
+    enabled: bool = True,
+    dry_run: bool = False,
+    cron_expr: str = DEFAULT_NIGHTLY_CRON,
+    timezone_name: str = DEFAULT_NIGHTLY_TIMEZONE,
+    since: str = "24 hours ago",
+    reviewer_model: str = "",
+    auto_fix_mode: str = "long-file-and-docs",
+    send_if_possible: bool = True,
+    include_dirty: bool = True,
+) -> dict[str, Any]:
+    jobs_path = resolve_cron_jobs_path(openclaw_config_path)
+    payload = _load_cron_jobs(jobs_path)
+    jobs = payload.get("jobs")
+    if not isinstance(jobs, list):
+        jobs = []
+        payload["jobs"] = jobs
+
+    normalized_repo_root = str(repo_root.expanduser().resolve())
+    normalized_pm_config = str(pm_config_path.expanduser().resolve())
+    normalized_project_name = str(project_name or repo_root.name).strip() or repo_root.name
+    normalized_agent_id = str(agent_id or "main").strip() or "main"
+    normalized_group_id = str(group_id or "").strip()
+    normalized_name = f"Nightly {normalized_project_name} review"
+    normalized_session_key = _default_session_key(normalized_agent_id, normalized_group_id)
+    message = _nightly_review_message(
+        repo_root=Path(normalized_repo_root),
+        pm_config_path=Path(normalized_pm_config),
+        since=since,
+        reviewer_model=reviewer_model,
+        auto_fix_mode=auto_fix_mode,
+        send_if_possible=send_if_possible,
+        include_dirty=include_dirty,
+    )
+
+    existing: dict[str, Any] | None = None
+    for item in jobs:
+        if not isinstance(item, dict):
+            continue
+        payload_item = item.get("payload") if isinstance(item.get("payload"), dict) else {}
+        payload_message = str(payload_item.get("message") or "").strip()
+        if str(item.get("name") or "").strip() == normalized_name or normalized_repo_root in payload_message:
+            existing = item
+            break
+
+    action = "created"
+    created_at_ms = _now_ms()
+    entry = copy.deepcopy(existing) if isinstance(existing, dict) else {}
+    if existing is not None:
+        action = "updated"
+    entry.update(
+        {
+            "id": str(entry.get("id") or uuid.uuid4()),
+            "agentId": normalized_agent_id,
+            "sessionKey": normalized_session_key,
+            "name": normalized_name,
+            "enabled": bool(enabled),
+            "createdAtMs": int(entry.get("createdAtMs") or created_at_ms),
+            "updatedAtMs": created_at_ms,
+            "schedule": {
+                "kind": "cron",
+                "expr": str(cron_expr or DEFAULT_NIGHTLY_CRON).strip() or DEFAULT_NIGHTLY_CRON,
+                "tz": str(timezone_name or DEFAULT_NIGHTLY_TIMEZONE).strip() or DEFAULT_NIGHTLY_TIMEZONE,
+            },
+            "sessionTarget": "isolated",
+            "wakeMode": "now",
+            "payload": {
+                "kind": "agentTurn",
+                "thinking": "medium",
+                "timeoutSeconds": 3600,
+                "message": message,
+            },
+        }
+    )
+
+    if existing is None:
+        jobs.append(entry)
+
+    if not dry_run:
+        jobs_path.parent.mkdir(parents=True, exist_ok=True)
+        jobs_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "status": "dry_run" if dry_run else "ok",
+        "action": action,
+        "jobs_path": str(jobs_path),
+        "job": entry,
+        "job_count": len([item for item in jobs if isinstance(item, dict)]),
+    }

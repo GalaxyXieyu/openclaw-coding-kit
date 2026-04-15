@@ -109,6 +109,8 @@ def _fix_request(scope: dict[str, Any], *, repo_root: Path) -> str:
         "修复要求：",
         "- 先处理 P0 / P1 风险，再处理明显的 P2。",
         "- 涉及 docs 漂移时，同时更新相关文档和 AGENTS.md。",
+        "- 如果命中了超长文件，优先按职责拆分，不要只做格式化或搬空行。",
+        "- 如果更新了文档，完成说明里要明确写出“补了什么项目描述/规则”。",
         "- 改动范围尽量收敛在当前风险涉及文件。",
     ]
     if scope.get("requires_uiux_review"):
@@ -194,6 +196,8 @@ def _write_repair_contract(
             "优先收敛在 fix_files；若测试、文档或 AGENTS.md 必须联动，可扩展到直接相关文件。",
             "如果只有 docs_flags，没有实质代码风险，允许只做文档修复。",
             "涉及 docs 漂移时，同步更新相关 docs 与 AGENTS.md。",
+            "如果命中了超长文件，优先做职责拆分，不要只做表面清理。",
+            "完成后要说明文档新增/修正了哪些项目描述、规则或约束。",
             "完成后给出变更文件、测试结果和剩余风险。",
         ],
     }
@@ -215,6 +219,7 @@ def _build_fix_run_message(
     lines.append("- Keep edits scoped to the listed fix files unless tests/docs/AGENTS sync requires a nearby change.")
     if scope.get("docs_flags"):
         lines.append("- This run includes docs drift; update the relevant docs and AGENTS.md if needed.")
+        lines.append("- In the completion summary, explicitly list which product/project descriptions were updated in docs.")
     if scope.get("requires_uiux_review"):
         lines.append("- This run touches UI scope; keep notes for a follow-up ui-ux-review.")
     fix_files = [str(item).strip() for item in (scope.get("fix_files") or []) if str(item).strip()]

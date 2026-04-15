@@ -1,0 +1,38 @@
+{
+  "scenario_id": "products-to-detail",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "products",
+  "target_node_id": "productdetail",
+  "target": {
+    "base_url": "http://127.0.0.1:3000"
+  },
+  "capture": {
+    "mode": "screenshot",
+    "output": "screenshots/scenario/productdetail.png"
+  },
+  "context": {
+    "storage": [],
+    "query": {},
+    "notes": "首次进入前需要具备 workspace 上下文。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/pages/products/index"
+    },
+    {
+      "action": "tap",
+      "selector": "[data-testid='product-card']"
+    }
+  ],
+  "assertions": [
+    {
+      "type": "path",
+      "value": "/subpackages/workspace/pages/product-detail/index"
+    },
+    {
+      "type": "text",
+      "value": "宠物详情"
+    }
+  ]
+}

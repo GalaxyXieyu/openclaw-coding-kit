@@ -1,27 +1,53 @@
-# 安装说明
+# 完整安装与集成说明
 
-这份文档只保留一条可执行的安装主线。
+这份文档面向已经决定做真实接入的人。
 
-如果你只是想先验证仓库可用，先做 Step 0 和 Step 1，不要一开始就接 Feishu。
+如果你只是第一次接触这个仓库，目标只是确认“它能不能跑通一个本地闭环”，不要先读这里，先回到 `README` 走 `3-Minute Quickstart`：
+
+- 英文入口：`README.md`
+- 中文入口：`README.zh-CN.md`
+
+只有当你的目标已经变成下面这些事时，再继续看这份文档：
+
+- 把仓库资产部署到 Codex / OpenClaw
+- 接入真实 OpenClaw runtime
+- 接入 Feishu bot / 群 / task / doc
+- 跑通 bridge、授权、真实 backend 初始化和 E2E
 
 相关资料：
 
 - 仓库介绍与角色边界：`README.md`
+- 中文介绍：`README.zh-CN.md`
 - 最小 PM 配置示例：`examples/pm.json.example`
 - OpenClaw 配置片段：`examples/openclaw.json5.snippets.md`
 
-## 0. 完整安装 Checklist
+## 0. 先判断你该走哪条路径
 
-如果你的目标不是“只验证 repo 能跑”，而是把整套链路真实装起来，先按这 6 步走：
+这套仓库有三种典型目标，不同目标不要混着排障：
+
+| 路径 | 目标 | 是否应该先看这份文档 |
+|------|------|----------------|
+| 本地验证 | 证明 `pm` / `coder` / GSD 路由能启动 | 否，先看 `README` |
+| OpenClaw 接入 | 证明 skill / plugin / agent 配置生效 | 是 |
+| 完整集成 | 证明 task/doc/OAuth/bridge 能跑通 | 是 |
+
+一句话原则：
+
+- 只想验证仓库是否有价值，先走 `README`
+- 真正要做运行时接入和协同系统集成，再留在 `INSTALL.md`
+
+## 1. 完整安装 Checklist
+
+如果你的目标已经不是“只验证 repo 能跑”，而是把整套链路真实装起来，按这 6 步走：
 
 1. 先装基础运行时：`python3 >= 3.9`、`node >= 22`、`openclaw = 2026.3.22`、`codex`、`gsd-tools`；如果要 ACP / bridge，再装 `acpx`
 2. 如果目标包含 Feishu，这一步就并行准备：安装 `@larksuite/openclaw-lark`、写 `channels.feishu`、准备飞书 app / bot / 群 / 权限、让用户完成 `/auth`；如果要附件上传，再补 attachment OAuth
-3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/openclaw-lark-bridge` 放到 Codex；`plugins/acp-progress-bridge` 放到 OpenClaw；只有 front agent 直接依赖 repo skills 时，才把 `pm/coder` 额外复制到 OpenClaw
+3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/openclaw-lark-bridge` 放到 Codex；`plugins/acp-progress-bridge` 放到 OpenClaw；兼容窗口内如仍依赖旧 board 命令，再额外同步 `skills/interaction-board`
 4. 写配置：先把 `openclaw.json` 和 `pm.json` 配好
 5. 再跑 smoke / runtime 验证：这时再跑 `py_compile`、`context --refresh`、`route-gsd`、`openclaw agents list --bindings`、`openclaw plugins list`
 6. 最后才做真实 backend 的 `init` 和 E2E；如果是 Feishu backend，必须等 bot / 群 / 权限都 ready 之后再跑真实 `pm init`
 
-### 0.1 这些步骤必须用户手动完成
+### 1.1 这些步骤必须用户手动完成
 
 下面这些动作，AI 最多只能帮你生成链接、命令和导入 JSON，不能替你点完：
 
@@ -32,21 +58,9 @@
 
 也就是说，AI 可以把授权入口一次性整理好，但最后的人机确认动作还是要你自己点。
 
-## 1. 安装策略
+## 2. 安装策略
 
-这份仓库实际上有两条入口：
-
-1. 只验证仓库是否可跑
-2. 真的要把整套链路装到 Codex / OpenClaw / Feishu
-
-如果你只是做 repo 验证，推荐按下面顺序推进：
-
-1. 先检查运行时和版本。
-2. 先跑 repo-local smoke。
-3. 再按需接入 Codex / OpenClaw。
-4. 最后按需接 Feishu、OAuth 和 progress bridge。
-
-如果你要做完整安装，推荐顺序改成：
+如果你已经决定做完整安装，推荐顺序如下：
 
 1. 先检查并补齐运行时。
 2. 如果目标包含 Feishu，让用户并行准备 app / bot / 群 / 权限，同时安装 `openclaw-lark`。
@@ -63,17 +77,9 @@
 - `openclaw` 默认基线固定为 `2026.3.22`，不要默认升级到 `2026.4.5+`。
 - 如果目标包含 Feishu，用户侧创建 app / bot / 群 / 权限申请要和机器侧安装并行进行。
 
-推荐把安装任务拆成三档：
+## 3. Step 0：环境检查
 
-| 档位 | 目标 | 是否需要 Feishu |
-|------|------|----------------|
-| 本地验证 | 证明 `pm` / `coder` / GSD 路由可启动 | 否 |
-| OpenClaw 接入 | 证明 skill / plugin / agent 配置生效 | 否 |
-| 完整集成 | 证明 task/doc/OAuth/bridge 能跑通 | 是 |
-
-## 2. Step 0：环境检查
-
-### 2.1 必查命令
+### 3.1 必查命令
 
 最少检查：
 
@@ -125,7 +131,7 @@ openclaw -v
 - 这次远端验证机实际用的是 `~/.local/bin/python3 -> /usr/local/bin/python3.12`
 - 如果 `cc` 不存在，不阻塞本仓库安装，但交付里要明确写出“仅验证了 Codex 路径”
 
-### 2.2 缺失时优先补什么
+### 3.2 缺失时优先补什么
 
 #### GSD
 
@@ -186,7 +192,7 @@ openclaw gateway restart
 - 两套 Feishu 工具同时注册时，可能出现 `plugin tool name conflict (openclaw-lark): feishu_chat`
 - 在远端真实环境里，这种双注册还可能把 `openclaw plugins list` 顶到 Node OOM
 
-### 2.3 如果目标包含 Feishu，立刻并行准备
+### 3.3 如果目标包含 Feishu，立刻并行准备
 
 不要等本地 smoke 全跑完才让用户去准备 Feishu。
 
@@ -200,7 +206,7 @@ openclaw gateway restart
 
 这里的预期是 OAuth 授权链接或卡片，不是 OpenClaw pairing 二维码。
 
-### 2.4 路径约定
+### 3.4 路径约定
 
 这套仓库按下面顺序查找运行时入口：
 
@@ -238,11 +244,11 @@ export OPENCLAW_CONFIG=/home/openclaw/.openclaw-coding-kit/openclaw.json
 - macOS / Linux：`/abs/path/to/workspace`
 - Windows JSON：`C:/path/to/workspace` 或 `C:\\path\\to\\workspace`
 
-## 3. Step 1：本地无鉴权验证
+## 4. Step 1：本地无鉴权验证
 
 这一段只验证仓库本身，不要求你已经接入 OpenClaw 或 Feishu。
 
-### 3.1 CLI 与语法检查
+### 4.1 CLI 与语法检查
 
 ```bash
 python3 -m py_compile skills/pm/scripts/*.py skills/coder/scripts/*.py skills/openclaw-lark-bridge/scripts/*.py
@@ -259,7 +265,7 @@ python3 skills/openclaw-lark-bridge/scripts/invoke_openclaw_tool.py --help
 - `openclaw` 路径
 - `codex` 路径
 
-### 3.2 先跑 `pm init --dry-run`
+### 4.2 先跑 `pm init --dry-run`
 
 ```bash
 python3 skills/pm/scripts/pm.py init --project-name demo --dry-run
@@ -283,7 +289,7 @@ python3 skills/pm/scripts/pm.py init --project-name "测试项目" --english-nam
 - 不传 `--group-id` 时，`workspace_bootstrap: null` 是预期行为
 - 非 ASCII 项目名未传 `--english-name` 会直接报错
 
-### 3.3 刷新上下文并验证 GSD 路由
+### 4.3 刷新上下文并验证 GSD 路由
 
 ```bash
 python3 skills/pm/scripts/pm.py context --refresh
@@ -304,7 +310,7 @@ python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 
 就先修运行时，不要继续谈 `plan-phase`。
 
-### 3.4 repo-local smoke 建议口径
+### 4.4 repo-local smoke 建议口径
 
 如果你只是要证明仓库本地可用，这一组命令已经够用：
 
@@ -328,12 +334,13 @@ python3 skills/pm/scripts/pm.py get --task-id T1 --include-completed
 - `.pm/local-tasks.json` 出现任务
 - `attachments` 非空
 - `comments` 中出现完成说明
+- 如果 `pm.json.task.completion_due_mode` 设为 `if_missing` 或 `always`，`get --include-completed` 里还应看到 `due.timestamp == completed_at`
 
-## 4. Step 2：接入 OpenClaw
+## 5. Step 2：接入 OpenClaw
 
 本地无鉴权验证通过以后，再做这一步。
 
-### 4.1 复制仓库资产
+### 5.1 复制仓库资产
 
 这一段要分清楚两侧：
 
@@ -350,33 +357,43 @@ plugins/acp-progress-bridge  -> $OPENCLAW_WORKSPACE/plugins/acp-progress-bridge
 默认推荐：
 
 - `pm`、`coder`、`openclaw-lark-bridge` 先放到 Codex skills 目录
-- `acp-progress-bridge` 只放到 OpenClaw plugins 目录
-- `skills/openclaw-lark-bridge` 不作为默认 OpenClaw workspace 资产
+- OpenClaw 侧默认同步 `pm`、`coder` 到 workspace skills
+- `acp-progress-bridge` 同步到 OpenClaw plugins 目录
+- `skills/openclaw-lark-bridge` 仍然不作为默认 OpenClaw workspace 资产
 
-推荐复制命令：
+推荐直接使用仓库自带同步脚本：
 
 ```bash
-mkdir -p ~/.codex/skills "$OPENCLAW_WORKSPACE/plugins"
-cp -R skills/pm ~/.codex/skills/pm
-cp -R skills/coder ~/.codex/skills/coder
-cp -R skills/openclaw-lark-bridge ~/.codex/skills/openclaw-lark-bridge
-cp -R plugins/acp-progress-bridge "$OPENCLAW_WORKSPACE/plugins/acp-progress-bridge"
+python3 scripts/sync_local_skills.py --target both
 ```
 
-复制后立刻检查：
+脚本行为：
+
+- `codex`：默认同步 `pm`、`coder`、`openclaw-lark-bridge`、`project-review`
+- `openclaw`：默认同步 `pm`、`coder`
+- `openclaw plugins`：默认同步 `acp-progress-bridge`
+- 对未变化目录直接跳过，不再每次整目录备份重装
+- 会忽略 `__pycache__`、`.DS_Store`、`*.pyc`
+
+如果只想同步指定 skill：
+
+```bash
+python3 scripts/sync_local_skills.py --target codex --skill pm
+python3 scripts/sync_local_skills.py --target openclaw --skill pm --skill coder
+```
+
+如果 OpenClaw front agent 确实也要直接加载 `openclaw-lark-bridge`：
+
+```bash
+python3 scripts/sync_local_skills.py --target openclaw --skill pm --skill coder --skill openclaw-lark-bridge
+```
+
+同步后立刻检查：
 
 - `~/.codex/skills/pm/SKILL.md` 是否存在
 - `~/.codex/skills/coder/SKILL.md` 是否存在
 - `~/.codex/skills/openclaw-lark-bridge/SKILL.md` 是否存在
 - `plugins/acp-progress-bridge` 主文件是否存在
-
-如果你的 OpenClaw front agent 也需要直接加载 repo 内的 `pm` / `coder`，再额外复制到：
-
-```bash
-mkdir -p "$OPENCLAW_WORKSPACE/skills"
-cp -R skills/pm "$OPENCLAW_WORKSPACE/skills/pm"
-cp -R skills/coder "$OPENCLAW_WORKSPACE/skills/coder"
-```
 
 这里仍然不建议默认复制：
 
@@ -384,7 +401,7 @@ cp -R skills/coder "$OPENCLAW_WORKSPACE/skills/coder"
 skills/openclaw-lark-bridge -> $OPENCLAW_WORKSPACE/skills/openclaw-lark-bridge
 ```
 
-### 4.2 最小 OpenClaw 配置
+### 5.2 最小 OpenClaw 配置
 
 最低要求：
 
@@ -429,7 +446,7 @@ openclaw agents list --bindings
 openclaw plugins list
 ```
 
-### 4.3 最小 PM 配置
+### 5.3 最小 PM 配置
 
 `pm.json` 至少要明确：
 
@@ -449,6 +466,14 @@ openclaw plugins list
   "doc": { "backend": "repo" }
 }
 ```
+
+可选的完成时间同步配置：
+
+- 默认 `task.completion_due_mode = "never"`，完成任务时只写 `completed_at`，不会改 `due`
+- `task.completion_due_mode = "if_missing"` 只在任务还没有 `due` 时把 `completed_at` 回填到 `due.timestamp`
+- `task.completion_due_mode = "always"` 总是用 `completed_at` 覆盖 `due.timestamp`
+- 兼容旧键 `task.sync_completed_at_to_due`：`true` 等价于 `if_missing`，`false` 等价于 `never`
+- 这个配置同时影响手动 `pm complete` 和 `pm materialize-gsd-tasks` 触发的自动完成
 
 如果要接 Feishu，再补：
 
@@ -470,11 +495,11 @@ python3 skills/pm/scripts/pm.py next --refresh
 - 旧 `group_id`
 - 旧 token / 文档地址
 
-## 5. Step 3：可选接 Feishu / OAuth / Bridge
+## 6. Step 3：可选接 Feishu / OAuth / Bridge
 
 如果当前目标只是本地或 OpenClaw 接入验证，可以跳过本节。
 
-### 5.1 Feishu 接入最小要求
+### 6.1 Feishu 接入最小要求
 
 先完成飞书应用准备，再回头写 repo 配置。
 
@@ -493,7 +518,7 @@ python3 skills/pm/scripts/pm.py next --refresh
 
 安装后先做诊断，不要手抄一大段权限清单。
 
-### 5.2 OpenClaw Feishu 配置
+### 6.2 OpenClaw Feishu 配置
 
 最小形状：
 
@@ -530,7 +555,7 @@ python3 skills/pm/scripts/pm.py next --refresh
 
 如果 `groupPolicy = "allowlist"`，但 `groupAllowFrom` 里写成用户 open_id，机器人会收到群消息但不回复。
 
-### 5.3 统一授权入口
+### 6.3 统一授权入口
 
 现在 `pm init` 默认会附带 `auth_bundle`。
 
@@ -561,7 +586,7 @@ python3 skills/pm/scripts/pm.py auth
 python3 skills/pm/scripts/pm.py init --project-name demo --no-auth-bundle --dry-run
 ```
 
-### 5.4 `/auth` 与附件 OAuth
+### 6.4 `/auth` 与附件 OAuth
 
 Bot 能收消息后，要明确引导用户主动触发授权：
 
@@ -603,7 +628,7 @@ python3 skills/pm/scripts/pm.py auth-link \
 - 如果 `appSecret` 不是明文，而是 OpenClaw SecretRef，例如 `{"source":"file","provider":"lark-secrets","id":"/lark/appSecret"}`，旧版 PM 可能会把它当普通字符串直接发给飞书，表现为 `device authorization failed: invalid_client`
 - 现在仓库内 PM 已支持解析常见的 `env` / `file` / `exec` SecretRef；如果你在旧环境里遇到这个报错，先不要急着怀疑飞书凭证本身错了，先检查是不是 SecretRef 没有被正确解引用
 
-### 5.5 把飞书权限开通抽出来
+### 6.5 把飞书权限开通抽出来
 
 不要把“权限开通”混在长链路安装末尾再做。
 
@@ -651,7 +676,7 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 
 如果你已经把 `requireMention=false` 配好了，但群里还是必须 `@` 才回复，优先检查这里，而不是反复重装 OpenClaw。
 
-### 5.6 用户手动步骤要单独看
+### 6.6 用户手动步骤要单独看
 
 完整安装里，下面这些动作一定要明确告诉用户是“手动步骤”：
 
@@ -663,7 +688,7 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 
 不要把这些步骤写成“AI 会自动做好”，否则后面最容易绕晕。
 
-### 5.7 可选启用 progress bridge
+### 6.7 可选启用 progress bridge
 
 只有在你需要下面能力时，才启用 `acp-progress-bridge`：
 
@@ -682,9 +707,9 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 
 如果 plugin 内部已经 delivered，但外部仍看不到结果，再去查父会话策略、bindings 或消息投递链路。
 
-## 6. 验收建议
+## 7. 验收建议
 
-### 6.1 最小可交付
+### 7.1 最小可交付
 
 如果只做本地验证，至少交付：
 
@@ -694,7 +719,7 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 4. `context --refresh`
 5. `route-gsd --repo-root .`
 
-### 6.2 OpenClaw 接入验收
+### 7.2 OpenClaw 接入验收
 
 至少补：
 
@@ -702,7 +727,7 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 2. `openclaw plugins list`
 3. `python3 skills/pm/scripts/pm.py next --refresh`
 
-### 6.3 完整集成验收
+### 7.3 完整集成验收
 
 如果用户明确要求 Feishu E2E，再继续做。
 
@@ -732,6 +757,8 @@ python3 skills/pm/scripts/pm.py complete --task-id T1 --content "E2E smoke done"
 python3 skills/pm/scripts/pm.py get --task-id T1 --include-completed
 ```
 
+如果你在 `pm.json.task` 里显式开启了 `completion_due_mode`，最后一步返回的任务详情还应体现 `due.timestamp` 已按配置回填。
+
 建议最终交付统一按这几个状态汇报：
 
 ```text
@@ -745,7 +772,7 @@ Installation Summary
 - attachment_oauth: not_run/pass/fail
 ```
 
-## 7. 常见问题
+## 8. 常见问题
 
 - `workspace` 不是绝对路径：改成目标机器真实绝对路径
 - Windows JSON 路径未转义：优先写 `C:/...`
@@ -757,7 +784,7 @@ Installation Summary
 - 群消息到了但机器人不回：优先检查 `groupAllowFrom` 是否写成了错误的用户 id
 - `invoke_openclaw_tool.py --dry-run` 失败：通常是 `openclaw.json`、gateway token 或 gateway URL 解析有问题
 
-## 8. 运行态目录
+## 9. 运行态目录
 
 | 类别 | 典型位置 | 说明 |
 |------|----------|------|

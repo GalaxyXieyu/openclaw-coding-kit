@@ -34,6 +34,29 @@ def _normalize_texts(items: list[Any] | None) -> list[str]:
     return result
 
 
+def _normalize_doc_updates(items: list[dict[str, Any]] | None) -> list[dict[str, str]]:
+    result: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+        path = str(item.get("path") or "").strip()
+        summary = str(item.get("summary") or "").strip()
+        if not path or not summary:
+            continue
+        key = (path, summary)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(
+            {
+                "path": path,
+                "summary": summary,
+            }
+        )
+    return result
+
+
 def _project_summary_rows(project_summaries: list[dict[str, Any]] | None, *, limit: int = 50) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for item in _normalize_items(project_summaries):
@@ -177,6 +200,7 @@ def build_review_bundle(payload: dict[str, Any]) -> dict[str, Any]:
         "commits": commits,
         "findings": _merge_findings(code_lane.get("findings") or [], llm_code_review.get("findings") or [], explicit_findings),
         "docs_flags": _merge_text_flags(docs_lane.get("docs_flags") or [], llm_docs_review.get("docs_flags") or [], explicit_docs_flags),
+        "doc_updates": _normalize_doc_updates(payload.get("doc_updates")),
         "graph": {
             "enabled": route.uses_graph_observe,
             "snapshot_path": str(payload.get("graph_snapshot_path") or "").strip(),

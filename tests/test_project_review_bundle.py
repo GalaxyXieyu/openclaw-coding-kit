@@ -95,6 +95,26 @@ class TaskReviewBundleTest(unittest.TestCase):
         self.assertIn("语义重复", titles)
         self.assertIn("docs/api.md 语义没同步", bundle["docs_flags"])
 
+    def test_build_bundle_keeps_doc_updates(self) -> None:
+        bundle = build_review_bundle(
+            {
+                "trigger_kind": "daily",
+                "project_name": "PM工具链",
+                "changed_files": ["docs/review.md"],
+                "commits": [{"hash": "abc123", "subject": "docs: update nightly review"}],
+                "doc_updates": [
+                    {
+                        "path": "docs/review.md",
+                        "summary": "补充 nightly review 如何自动拆长文件和回写文档说明",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(
+            [{"path": "docs/review.md", "summary": "补充 nightly review 如何自动拆长文件和回写文档说明"}],
+            bundle["doc_updates"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

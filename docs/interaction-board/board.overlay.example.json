@@ -1,0 +1,28 @@
+{
+  "card_patches": [
+    {
+      "match": "products",
+      "note": "产品主列表，后续可继续接 AI 规划的新页面。"
+    }
+  ],
+  "cards": [
+    {
+      "node_id": "ai-share-flow",
+      "title": "分享漏斗草图",
+      "group": "products",
+      "status": "draft",
+      "extends": "products",
+      "note": "AI 先补一版分享闭环草图，不依赖真实代码页面。",
+      "tags": ["ai", "prototype"]
+    }
+  ],
+  "links": [
+    {
+      "from": "products",
+      "to": "ai-share-flow",
+      "kind": "prototype",
+      "trigger": "overlay:share-funnel",
+      "label": "从宠物列表进入分享草图"
+    }
+  ]
+}

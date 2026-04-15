@@ -1,0 +1,39 @@
+{
+  "scenario_id": "guiquan-to-community-detail",
+  "engine": "miniapp-devtools",
+  "entry_node_id": "guiquan",
+  "target_node_id": "guiquancommunitydetail",
+  "target": {
+    "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+  },
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/scenario/guiquan-to-community-detail.png"
+  },
+  "context": {
+    "storage": [],
+    "notes": "依赖龟圈社区 feed 返回至少一条帖子卡片。"
+  },
+  "steps": [
+    {
+      "action": "relaunch",
+      "target": "/pages/guiquan/index"
+    },
+    {
+      "action": "wait",
+      "selector": ".guiquan-feed-card",
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "selector": ".guiquan-feed-card",
+      "path": "subpackages/workspace/pages/guiquan-community-detail/index"
+    }
+  ],
+  "assertions": [
+    {
+      "type": "path",
+      "value": "subpackages/workspace/pages/guiquan-community-detail/index"
+    }
+  ]
+}

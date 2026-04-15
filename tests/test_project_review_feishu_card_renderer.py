@@ -96,6 +96,8 @@ class ProjectReviewFeishuCardRendererTest(unittest.TestCase):
         self.assertIn("页面路由说明和真实跳转可能对不上", content)
         self.assertIn("建议怎么做", content)
         self.assertIn("整张订单就可能被提前改成已发货或已完成", content)
+        self.assertIn("文件索引", content)
+        self.assertIn("[F1]", content)
         self.assertEqual("action", card["elements"][-1]["tag"])
         labels = [item["text"]["content"] for item in card["elements"][-1]["actions"]]
         self.assertEqual(["开始修复", "忽略这次"], labels)
@@ -133,10 +135,17 @@ class ProjectReviewFeishuCardRendererTest(unittest.TestCase):
                             "suggestion": "补主订单状态回写",
                         }
                     ],
+                    "doc_updates": [
+                        {
+                            "path": "docs/review.md",
+                            "summary": "补充 nightly review 如何自动拆长文件和同步文档",
+                        }
+                    ],
                     "docs_flags": ["canonical-miniapp-route-drift"],
                     "changed_scope": {"requires_uiux": True},
                     "commit_window": {"count": 2, "latest_subject": "fix: update refund status"},
                     "next_actions": ["先补主订单状态回写"],
+                    "automation_updates": ["已自动创建并执行修复任务 T88。"],
                     "actions": [],
                 },
                 "bundle": {
@@ -150,10 +159,15 @@ class ProjectReviewFeishuCardRendererTest(unittest.TestCase):
         self.assertEqual("每日项目回顾", card["header"]["title"]["content"])
         content = card["elements"][0]["text"]["content"]
         self.assertIn("今天具体推进", content)
-        self.assertIn("今天实际改到的文件", content)
+        self.assertIn("今天实际改到的范围", content)
+        self.assertIn("主要落在", content)
         self.assertIn("审核结果", content)
+        self.assertIn("今天文档主要更新了什么", content)
         self.assertIn("最值得看的问题", content)
         self.assertIn("下一步", content)
+        self.assertIn("自动处理", content)
+        self.assertIn("文件索引", content)
+        self.assertIn("[F1]", content)
         self.assertNotIn("P0 0 · P1 1 · P2 0", content)
         self.assertEqual(1, len(card["elements"]))
 

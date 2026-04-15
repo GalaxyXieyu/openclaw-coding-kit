@@ -1,0 +1,3 @@
+scope_id,module,persona,entry_route,in_scope,out_scope,risk_level,owner,notes
+SCOPE-001,Auth,guest,/login,login+session,invite flow,HIGH,,core entry
+SCOPE-002,Core browsing,member,/app,read flows only,batch import,HIGH,,main value path

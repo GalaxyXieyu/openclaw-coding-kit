@@ -1,0 +1,6 @@
+module,critical_flow,permission,data_integrity,error_recovery,responsive,observability,coverage_status,gap_note
+Auth,Y,Y,Y,Y,Y,Y,planned,
+Tenant switch,Y,Y,Y,Y,Y,Y,planned,
+Core list/detail,Y,Y,Y,Y,Y,Y,planned,
+Write operation,Y,Y,Y,Y,Y,Y,planned,
+Public share,Y,N,Y,Y,Y,Y,planned,

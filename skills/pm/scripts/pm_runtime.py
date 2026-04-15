@@ -258,6 +258,7 @@ def run_codex_cli(
             capture_output=True,
             text=True,
             check=False,
+            stdin=subprocess.DEVNULL,
             timeout=max(30, int(timeout_seconds or 900)),
         )
     except subprocess.TimeoutExpired as exc:

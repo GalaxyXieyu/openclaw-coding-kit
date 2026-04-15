@@ -1,0 +1,37 @@
+{
+  "scenario_id": "prod-web-home",
+  "engine": "web-playwright-spec",
+  "entry_node_id": "web-home",
+  "target_node_id": "web-home",
+  "target": {
+    "base_url": "https://xuanyuku.cn"
+  },
+  "context": {
+    "notes": "生产 Web 首页 smoke：验证公开首页可打开，核心 CTA 可见，并保存全页截图。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/"
+    },
+    {
+      "action": "wait",
+      "ms": 1000
+    }
+  ],
+  "assertions": [
+    {
+      "type": "selector",
+      "selector": "text=立即开始记录",
+      "min_count": 1
+    },
+    {
+      "type": "selector",
+      "selector": "text=查看功能演示",
+      "min_count": 1
+    }
+  ],
+  "capture": {
+    "output": "docs/interaction-board/eggturtle-web-prod/screenshots/prod-web-home.png"
+  }
+}
