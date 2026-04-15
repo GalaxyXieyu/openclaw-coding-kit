@@ -1,0 +1,34 @@
+{
+  "main_target": {
+    "alias": "main",
+    "channel": "feishu",
+    "chat_id": "oc_f213a226785839c50e582b85f20db79a",
+    "chat_name": "宇宇(main agent)"
+  },
+  "main_chat_id": "oc_f213a226785839c50e582b85f20db79a",
+  "main_chat_name": "宇宇(main agent)",
+  "main_project_name": "全部项目",
+  "default_since": "7 days ago",
+  "sources": [
+    {
+      "key": "pm-toolkit",
+      "project_name": "PM工具链",
+      "repo_root": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit"
+    },
+    {
+      "key": "eggturtle-miniapp",
+      "project_name": "选育溯源小程序",
+      "repo_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+    },
+    {
+      "key": "nanshan-ai",
+      "project_name": "市固投智能预测系统",
+      "repo_root": "/Volumes/DATABASE/code/fufeng/project-group/NanshanAIProject"
+    },
+    {
+      "key": "smart-miaomiao",
+      "project_name": "智能喵喵",
+      "repo_root": "/Users/galaxyxieyu/ensoai/repos/github/GalaxyXieyu/RobotsRun"
+    }
+  ]
+}
