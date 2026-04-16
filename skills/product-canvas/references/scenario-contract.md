@@ -33,7 +33,9 @@ Web 示例：
 ```json
 {
   "base_url": "http://127.0.0.1:3000",
-  "storage_state": ".auth/user.json"
+  "auth_surface": "admin",
+  "auth_profile": "demo-admin",
+  "storage_state": ".auth/user.session.json"
 }
 ```
 
@@ -129,4 +131,7 @@ Miniapp 示例：
 补充约定：
 
 - `capture.output` 建议写相对 `scenario.json` 的路径，例如 `../screenshots/scenario/products-to-detail.png`。
+- Web 场景若未显式写 `target.storage_state`，runner 默认会把登录态写到 `out/product-canvas/auth/<auth_profile>.session.json`。
+- `target.auth_surface` 第一版先支持 `admin`，用于基于登录接口自动 bootstrap Playwright storage state。
+- `web-playwright-cli` 第一版建议只用稳定子集：`open` + `wait` + `selector/text assertions` + `capture.output`。
 - `tap` 支持 `count` 与 `interval_ms`，可表达双击等真实手势。

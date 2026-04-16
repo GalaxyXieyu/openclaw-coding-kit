@@ -1,0 +1,41 @@
+{
+  "scenario_id": "prod-admin-admin-dashboard-commerce-marketplace",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-dashboard-commerce-marketplace",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "默认复用持久化登录态直接打开目标页。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/dashboard/commerce/marketplace"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "text",
+      "value": "当前筛选下没有挂牌"
+    },
+    {
+      "type": "text",
+      "value": "挂牌总览"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-admin-dashboard-commerce-marketplace.png"
+  }
+}

@@ -39,6 +39,7 @@ NOISE_PATH_PREFIXES = (
     "docs/plan/",
 )
 LOW_SIGNAL_PATHS = {"AGENTS.md", "CLAUDE.md", "pm.json", "package.json"}
+DAILY_CODE_SUFFIXES = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".java", ".rb", ".rs", ".kt")
 
 
 def _normalize_items(items: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -373,6 +374,149 @@ def _daily_next_actions(next_actions: list[str], audit_checks: list[dict[str, st
     return _normalize_texts(derived)[:3]
 
 
+def _has_llm_daily_review(review: dict[str, Any]) -> bool:
+    return _text(review.get("source")) == "llm-review"
+
+
+def _daily_doc_update_items(doc_updates: list[dict[str, str]]) -> list[str]:
+    items: list[str] = []
+    for item in doc_updates:
+        summary = _text(item.get("summary"))
+        if not summary:
+            continue
+        if summary.startswith("业务文档已补充"):
+            items.append(summary)
+            continue
+        quoted = re.search(r"「([^」]+)」", summary)
+        label = quoted.group(1).strip() if quoted else summary
+        label = re.sub(r"^(补充|新增说明：|更新说明：|新增|更新)\s*", "", label).strip()
+        label = label.replace("章节", "").strip(" 。；")
+        if not label:
+            label = "本次功能说明"
+        if not label.endswith(("功能", "说明", "规则", "文档", "口径")):
+            label = f"{label}功能"
+        items.append(f"业务文档已补充 {label}")
+    return _normalize_texts(items)[:2]
+
+
+def _daily_changed_code(changed_scope: dict[str, Any]) -> bool:
+    return any(
+        _text(path).endswith(DAILY_CODE_SUFFIXES)
+        for path in changed_scope.get("files") or []
+    )
+
+
+def _daily_review_summary(bundle: dict[str, Any], llm_daily_review: dict[str, Any]) -> str:
+    summary = _text(llm_daily_review.get("summary"))
+    if summary:
+        return summary
+    return _review_summary(bundle) or "今天完成了本次项目回顾，重点看业务进展、文档同步和风险。"
+
+
+def _daily_done_items(
+    llm_daily_review: dict[str, Any],
+    *,
+    commits: list[dict[str, Any]],
+    changed_files: list[str],
+) -> list[str]:
+    done_items = _normalize_texts(llm_daily_review.get("done_items"))
+    if done_items:
+        return done_items[:2]
+    if commits:
+        return _today_updates(commits, [], limit=2)
+    if any(path.startswith("docs/") or path.endswith(".md") for path in changed_files):
+        return ["今天补充了相关业务说明。"]
+    return ["今天没有识别到明确的业务功能变更。"]
+
+
+def _daily_docs_sync(
+    llm_daily_review: dict[str, Any],
+    *,
+    doc_updates: list[dict[str, str]],
+    docs_flags: list[str],
+    changed_scope: dict[str, Any],
+) -> dict[str, Any]:
+    raw_sync = llm_daily_review.get("docs_sync") if isinstance(llm_daily_review.get("docs_sync"), dict) else {}
+    status = _text(raw_sync.get("status")).lower()
+    if status not in {"synced", "partial", "missing"}:
+        status = "partial"
+    summary = _text(raw_sync.get("summary"))
+    items = _normalize_texts(raw_sync.get("items"))
+    doc_items = _daily_doc_update_items(doc_updates)
+    if doc_items:
+        status = "synced"
+        items = _normalize_texts(items + doc_items)[:2]
+        if not summary or "没" in summary or "未" in summary:
+            summary = items[0]
+    elif not _has_llm_daily_review(llm_daily_review):
+        humanized_flags = [_humanize_docs_flag(item) for item in docs_flags if _humanize_docs_flag(item)]
+        if humanized_flags:
+            status = "partial"
+            summary = humanized_flags[0]
+        elif _daily_changed_code(changed_scope):
+            status = "missing"
+            summary = "本次功能说明还没补。"
+        else:
+            status = "partial"
+            summary = "暂未识别到需要同步的业务文档。"
+    if not summary:
+        summary = {
+            "synced": "业务文档已补充本次功能说明。",
+            "missing": "本次功能说明还没补。",
+            "partial": "文档同步状态还需要继续确认。",
+        }[status]
+    return {
+        "status": status,
+        "summary": summary,
+        "items": items[:2],
+    }
+
+
+def _daily_risk_items(
+    llm_daily_review: dict[str, Any],
+    *,
+    findings: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    raw_risks = _normalize_items(llm_daily_review.get("risk_items"))
+    if raw_risks:
+        source = raw_risks[:2]
+    else:
+        source = _daily_focus_findings(findings, limit=2)
+    risks: list[dict[str, str]] = []
+    for item in source:
+        title = _text(item.get("card_title") or item.get("title"))
+        summary = _text(item.get("card_summary") or item.get("summary"))
+        if not title and not summary:
+            continue
+        risks.append(
+            {
+                "severity": _text(item.get("severity")).upper() or "P1",
+                "title": title or summary,
+                "summary": summary,
+            }
+        )
+    return risks[:2]
+
+
+def _daily_next_action(
+    llm_daily_review: dict[str, Any],
+    *,
+    fallback_actions: list[str],
+    docs_sync: dict[str, Any],
+    risk_items: list[dict[str, str]],
+) -> str:
+    direct = _text(llm_daily_review.get("next_action"))
+    if direct:
+        return direct
+    if fallback_actions:
+        return fallback_actions[0]
+    if risk_items:
+        return "先处理今天识别到的交付风险。"
+    if _text(docs_sync.get("status")) == "missing":
+        return "先把本次功能说明补到业务文档。"
+    return "继续推进下一步验收。"
+
+
 def build_code_health_risk_card(bundle: dict[str, Any]) -> dict[str, Any]:
     findings = _normalize_items(bundle.get("findings"))
     docs_flags = [str(item).strip() for item in bundle.get("docs_flags") or [] if str(item).strip()]
@@ -419,42 +563,36 @@ def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
     commits = _normalize_items(bundle.get("commits"))
     trigger = bundle.get("trigger") if isinstance(bundle.get("trigger"), dict) else {}
     lane_results = bundle.get("lane_results") if isinstance(bundle.get("lane_results"), dict) else {}
-    llm_code_review = lane_results.get("llm_code_review") if isinstance(lane_results.get("llm_code_review"), dict) else {}
-    llm_docs_review = lane_results.get("llm_docs_review") if isinstance(lane_results.get("llm_docs_review"), dict) else {}
-    llm_findings = _normalize_items(llm_code_review.get("findings")) + _normalize_items(llm_docs_review.get("findings"))
-    card_findings = llm_findings or findings
-    next_actions = _normalize_texts(llm_code_review.get("next_actions")) + _normalize_texts(llm_docs_review.get("next_actions"))
-    next_actions = _normalize_texts(next_actions)
+    llm_daily_review = lane_results.get("llm_daily_review") if isinstance(lane_results.get("llm_daily_review"), dict) else {}
     changed_files = [str(item).strip() for item in changed_scope.get("files") or [] if str(item).strip()]
-    docs_flag_texts = [_humanize_docs_flag(item) for item in docs_flags if _humanize_docs_flag(item)]
-    audit_checks = _daily_audit_checks(bundle, docs_flags, card_findings)
-    focus_findings = _daily_focus_findings(card_findings)
-    daily_next_actions = _daily_next_actions(next_actions, audit_checks, docs_flag_texts)
+    docs_sync = _daily_docs_sync(
+        llm_daily_review,
+        doc_updates=doc_updates,
+        docs_flags=docs_flags,
+        changed_scope=changed_scope,
+    )
+    risk_items = _daily_risk_items(llm_daily_review, findings=findings)
+    fallback_actions = _daily_next_actions([], [], docs_sync.get("items") or [docs_sync.get("summary")])
+    next_action = _daily_next_action(
+        llm_daily_review,
+        fallback_actions=fallback_actions,
+        docs_sync=docs_sync,
+        risk_items=risk_items,
+    )
 
     return {
         "card_kind": "daily_review_card_v1",
         "title": "每日项目回顾",
         "should_run": bool(trigger.get("should_run")),
         "skip_reason": str(trigger.get("skip_reason") or "").strip(),
-        "severity_counts": _severity_counts(card_findings),
-        "review_summary": _review_summary(bundle),
-        "today_updates": _today_updates(commits, changed_files),
-        "file_highlights": _highlight_files(changed_files),
-        "audit_checks": audit_checks,
-        "top_risks": focus_findings,
-        "focus_findings": focus_findings,
-        "docs_flags": docs_flag_texts[:3],
-        "doc_updates": doc_updates,
+        "review_summary": _daily_review_summary(bundle, llm_daily_review),
+        "done_items": _daily_done_items(llm_daily_review, commits=commits, changed_files=changed_files),
+        "docs_sync": docs_sync,
+        "risk_items": risk_items,
+        "next_action": next_action,
         "changed_scope": {
-            "file_count": int(changed_scope.get("file_count") or 0),
-            "files": list(changed_scope.get("files") or []),
             "requires_uiux": bool(changed_scope.get("touches_ui")),
         },
-        "commit_window": {
-            "count": len(commits),
-            "latest_subject": str(commits[0].get("subject") or "").strip() if commits else "",
-        },
-        "next_actions": daily_next_actions,
         "actions": [],
     }
 

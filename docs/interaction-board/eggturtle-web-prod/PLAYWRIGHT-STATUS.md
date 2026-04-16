@@ -32,6 +32,7 @@
 - 场景 JSON：
   - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-web-home.json`
   - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.json`
+  - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json`
 - 渲染出来的 spec：
   - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-web-home.spec.ts`
   - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.spec.ts`
@@ -72,6 +73,38 @@
   - `npx playwright test --config docs/interaction-board/eggturtle-web-prod/playwright.config.cjs ...`
 - 失败原因不是脚本内容错误，而是模块解析边界：
   - `Cannot find module '@playwright/test'`
+
+## 新增进展
+
+### 3. 生产 Admin 仪表盘登录态场景
+
+- 新增了 `web-playwright-cli` contract：
+  - `docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json`
+- 该场景不再依赖“每次手工填登录表单”，而是：
+  1. 通过 `web_auth_bootstrap.js` 调 `/api/auth/password-login`
+  2. 将 cookie 写入 `out/product-canvas/auth/*.session.json`
+  3. 后续通过 `web_scenario.js` 复用 storage state 直接打开 `/dashboard`
+- 这条链路更适合长期化存档、CI 重跑和页面卡片绑定
+
+### 4. 生产后台 board 卡片已接回场景结果
+
+- 已新增 seed board：
+  - `docs/interaction-board/eggturtle-web-prod/board.seed.json`
+- 已生成完整 board 产物：
+  - `docs/interaction-board/eggturtle-web-prod/board.manifest.json`
+  - `docs/interaction-board/eggturtle-web-prod/index.html`
+  - `docs/interaction-board/eggturtle-web-prod/board.drawio`
+  - `docs/interaction-board/eggturtle-web-prod/inventory.md`
+- 当前后台两张核心卡片：
+  - `admin-login`
+  - `admin-dashboard`
+- 卡片现在可直接带：
+  - `card.scenario_refs[]`
+  - `card.primary_image / card.images[]`
+  - `card.code_entry / card.code_anchors[]`
+- 其中：
+  - `admin-login` 主图已指向 `prod-admin-login.png`
+  - `admin-dashboard` 主图已指向 `prod-admin-dashboard-auth.png`
 
 ## 建议的后续路径
 

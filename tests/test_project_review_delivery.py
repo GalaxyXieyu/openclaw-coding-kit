@@ -287,7 +287,7 @@ class ProjectReviewDeliveryTest(unittest.TestCase):
             self.assertEqual("om_pm_force", stored["delivery"]["message_id"])
             self.assertEqual(captured["uuid"], stored["delivery"]["uuid"])
 
-    def test_send_review_card_blocks_incomplete_code_health_review(self) -> None:
+    def test_send_review_card_blocks_incomplete_llm_review(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             state_path = Path(tmp_dir) / "project-review-state.json"
             prepared = prepare_review(
@@ -300,6 +300,7 @@ class ProjectReviewDeliveryTest(unittest.TestCase):
                 },
                 state_path=state_path,
                 now_iso="2026-04-14T20:00:00+08:00",
+                model="codex",
             )
 
             with self.assertRaisesRegex(RuntimeError, "还没完成"):

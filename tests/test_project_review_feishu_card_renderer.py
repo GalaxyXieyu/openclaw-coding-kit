@@ -111,64 +111,39 @@ class ProjectReviewFeishuCardRendererTest(unittest.TestCase):
                 "card_preview": {
                     "card_kind": "daily_review_card_v1",
                     "title": "每日项目回顾",
-                    "review_summary": "今天先按代码和文档两条线回顾。",
-                    "today_updates": ["同步 weapp 入口和卖家市场更新", "收尾 supply cart 样式"],
-                    "file_highlights": ["apps/miniapp/app.json", "apps/miniapp/src/features/guiquan/screen.tsx"],
-                    "audit_checks": [
+                    "review_summary": "今天把退款状态链路和功能说明一起收口了。",
+                    "done_items": ["优化了退款状态流转", "补充了退款功能说明"],
+                    "docs_sync": {
+                        "status": "synced",
+                        "summary": "业务文档已补充退款功能。",
+                        "items": ["业务文档已补充退款功能"],
+                    },
+                    "risk_items": [
                         {
-                            "label": "单文件 > 1000 行",
-                            "status": "ok",
-                            "detail": "本次变更里没发现超过 1000 行的文件。",
-                        },
-                        {
-                            "label": "导入/引用异常",
-                            "status": "unknown",
-                            "detail": "这次没有带编译或静态检查结果，暂时看不到这类报错。",
-                        },
-                    ],
-                    "focus_findings": [
-                        {
-                            "title": "退款后状态可能不对",
-                            "card_title": "退款后状态可能不对",
-                            "card_summary": "退款处理完了，前端可能还显示退款中。",
-                            "file": "src/orders/refund.ts",
-                            "suggestion": "补主订单状态回写",
+                            "severity": "P1",
+                            "title": "退款联调还没走完",
+                            "summary": "退款场景还要再做一次联调确认。",
                         }
                     ],
-                    "doc_updates": [
-                        {
-                            "path": "docs/review.md",
-                            "summary": "补充 nightly review 如何自动拆长文件和同步文档",
-                        }
-                    ],
-                    "docs_flags": ["canonical-miniapp-route-drift"],
-                    "changed_scope": {"requires_uiux": True},
-                    "commit_window": {"count": 2, "latest_subject": "fix: update refund status"},
-                    "next_actions": ["先补主订单状态回写"],
-                    "automation_updates": ["已自动创建并执行修复任务 T88。"],
+                    "next_action": "先完成退款联调验收。",
                     "actions": [],
                 },
                 "bundle": {
                     "project": {"name": "选育溯源小程序"},
-                    "changed_scope": {"files": ["src/orders/refund.ts", "docs/review.md"]},
-                    "commits": [{"subject": "fix: update refund status"}],
                 },
             }
         )
 
         self.assertEqual("每日项目回顾", card["header"]["title"]["content"])
         content = card["elements"][0]["text"]["content"]
-        self.assertIn("今天具体推进", content)
-        self.assertIn("今天实际改到的范围", content)
-        self.assertIn("主要落在", content)
-        self.assertIn("审核结果", content)
-        self.assertIn("今天文档主要更新了什么", content)
-        self.assertIn("最值得看的问题", content)
+        self.assertIn("今天完成", content)
+        self.assertIn("文档同步", content)
+        self.assertIn("风险", content)
         self.assertIn("下一步", content)
-        self.assertIn("自动处理", content)
-        self.assertIn("文件索引", content)
-        self.assertIn("[F1]", content)
-        self.assertNotIn("P0 0 · P1 1 · P2 0", content)
+        self.assertIn("业务文档已补充退款功能", content)
+        self.assertIn("退款联调还没走完", content)
+        self.assertNotIn("文件索引", content)
+        self.assertNotIn("自动处理", content)
         self.assertEqual(1, len(card["elements"]))
 
 

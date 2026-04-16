@@ -242,7 +242,7 @@ def build_diagnosis(data: Dict[str, Any], meta: Dict[str, Any]) -> Dict[str, Any
     }
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Invoke a loaded OpenClaw tool through the local Gateway HTTP API."
     )
@@ -269,29 +269,37 @@ def main() -> None:
         action="store_true",
         help="Print the resolved request without sending it",
     )
-    args = parser.parse_args()
+    return parser
 
-    config_path = find_config_path(args.config)
-    cfg = load_json(config_path)
-    gateway_url = resolve_gateway_url(cfg, args.gateway_url)
-    token = resolve_gateway_token(cfg, args.token)
-    tool_args = parse_args_json(args.args, args.args_file)
+
+def mirror_action_into_args(
+    tool_args: Dict[str, Any],
+    action: Optional[str],
+) -> tuple[Dict[str, Any], bool]:
     action_mirrored = False
-
-    # Some tools (notably feishu_task_*) expect `action` inside args, and may return ok=true without
-    # a result when only the top-level action field is set. To be robust, mirror --action into
-    # the args payload unless the caller already provided an action.
-    if args.action and isinstance(tool_args, dict) and "action" not in tool_args:
-        tool_args["action"] = args.action
+    if action and "action" not in tool_args:
+        tool_args["action"] = action
         action_mirrored = True
+    return tool_args, action_mirrored
 
+
+def build_request_body(
+    args: argparse.Namespace,
+    tool_args: Dict[str, Any],
+) -> Dict[str, Any]:
     body: Dict[str, Any] = {"tool": args.tool, "args": tool_args}
     if args.action:
         body["action"] = args.action
     if args.session_key:
         body["sessionKey"] = args.session_key
+    return body
 
-    extra_headers = parse_headers(args.header)
+
+def build_request_headers(
+    args: argparse.Namespace,
+    token: str,
+    extra_headers: Dict[str, str],
+) -> Dict[str, str]:
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
@@ -305,19 +313,158 @@ def main() -> None:
     if args.thread_id:
         headers["X-OpenClaw-Thread-Id"] = args.thread_id
     headers.update(extra_headers)
+    return headers
+
+
+def build_dry_run_preview(
+    *,
+    config_path: Path,
+    gateway_url: str,
+    headers: Dict[str, str],
+    body: Dict[str, Any],
+    args: argparse.Namespace,
+    extra_headers: Dict[str, str],
+    action_mirrored: bool,
+) -> Dict[str, Any]:
+    return {
+        "config": str(config_path),
+        "url": f"{gateway_url}/tools/invoke",
+        "headers": {
+            key: ("<redacted>" if key.lower() == "authorization" else value)
+            for key, value in headers.items()
+        },
+        "body": body,
+        "request": request_preview(body, args, extra_headers),
+        "action_mirrored_to_args": action_mirrored,
+    }
+
+
+def build_success_payload(
+    *,
+    raw: str,
+    response: Any,
+    gateway_url: str,
+    body: Dict[str, Any],
+    action_mirrored: bool,
+    args: argparse.Namespace,
+    extra_headers: Dict[str, str],
+) -> Dict[str, Any]:
+    data = decode_json_response(raw)
+    meta = build_meta(
+        gateway_url=gateway_url,
+        status_code=response.status,
+        raw=raw,
+        body=body,
+        action_mirrored=action_mirrored,
+        response_content_type=response.headers.get("Content-Type"),
+    )
+    if data.get("ok") is True and "result" not in data:
+        data = {
+            **data,
+            "warning": "gateway returned ok=true without result payload; inspect _diagnosis.next_steps",
+        }
+    details = extract_details(data)
+    if details is not None and "details" not in data:
+        data["details"] = details
+    data["_request"] = request_preview(body, args, extra_headers)
+    data["_meta"] = meta
+    data["_diagnosis"] = build_diagnosis(data, meta)
+    return data
+
+
+def build_http_error_payload(
+    *,
+    exc: urllib.error.HTTPError,
+    gateway_url: str,
+    body: Dict[str, Any],
+    action_mirrored: bool,
+    args: argparse.Namespace,
+    extra_headers: Dict[str, str],
+) -> Dict[str, Any]:
+    body_text = exc.read().decode("utf-8", errors="replace")
+    return {
+        "ok": False,
+        "error": {
+            "type": "http_error",
+            "status_code": exc.code,
+            "reason": str(exc.reason),
+            "body": body_text,
+        },
+        "_request": request_preview(body, args, extra_headers),
+        "_meta": build_meta(
+            gateway_url=gateway_url,
+            status_code=exc.code,
+            raw=body_text,
+            body=body,
+            action_mirrored=action_mirrored,
+            response_content_type=exc.headers.get("Content-Type") if exc.headers else None,
+        ),
+        "_diagnosis": {
+            "status": "http_error",
+            "message": "Gateway returned a non-2xx HTTP response.",
+            "next_steps": [
+                "Check gateway auth token and local gateway status.",
+                "Inspect error.body for plugin-specific failure details.",
+            ],
+        },
+    }
+
+
+def build_network_error_payload(
+    *,
+    exc: urllib.error.URLError,
+    body: Dict[str, Any],
+    args: argparse.Namespace,
+    extra_headers: Dict[str, str],
+) -> Dict[str, Any]:
+    return {
+        "ok": False,
+        "error": {
+            "type": "network_error",
+            "reason": str(exc.reason),
+        },
+        "_request": request_preview(body, args, extra_headers),
+        "_diagnosis": {
+            "status": "network_error",
+            "message": "Gateway request failed before receiving an HTTP response.",
+            "next_steps": [
+                "Confirm the local OpenClaw Gateway is running.",
+                "Check OPENCLAW_GATEWAY_URL / gateway.port and token settings.",
+            ],
+        },
+    }
+
+
+def prepare_gateway_request(
+    args: argparse.Namespace,
+) -> tuple[Path, str, Dict[str, Any], Dict[str, str], Dict[str, Any], bool]:
+    config_path = find_config_path(args.config)
+    cfg = load_json(config_path)
+    gateway_url = resolve_gateway_url(cfg, args.gateway_url)
+    token = resolve_gateway_token(cfg, args.token)
+    tool_args = parse_args_json(args.args, args.args_file)
+    tool_args, action_mirrored = mirror_action_into_args(tool_args, args.action)
+    body = build_request_body(args, tool_args)
+    extra_headers = parse_headers(args.header)
+    headers = build_request_headers(args, token, extra_headers)
+    return config_path, gateway_url, body, headers, extra_headers, action_mirrored
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+    config_path, gateway_url, body, headers, extra_headers, action_mirrored = prepare_gateway_request(args)
 
     if args.dry_run:
-        preview = {
-            "config": str(config_path),
-            "url": f"{gateway_url}/tools/invoke",
-            "headers": {
-                key: ("<redacted>" if key.lower() == "authorization" else value)
-                for key, value in headers.items()
-            },
-            "body": body,
-            "request": request_preview(body, args, extra_headers),
-            "action_mirrored_to_args": action_mirrored,
-        }
+        preview = build_dry_run_preview(
+            config_path=config_path,
+            gateway_url=gateway_url,
+            headers=headers,
+            body=body,
+            args=args,
+            extra_headers=extra_headers,
+            action_mirrored=action_mirrored,
+        )
         print(json.dumps(preview, ensure_ascii=False, indent=2))
         return
 
@@ -332,79 +479,36 @@ def main() -> None:
     try:
         with urllib.request.urlopen(request) as response:
             raw = response.read().decode("utf-8")
-            data = decode_json_response(raw)
-            meta = build_meta(
-                gateway_url=gateway_url,
-                status_code=response.status,
+            payload = build_success_payload(
                 raw=raw,
+                response=response,
+                gateway_url=gateway_url,
                 body=body,
                 action_mirrored=action_mirrored,
-                response_content_type=response.headers.get("Content-Type"),
+                args=args,
+                extra_headers=extra_headers,
             )
-
-            if data.get("ok") is True and "result" not in data:
-                data = {
-                    **data,
-                    "warning": "gateway returned ok=true without result payload; inspect _diagnosis.next_steps",
-                }
-
-            details = extract_details(data)
-            if details is not None and "details" not in data:
-                data["details"] = details
-            data["_request"] = request_preview(body, args, extra_headers)
-            data["_meta"] = meta
-            data["_diagnosis"] = build_diagnosis(data, meta)
-
-            print(json.dumps(data, ensure_ascii=False, indent=2))
-            if data.get("ok") is False:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            if payload.get("ok") is False:
                 raise SystemExit(1)
     except urllib.error.HTTPError as exc:
-        body_text = exc.read().decode("utf-8", errors="replace")
-        payload = {
-            "ok": False,
-            "error": {
-                "type": "http_error",
-                "status_code": exc.code,
-                "reason": str(exc.reason),
-                "body": body_text,
-            },
-            "_request": request_preview(body, args, extra_headers),
-            "_meta": build_meta(
-                gateway_url=gateway_url,
-                status_code=exc.code,
-                raw=body_text,
-                body=body,
-                action_mirrored=action_mirrored,
-                response_content_type=exc.headers.get("Content-Type") if exc.headers else None,
-            ),
-            "_diagnosis": {
-                "status": "http_error",
-                "message": "Gateway returned a non-2xx HTTP response.",
-                "next_steps": [
-                    "Check gateway auth token and local gateway status.",
-                    "Inspect error.body for plugin-specific failure details.",
-                ],
-            },
-        }
+        payload = build_http_error_payload(
+            exc=exc,
+            gateway_url=gateway_url,
+            body=body,
+            action_mirrored=action_mirrored,
+            args=args,
+            extra_headers=extra_headers,
+        )
         print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
         raise SystemExit(exc.code)
     except urllib.error.URLError as exc:
-        payload = {
-            "ok": False,
-            "error": {
-                "type": "network_error",
-                "reason": str(exc.reason),
-            },
-            "_request": request_preview(body, args, extra_headers),
-            "_diagnosis": {
-                "status": "network_error",
-                "message": "Gateway request failed before receiving an HTTP response.",
-                "next_steps": [
-                    "Confirm the local OpenClaw Gateway is running.",
-                    "Check OPENCLAW_GATEWAY_URL / gateway.port and token settings.",
-                ],
-            },
-        }
+        payload = build_network_error_payload(
+            exc=exc,
+            body=body,
+            args=args,
+            extra_headers=extra_headers,
+        )
         print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
         raise SystemExit(1)
 

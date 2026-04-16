@@ -1,7 +1,6 @@
 {
   "scenario_id": "prod-admin-login",
   "engine": "web-playwright-spec",
-  "entry_node_id": "admin-login",
   "target_node_id": "admin-login",
   "target": {
     "base_url": "https://eggturtles-admin.sealoshzh.site"
@@ -32,6 +31,6 @@
     }
   ],
   "capture": {
-    "output": "docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png"
+    "output": "../screenshots/prod-admin-login.png"
   }
 }

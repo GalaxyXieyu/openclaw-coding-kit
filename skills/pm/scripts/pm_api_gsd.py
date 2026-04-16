@@ -441,6 +441,104 @@ def execute_gsd_plan_phase(
     }
 
 
+def resolve_workflow_task_guid(task_id: str, task_guid: str, *, include_completed: bool = False) -> str:
+    resolved_task_guid = str(task_guid or "").strip()
+    if resolved_task_guid or not str(task_id or "").strip():
+        return resolved_task_guid
+    task = get_task_record(task_id, include_completed=include_completed)
+    return str(task.get("guid") or "").strip()
+
+
+def workflow_force_replan(
+    *,
+    research: bool = False,
+    skip_research: bool = False,
+    gaps: bool = False,
+    skip_verify: bool = False,
+    prd: str = "",
+    reviews: bool = False,
+) -> bool:
+    return any(
+        (
+            bool(research),
+            bool(skip_research),
+            bool(gaps),
+            bool(skip_verify),
+            bool(reviews),
+            bool(str(prd or "").strip()),
+        )
+    )
+
+
+def maybe_execute_phase_planning(
+    *,
+    root: Path,
+    route: dict[str, Any],
+    phase: str = "",
+    agent_id: str = "",
+    timeout_seconds: int = 0,
+    thinking: str = "",
+    research: bool = False,
+    skip_research: bool = False,
+    gaps: bool = False,
+    skip_verify: bool = False,
+    prd: str = "",
+    reviews: bool = False,
+) -> dict[str, Any] | None:
+    force_replan = workflow_force_replan(
+        research=research,
+        skip_research=skip_research,
+        gaps=gaps,
+        skip_verify=skip_verify,
+        prd=prd,
+        reviews=reviews,
+    )
+    if str(route.get("route") or "") == "materialize-tasks" and not force_replan:
+        return None
+    return execute_gsd_plan_phase(
+        root=root,
+        phase=phase,
+        agent_id=agent_id,
+        timeout_seconds=timeout_seconds,
+        thinking=thinking,
+        research=research,
+        skip_research=skip_research,
+        gaps=gaps,
+        skip_verify=skip_verify,
+        prd=prd,
+        reviews=reviews,
+    )
+
+
+def maybe_sync_gsd_progress(
+    *,
+    root: Path,
+    phase: str,
+    task_guid: str,
+    sync_progress: bool,
+    append_state: bool,
+) -> dict[str, Any] | None:
+    if not sync_progress:
+        return None
+    return sync_gsd_progress(
+        root=root,
+        phase=phase,
+        task_guid=task_guid,
+        append_to_state=append_state,
+    )
+
+
+def refresh_gsd_workflow_context(root: Path) -> dict[str, Any]:
+    from pm_api_context import refresh_context_cache
+
+    refreshed = refresh_context_cache()
+    return {
+        "context_path": str(pm_file("current-context.json", str(root))),
+        "doc_index": refreshed.get("doc_index") or {},
+        "gsd": refreshed.get("gsd") or {},
+    }
+
+
 def plan_gsd_phase_workflow(
     *,
     root: Path,
@@ -461,55 +559,34 @@ def plan_gsd_phase_workflow(
     sync_progress: bool = True,
     append_state: bool = True,
 ) -> dict[str, Any]:
-    resolved_task_guid = str(task_guid or "").strip()
-    if not resolved_task_guid and str(task_id or "").strip():
-        task = get_task_record(task_id, include_completed=include_completed)
-        resolved_task_guid = str(task.get("guid") or "").strip()
-
+    resolved_task_guid = resolve_workflow_task_guid(task_id, task_guid, include_completed=include_completed)
     selected_phase_input = str(phase or "").strip()
     route = route_gsd_work(root, phase=selected_phase_input, prefer_pm_tasks=True)
-    force_replan = any(
-        (
-            bool(research),
-            bool(skip_research),
-            bool(gaps),
-            bool(skip_verify),
-            bool(reviews),
-            bool(str(prd or "").strip()),
-        )
+    planning = maybe_execute_phase_planning(
+        root=root,
+        route=route,
+        phase=selected_phase_input,
+        agent_id=agent_id,
+        timeout_seconds=timeout_seconds,
+        thinking=thinking,
+        research=research,
+        skip_research=skip_research,
+        gaps=gaps,
+        skip_verify=skip_verify,
+        prd=prd,
+        reviews=reviews,
     )
-
-    planning = None
-    if str(route.get("route") or "") != "materialize-tasks" or force_replan:
-        planning = execute_gsd_plan_phase(
-            root=root,
-            phase=selected_phase_input,
-            agent_id=agent_id,
-            timeout_seconds=timeout_seconds,
-            thinking=thinking,
-            research=research,
-            skip_research=skip_research,
-            gaps=gaps,
-            skip_verify=skip_verify,
-            prd=prd,
-            reviews=reviews,
-        )
-
     selected_phase = str((planning or {}).get("phase") or route.get("phase") or selected_phase_input).strip()
     docs_sync = sync_gsd_docs(root=root) if sync_docs else None
     materialization = materialize_gsd_tasks(root=root, phase=selected_phase)
     materialized_phase = str(materialization.get("phase") or selected_phase).strip()
-    progress_sync = None
-    if sync_progress:
-        progress_sync = sync_gsd_progress(
-            root=root,
-            phase=materialized_phase,
-            task_guid=resolved_task_guid,
-            append_to_state=append_state,
-        )
-    from pm_api_context import refresh_context_cache
-
-    refreshed = refresh_context_cache()
+    progress_sync = maybe_sync_gsd_progress(
+        root=root,
+        phase=materialized_phase,
+        task_guid=resolved_task_guid,
+        sync_progress=sync_progress,
+        append_state=append_state,
+    )
     return {
         "status": "planned" if planning else "routed",
         "repo_root": str(root),
@@ -520,7 +597,5 @@ def plan_gsd_phase_workflow(
         "task_materialization": materialization,
         "progress_sync": progress_sync,
         "task_guid": resolved_task_guid,
-        "context_path": str(pm_file("current-context.json", str(root))),
-        "doc_index": refreshed.get("doc_index") or {},
-        "gsd": refreshed.get("gsd") or {},
+        **refresh_gsd_workflow_context(root),
     }

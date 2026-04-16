@@ -1,0 +1,41 @@
+{
+  "scenario_id": "prod-admin-admin-login",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-login",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "默认批量回放会跳过该场景：entry-auth-page。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/login"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "selector",
+      "selector": "#login-identifier"
+    },
+    {
+      "type": "selector",
+      "selector": "#code-phone"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-admin-login.png"
+  }
+}

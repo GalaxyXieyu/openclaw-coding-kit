@@ -229,6 +229,13 @@ def _build_fix_run_message(
     return "\n".join(line for line in lines if str(line).strip())
 
 
+def _error_message(exc: BaseException) -> str:
+    text = str(exc).strip()
+    if text:
+        return text[:400]
+    return exc.__class__.__name__
+
+
 def _upsert_fix_execution(
     state_path: Path,
     review_id: str,
@@ -258,6 +265,123 @@ def _upsert_fix_execution(
     return next_record
 
 
+def _create_or_reuse_fix_task(pm: Any, *, scope: dict[str, Any], repo_root: Path) -> dict[str, Any]:
+    tasklist = pm.ensure_tasklist()
+    summary = f"修复代码健康风险 {scope.get('review_id')}"
+    existing = pm.find_existing_task_by_summary(summary, include_completed=True)
+    reused_existing = isinstance(existing, dict) and str(existing.get("guid") or "").strip() != ""
+    request = _fix_request(scope, repo_root=repo_root)
+
+    if reused_existing:
+        task = pm.get_task_record_by_guid(str(existing.get("guid") or "").strip())
+    else:
+        task_id = pm.next_task_id()
+        title = f"[{task_id}] {summary}"
+        description = pm.build_description(task_id, summary, request, str(repo_root), pm.task_kind())
+        owner = tasklist.get("owner") if isinstance(tasklist.get("owner"), dict) else {}
+        task = pm.create_task(
+            summary=title,
+            description=description,
+            tasklists=[{"tasklist_guid": str(tasklist.get("guid") or "").strip()}],
+            current_user_id=str(owner.get("id") or "").strip(),
+        )
+        pm.refresh_context_cache(task_guid=str(task.get("guid") or "").strip())
+
+    task_guid = str(task.get("guid") or "").strip()
+    task_id = _task_id_from_task(pm, task)
+    task_comment = pm.create_task_comment(task_guid, request) if task_guid else None
+    return {
+        "task": task,
+        "task_id": task_id,
+        "task_guid": task_guid,
+        "request": request,
+        "task_comment": task_comment,
+        "reused_existing": reused_existing,
+    }
+
+
+def _build_execution_payload(
+    *,
+    review_id: str,
+    repo_root: Path,
+    config_path: str,
+    scope: dict[str, Any],
+    task_context: dict[str, Any],
+    repair_contract_path: Path,
+    updated_at: str,
+) -> dict[str, Any]:
+    task = task_context["task"]
+    return {
+        "status": "task_created",
+        "review_id": review_id,
+        "repo_root": str(repo_root),
+        "config_path": config_path,
+        "task_id": task_context["task_id"],
+        "task_guid": task_context["task_guid"],
+        "task_summary": str(task.get("summary") or "").strip(),
+        "reused_existing": bool(task_context["reused_existing"]),
+        "requires_uiux_review": bool(scope.get("requires_uiux_review")),
+        "docs_update_expected": bool(scope.get("docs_flags")),
+        "fix_files": list(scope.get("fix_files") or []),
+        "repair_contract_path": str(repair_contract_path),
+        "task_comment_result": task_context["task_comment"],
+        "updated_at": updated_at,
+    }
+
+
+def _run_fix_coder(
+    pm: Any,
+    *,
+    task_guid: str,
+    repo_root: Path,
+    scope: dict[str, Any],
+    repair_contract_path: Path,
+    model: str,
+    timeout_seconds: int,
+    thinking: str,
+) -> dict[str, Any]:
+    context_path = None
+    message = ""
+    try:
+        bundle, context_path = pm.build_coder_context(task_guid=task_guid)
+        message = _build_fix_run_message(
+            pm.build_run_message(bundle),
+            contract_path=repair_contract_path,
+            scope=scope,
+        )
+        run_result = pm.run_codex_cli(
+            agent_id=model,
+            message=message,
+            cwd=str(repo_root),
+            timeout_seconds=timeout_seconds,
+            thinking=thinking,
+        )
+        side_effects = pm.persist_run_side_effects(bundle, run_result)
+    except BaseException as exc:
+        if isinstance(exc, KeyboardInterrupt):
+            raise
+        return {
+            "status": "coder_failed",
+            "coder_context_path": str(context_path) if context_path else "",
+            "coder_backend": "codex-cli",
+            "coder_model": model,
+            "coder_message_preview": message[:4000],
+            "coder_error": _error_message(exc),
+            "coder_error_type": exc.__class__.__name__,
+            "uiux_review_status": "pending_integration" if scope.get("requires_uiux_review") else "not_required",
+        }
+    return {
+        "status": "coder_completed",
+        "coder_context_path": str(context_path),
+        "coder_backend": str(run_result.get("backend") or "codex-cli"),
+        "coder_model": model,
+        "coder_message_preview": message[:4000],
+        "coder_result": run_result,
+        "coder_side_effects": side_effects,
+        "uiux_review_status": "pending_integration" if scope.get("requires_uiux_review") else "not_required",
+    }
+
+
 def execute_fix_flow(
     review_id: str,
     *,
@@ -277,83 +401,37 @@ def execute_fix_flow(
 
     snapshot, config_path = _activate_pm(pm, repo_root=repo_root)
     try:
-        tasklist = pm.ensure_tasklist()
-        summary = f"修复代码健康风险 {review_id}"
-        existing = pm.find_existing_task_by_summary(summary, include_completed=True)
-        reused_existing = isinstance(existing, dict) and str(existing.get("guid") or "").strip() != ""
-        request = _fix_request(scope, repo_root=repo_root)
-
-        if reused_existing:
-            task = pm.get_task_record_by_guid(str(existing.get("guid") or "").strip())
-        else:
-            task_id = pm.next_task_id()
-            title = f"[{task_id}] {summary}"
-            description = pm.build_description(task_id, summary, request, str(repo_root), pm.task_kind())
-            owner = tasklist.get("owner") if isinstance(tasklist.get("owner"), dict) else {}
-            task = pm.create_task(
-                summary=title,
-                description=description,
-                tasklists=[{"tasklist_guid": str(tasklist.get("guid") or "").strip()}],
-                current_user_id=str(owner.get("id") or "").strip(),
-            )
-            pm.refresh_context_cache(task_guid=str(task.get("guid") or "").strip())
-
-        task_guid = str(task.get("guid") or "").strip()
-        task_id = _task_id_from_task(pm, task)
-        task_comment = pm.create_task_comment(task_guid, request) if task_guid else None
+        task_context = _create_or_reuse_fix_task(pm, scope=scope, repo_root=repo_root)
         repair_contract_path = _write_repair_contract(
             repo_root=repo_root,
             review_id=review_id,
             now_iso=current_now,
             scope=scope,
-            request=request,
-            task_id=task_id,
-            task_guid=task_guid,
+            request=str(task_context["request"] or ""),
+            task_id=str(task_context["task_id"] or ""),
+            task_guid=str(task_context["task_guid"] or ""),
         )
-
-        execution: dict[str, Any] = {
-            "status": "task_created",
-            "review_id": review_id,
-            "repo_root": str(repo_root),
-            "config_path": config_path,
-            "task_id": task_id,
-            "task_guid": task_guid,
-            "task_summary": str(task.get("summary") or "").strip(),
-            "reused_existing": reused_existing,
-            "requires_uiux_review": bool(scope.get("requires_uiux_review")),
-            "docs_update_expected": bool(scope.get("docs_flags")),
-            "fix_files": list(scope.get("fix_files") or []),
-            "repair_contract_path": str(repair_contract_path),
-            "task_comment_result": task_comment,
-            "updated_at": current_now,
-        }
-
-        if auto_run and task_guid:
-            bundle, context_path = pm.build_coder_context(task_guid=task_guid)
-            message = _build_fix_run_message(
-                pm.build_run_message(bundle),
-                contract_path=repair_contract_path,
-                scope=scope,
-            )
-            run_result = pm.run_codex_cli(
-                agent_id=model,
-                message=message,
-                cwd=str(repo_root),
-                timeout_seconds=timeout_seconds,
-                thinking=thinking,
-            )
-            side_effects = pm.persist_run_side_effects(bundle, run_result)
+        execution = _build_execution_payload(
+            review_id=review_id,
+            repo_root=repo_root,
+            config_path=config_path,
+            scope=scope,
+            task_context=task_context,
+            repair_contract_path=repair_contract_path,
+            updated_at=current_now,
+        )
+        if auto_run and task_context["task_guid"]:
             execution.update(
-                {
-                    "status": "coder_completed",
-                    "coder_context_path": str(context_path),
-                    "coder_backend": str(run_result.get("backend") or "codex-cli"),
-                    "coder_model": model,
-                    "coder_message_preview": message[:4000],
-                    "coder_result": run_result,
-                    "coder_side_effects": side_effects,
-                    "uiux_review_status": "pending_integration" if scope.get("requires_uiux_review") else "not_required",
-                }
+                _run_fix_coder(
+                    pm,
+                    task_guid=str(task_context["task_guid"] or ""),
+                    repo_root=repo_root,
+                    scope=scope,
+                    repair_contract_path=repair_contract_path,
+                    model=model,
+                    timeout_seconds=timeout_seconds,
+                    thinking=thinking,
+                )
             )
 
         _upsert_fix_execution(

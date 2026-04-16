@@ -25,7 +25,7 @@ from review_state_store import (
 from risk_card_builder import build_card_payload
 
 DEFAULT_PROMPT_VERSION = "project-review-reviewer/v1"
-LLM_REVIEWABLE_LANES = ("code-review", "docs-review")
+LLM_REVIEWABLE_LANES = ("code-review", "docs-review", "daily-review")
 PROJECT_REVIEW_SCRIPTS_ROOT = Path(__file__).resolve().parent
 PM_SCRIPTS_ROOT = PROJECT_REVIEW_SCRIPTS_ROOT.parents[1] / "pm" / "scripts"
 
@@ -148,22 +148,44 @@ def _build_codex_review_prompt(request: dict[str, Any], *, repo_root: str) -> st
         "你是 project-review 的 reviewer worker。",
         f"当前 review lane：{lane}。",
         f"仓库根目录：{repo_root}。",
-        "这是一张会直接发给业务负责人/项目负责人的健康风险卡，不是给工程师写周报。",
-        "你必须优先看真实代码和仓库证据，candidate findings 只是提示，不是真相。",
-        "如果现有证据不够，请主动检查当前仓库里的相关文件，再决定要不要保留风险。",
-        "优先输出真正会影响用户、交付、状态流转、页面结果、联调验收的风险。",
-        "只有在找不到更具体的问题时，才允许输出“缺少测试”“文档没同步”“API 不明确”这类流程型风险。",
-        "所有可见字段都必须是中文大白话，不能夹英文总结，也不要写抽象术语和空话。",
-        "`summary` 要回答三件事：这次主要改了什么、现在最可能出什么问题、下一步先做什么。",
-        "`card_title` 要短，适合直接放卡片里；`card_summary` 要直接说影响，不要复述代码细节。",
-        "`next_actions` 必须给 1-3 条可执行动作，每条一句中文祈使句。",
-        "如果证据不足，就返回空 findings，并在中文 summary 里明确说明还需要看什么。",
-        "输出必须严格是一个 JSON object，不要 markdown，不要额外解释。",
-        "Expected JSON schema:",
-        json.dumps(schema, ensure_ascii=False, indent=2),
-        "Review request:",
-        json.dumps(request, ensure_ascii=False, indent=2),
     ]
+    if lane == "daily-review":
+        prompt_parts.extend(
+            [
+                "这是一条会直接发到项目群里的每日精简回顾，不是工程师看的代码审计报告。",
+                "你必须优先看真实代码和仓库证据，但输出只能保留业务负责人看得懂的摘要。",
+                "done_items 只写今天优化了哪块业务、实现了什么功能，不要写文件路径、函数名、行号或测试名。",
+                "docs_sync 必须明确回答今天新增或调整的功能有没有补业务文档。",
+                "如果文档已补，items 要写成“业务文档已补充 xxx 功能”；如果没补，要直接指出缺了哪块功能说明。",
+                "risk_items 最多保留 2 条，只写真正会影响用户、交付、状态流转或验收的风险。",
+                "next_action 必须只有 1 条，直接写下一步最该做什么。",
+                "除非完全无法避免，不要输出文件路径、函数名、类名、代码标识符。",
+            ]
+        )
+    else:
+        prompt_parts.extend(
+            [
+                "这是一张会直接发给业务负责人/项目负责人的健康风险卡，不是给工程师写周报。",
+                "你必须优先看真实代码和仓库证据，candidate findings 只是提示，不是真相。",
+                "如果现有证据不够，请主动检查当前仓库里的相关文件，再决定要不要保留风险。",
+                "优先输出真正会影响用户、交付、状态流转、页面结果、联调验收的风险。",
+                "只有在找不到更具体的问题时，才允许输出“缺少测试”“文档没同步”“API 不明确”这类流程型风险。",
+                "所有可见字段都必须是中文大白话，不能夹英文总结，也不要写抽象术语和空话。",
+                "`summary` 要回答三件事：这次主要改了什么、现在最可能出什么问题、下一步先做什么。",
+                "`card_title` 要短，适合直接放卡片里；`card_summary` 要直接说影响，不要复述代码细节。",
+                "`next_actions` 必须给 1-3 条可执行动作，每条一句中文祈使句。",
+                "如果证据不足，就返回空 findings，并在中文 summary 里明确说明还需要看什么。",
+            ]
+        )
+    prompt_parts.extend(
+        [
+            "输出必须严格是一个 JSON object，不要 markdown，不要额外解释。",
+            "Expected JSON schema:",
+            json.dumps(schema, ensure_ascii=False, indent=2),
+            "Review request:",
+            json.dumps(request, ensure_ascii=False, indent=2),
+        ]
+    )
     return "\n\n".join(prompt_parts)
 
 

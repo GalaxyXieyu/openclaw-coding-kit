@@ -15,6 +15,7 @@ PROJECT_RETRO_TRIGGERS = {
 }
 DAILY_REVIEW_TRIGGER = "daily"
 CODE_HEALTH_TRIGGER = "code-health"
+DAILY_REVIEW_LANE = "daily-review"
 
 UI_PREFIXES = (
     "pages/",
@@ -97,17 +98,42 @@ def route_review(
             reasons=tuple(reasons),
         )
 
-    if trigger in {DAILY_REVIEW_TRIGGER, CODE_HEALTH_TRIGGER}:
+    if trigger == DAILY_REVIEW_TRIGGER:
         requires_uiux = fix_touches_ui or touches_ui_paths(normalized_files)
-        is_daily_review = trigger == DAILY_REVIEW_TRIGGER
-        card_kind = "daily_review_card_v1" if is_daily_review else "code_health_risk_card_v1"
-        reasons.append("每日项目回顾先看最近 commit，再补 docs review。" if is_daily_review else "代码健康巡检先看最近 commit，再补 docs review。")
+        reasons.append("每日项目回顾只保留一条精简日报，聚焦今天完成、文档同步、风险和下一步。")
         if requires_uiux:
-            reasons.append("命中 UI 路径，需要补 ui-ux-review。")
+            reasons.append("命中 UI 路径，日报里要提醒补页面验证。")
         if not has_recent_commits:
             return ReviewRoute(
                 trigger_kind=trigger,
-                card_kind=card_kind,
+                card_kind="daily_review_card_v1",
+                lanes=tuple(),
+                should_run=False,
+                requires_commits=True,
+                requires_uiux=requires_uiux,
+                uses_graph_observe=False,
+                skip_reason="最近 24 小时没有新的 commit。",
+                reasons=tuple(reasons),
+            )
+        return ReviewRoute(
+            trigger_kind=trigger,
+            card_kind="daily_review_card_v1",
+            lanes=(DAILY_REVIEW_LANE,),
+            should_run=True,
+            requires_commits=True,
+            requires_uiux=requires_uiux,
+            uses_graph_observe=False,
+            skip_reason="",
+            reasons=tuple(reasons),
+        )
+
+    if trigger == CODE_HEALTH_TRIGGER:
+        requires_uiux = fix_touches_ui or touches_ui_paths(normalized_files)
+        reasons.append("代码健康巡检先看最近 commit，再补 docs review。")
+        if not has_recent_commits:
+            return ReviewRoute(
+                trigger_kind=trigger,
+                card_kind="code_health_risk_card_v1",
                 lanes=tuple(),
                 should_run=False,
                 requires_commits=True,
@@ -119,9 +145,10 @@ def route_review(
         lanes = ["code-review", "docs-review"]
         if requires_uiux:
             lanes.append("ui-ux-review")
+            reasons.append("命中 UI 路径，需要补 ui-ux-review。")
         return ReviewRoute(
             trigger_kind=trigger,
-            card_kind=card_kind,
+            card_kind="code_health_risk_card_v1",
             lanes=tuple(lanes),
             should_run=True,
             requires_commits=True,

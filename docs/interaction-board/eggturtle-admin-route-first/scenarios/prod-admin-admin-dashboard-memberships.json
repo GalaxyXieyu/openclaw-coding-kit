@@ -1,0 +1,37 @@
+{
+  "scenario_id": "prod-admin-admin-dashboard-memberships",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-dashboard-memberships",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "默认复用持久化登录态直接打开目标页。 当前节点是跳转页，打开后会落到 /dashboard/tenant-management。 默认批量回放会跳过该场景：redirect-only。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/dashboard/memberships"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "text",
+      "value": "会员入口"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-admin-dashboard-memberships.png"
+  }
+}

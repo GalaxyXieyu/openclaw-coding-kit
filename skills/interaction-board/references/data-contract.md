@@ -96,6 +96,17 @@
       "role": "target"
     }
   ],
+  "code_entry": {
+    "screen_component": "apps/admin/app/dashboard/page.tsx",
+    "page_file": "apps/admin/app/dashboard/page.tsx",
+    "config_file": ""
+  },
+  "code_anchors": [
+    {
+      "path": "/abs/path/to/apps/admin/app/dashboard/page.tsx",
+      "line": 127
+    }
+  ],
   "primary_image": {
     "label": "compare",
     "relative_path": "screenshots/compare/products.png",
@@ -118,6 +129,19 @@
 - `target`: 运行目标信息；phase 1 保持轻量对象
 - `assertions`: 结构化断言，便于 runner/report 直接复用
 - `role`: `entry` / `target` / `manual`
+
+为了避免入口页挂满大量 `entry` 关联场景，`card` 还会提供两层视图：
+
+- `scenario_refs`: 面向卡片/查询/UI 的精简场景列表，优先保留 `target` / `manual`
+- `scenario_refs_all`: 去重后的全量绑定列表
+- `scenario_ref_stats`: `all_count` / `visible_count` / `entry_count` / `hidden_count` 等统计
+
+`card` 还应该直接带页面代码上下文，避免 UI/AI 消费层再回头拼装：
+
+- `code_entry.screen_component`: 主组件或页面入口
+- `code_entry.page_file`: 页面文件
+- `code_entry.config_file`: 配置文件；没有时为空字符串
+- `code_anchors[]`: 结构化文件锚点，方便快速跳转到实现位置
 
 ## Overlay Contract
 

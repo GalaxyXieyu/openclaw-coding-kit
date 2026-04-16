@@ -33,6 +33,31 @@
 7. 生成 `inventory.md`
 8. 如已有场景 JSON，执行 `attach-scenarios` 把可复用的自动化路径绑到页面节点
 
+## 新增能力：manual board bundle
+
+对于 Web/Admin 这类当前还没有代码抽取器的项目，现在支持先维护一份轻量 `board.seed.json`，再一次性生成：
+
+- `board.manifest.json`
+- `board.drawio`
+- `index.html`
+- `inventory.md`
+
+典型命令：
+
+```bash
+python3 skills/interaction-board/scripts/interaction_board.py build-manual-board \
+  --manifest docs/interaction-board/eggturtle-web-prod/board.seed.json \
+  --out-dir docs/interaction-board/eggturtle-web-prod \
+  --scenario-dir docs/interaction-board/eggturtle-web-prod/scenarios \
+  --skip-missing-scenarios
+```
+
+适合的场景：
+
+- 先把 Admin / Web 页面和关系手工 seed 成最小节点集
+- 再把 `scenario.json` 绑定回节点，自动把最新截图抬进 `card.primary_image`
+- 让 AI 直接通过 manifest 查询 `scenario_ref + 最新截图 + 代码锚点`
+
 ## 新增能力：截图挂载
 
 现在支持把已有截图资产直接挂到 manifest，而不是只保留占位路径。

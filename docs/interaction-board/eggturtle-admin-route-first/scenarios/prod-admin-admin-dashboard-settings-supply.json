@@ -1,0 +1,37 @@
+{
+  "scenario_id": "prod-admin-admin-dashboard-settings-supply",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-dashboard-settings-supply",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "默认复用持久化登录态直接打开目标页。 当前节点是跳转页，打开后会落到 /dashboard/commerce/catalog。 默认批量回放会跳过该场景：redirect-only。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/dashboard/settings/supply"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "text",
+      "value": "供给入口"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-admin-dashboard-settings-supply.png"
+  }
+}

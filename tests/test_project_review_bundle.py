@@ -114,6 +114,8 @@ class TaskReviewBundleTest(unittest.TestCase):
             [{"path": "docs/review.md", "summary": "补充 nightly review 如何自动拆长文件和回写文档说明"}],
             bundle["doc_updates"],
         )
+        self.assertEqual(["daily-review"], bundle["trigger"]["lanes"])
+        self.assertEqual("daily-review", bundle["lane_results"]["llm_daily_review"]["lane"])
 
 
 if __name__ == "__main__":

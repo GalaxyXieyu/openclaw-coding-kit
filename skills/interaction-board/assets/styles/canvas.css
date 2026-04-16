@@ -1,0 +1,266 @@
+    .lane {
+      position: absolute;
+      top: 20px;
+      height: 52px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .lane-label {
+      appearance: none;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      display: grid;
+      gap: 2px;
+      min-width: 84px;
+      padding: 6px 11px 8px;
+      border-radius: 999px;
+      text-align: center;
+      background: rgba(255, 252, 246, 0.76);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 24px rgba(26, 19, 12, 0.05);
+      border: 1px solid rgba(255,255,255,0.62);
+      pointer-events: auto;
+      cursor: default;
+    }
+
+    .lane-label strong {
+      font-size: 11px;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+
+    .lane-label small {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    .lane-label.expandable {
+      cursor: pointer;
+    }
+
+    .lane-label.expandable:hover,
+    .lane-label.expandable:focus-visible {
+      outline: none;
+      transform: translateX(-50%) translateY(-1px);
+      box-shadow: 0 14px 28px rgba(26, 19, 12, 0.10);
+    }
+
+    .lane-label.expanded {
+      background: rgba(27, 22, 17, 0.90);
+      border-color: rgba(27, 22, 17, 0.88);
+    }
+
+    .lane-label.expanded strong,
+    .lane-label.expanded small,
+    .lane-label.expanded .lane-action {
+      color: #fff7ee;
+    }
+
+    .lane-action {
+      display: inline-flex;
+      justify-content: center;
+      padding-top: 1px;
+      font-size: 9px;
+      color: var(--blue);
+      letter-spacing: 0.02em;
+    }
+
+    #edgeLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .edge-line {
+      fill: none;
+      stroke-width: 1.55;
+      opacity: 0.13;
+      transition: opacity 140ms ease, stroke-width 140ms ease, filter 140ms ease;
+    }
+
+    .edge-line.kind-navigateTo { stroke: var(--blue); }
+    .edge-line.kind-switchTab { stroke: var(--green); }
+    .edge-line.kind-reLaunch { stroke: var(--amber); }
+    .edge-line.kind-redirect { stroke: var(--rose); }
+    .edge-line.kind-prototype {
+      stroke: rgba(34, 26, 18, 0.44);
+      stroke-dasharray: 10 7;
+    }
+
+    .edge-line.muted {
+      opacity: 0.035;
+    }
+
+    .edge-line.active {
+      opacity: 0.92;
+      stroke-width: 2.8;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.66));
+    }
+
+    .node {
+      position: absolute;
+      z-index: 3;
+      width: var(--node-width);
+      height: var(--node-height);
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: var(--shadow-card);
+      cursor: grab;
+      overflow: visible;
+      isolation: isolate;
+      user-select: none;
+      contain: layout paint style;
+      content-visibility: auto;
+      contain-intrinsic-size: var(--node-width) var(--node-height);
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease, filter 120ms ease;
+    }
+
+    .node:focus-visible {
+      outline: 2px solid rgba(44, 96, 122, 0.32);
+      outline-offset: 4px;
+    }
+
+    .node:not(.dragging):hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-card-active);
+    }
+
+    .node.dragging {
+      cursor: grabbing;
+      box-shadow: var(--shadow-card-active);
+      transform: rotate(-0.8deg) scale(1.02);
+      z-index: 12;
+    }
+
+    .node.dim {
+      opacity: 0.18;
+      filter: saturate(0.42);
+    }
+
+    .node.active {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: var(--shadow-card-active);
+    }
+
+    .node-shot {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.18)),
+        rgba(244, 236, 226, 0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.58);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.65),
+        inset 0 -24px 30px rgba(0,0,0,0.03);
+    }
+
+    .node-shot.missing-shot {
+      background:
+        radial-gradient(circle at 18% 18%, rgba(44, 96, 122, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 24%, rgba(184, 116, 49, 0.16), transparent 26%),
+        linear-gradient(160deg, #ddd0bd, #cfc0ac 60%, #efe7db);
+    }
+
+    .node-shot img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center top;
+      padding: 18px 12px 12px;
+      background: transparent;
+      opacity: 0.995;
+    }
+
+    .node-shot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 28%, rgba(16, 12, 8, 0.05) 100%);
+      pointer-events: none;
+    }
+
+    .node-overlay {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      z-index: 2;
+      max-width: calc(100% - 20px);
+      pointer-events: none;
+    }
+
+    .node-title-wrap {
+      display: grid;
+      gap: 2px;
+      max-width: 100%;
+      padding: 9px 11px 10px;
+      border-radius: 18px;
+      background: rgba(255, 252, 247, 0.82);
+      border: 1px solid rgba(255,255,255,0.68);
+      box-shadow: 0 10px 28px rgba(20, 15, 10, 0.10);
+      backdrop-filter: blur(16px);
+    }
+
+    .node-title {
+      display: block;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 16px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .node-subtitle {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+      line-height: 1.15;
+    }
+
+    .node-shot-grid {
+      position: absolute;
+      inset: 16px;
+      z-index: 1;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.38);
+      background:
+        linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    .node-empty-badge {
+      position: absolute;
+      inset: auto auto 14px 14px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 11px;
+      border-radius: 999px;
+      background: rgba(20, 16, 13, 0.42);
+      color: #fff8ed;
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }

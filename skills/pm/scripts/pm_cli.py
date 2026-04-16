@@ -4,11 +4,7 @@ import argparse
 from typing import Any
 
 
-def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="PM project orchestration utilities for project workspaces")
-    parser.add_argument("--config", default="")
-    sub = parser.add_subparsers(dest="command", required=True)
-
+def _add_auth_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
     auth_link = sub.add_parser("auth-link")
     auth_link.add_argument("--scopes", default="")
     auth_link.add_argument("--mode", default="app-scope", choices=["app-scope", "user-oauth"])
@@ -27,6 +23,64 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     auth.add_argument("--no-attachment-oauth", action="store_true", default=False)
     auth.set_defaults(func=handlers["auth"])
 
+
+def _add_init_shared_arguments(
+    parser: argparse.ArgumentParser,
+    *,
+    require_project_name: bool,
+    require_group_id: bool,
+    require_repo_root: bool,
+) -> None:
+    parser.add_argument(
+        "--project-name",
+        required=require_project_name,
+        default="" if not require_project_name else argparse.SUPPRESS,
+        help="Primary human-readable project name; defaults to repo name",
+    )
+    parser.add_argument("--english-name", default="", help="Optional ASCII name used for workspace/agent slug generation; required when --project-name contains non-ASCII characters")
+    parser.add_argument("--agent-id", default="", help="Optional explicit agent id override for workspace bootstrap")
+    parser.add_argument(
+        "--group-id",
+        required=require_group_id,
+        default="" if not require_group_id else argparse.SUPPRESS,
+        help="Optional Feishu group id; when provided, workspace bootstrap preview/execution is also enabled",
+    )
+    parser.add_argument(
+        "--repo-root",
+        required=require_repo_root,
+        default="" if not require_repo_root else argparse.SUPPRESS,
+    )
+    parser.add_argument("--workspace-root", default="")
+    parser.add_argument("--openclaw-config", default="")
+    parser.add_argument("--channel", default="feishu")
+    parser.add_argument("--tasklist-guid", default="", help="Bind an existing Feishu tasklist by GUID when name matches are ambiguous")
+    parser.add_argument("--agent", default="")
+    parser.add_argument("--timeout", type=int, default=0)
+    parser.add_argument("--thinking", default="")
+    parser.add_argument("--session-key", default="")
+    parser.add_argument("--skip-bootstrap-task", action="store_true", default=False)
+    parser.add_argument("--skip-auto-run", action="store_true", default=False)
+    parser.add_argument("--write-config", action="store_true", default=False)
+    parser.add_argument("--doc-folder-token", default="", help="Bind an existing Feishu docs folder by token when name matches are ambiguous")
+    parser.add_argument("--task-backend", default="", choices=["", "feishu", "local"])
+    parser.add_argument("--doc-backend", default="", choices=["", "feishu", "repo"])
+    parser.add_argument("--task-prefix", default="T")
+    parser.add_argument("--default-worker", default="codex")
+    parser.add_argument("--reviewer-worker", default="reviewer")
+    parser.add_argument("--skill", action="append", default=[])
+    parser.add_argument("--allow-agent", action="append", default=[])
+    parser.add_argument("--model-primary", default="")
+    parser.add_argument("--no-auth-bundle", action="store_true", default=False)
+    parser.add_argument("--no-main-review-source", action="store_true", default=False)
+    parser.add_argument("--no-main-digest-source", action="store_true", default=False)
+    parser.add_argument("--force", action="store_true", default=False)
+    parser.add_argument("--replace-binding", action="store_true", default=False)
+    parser.add_argument("--dry-run", action="store_true", default=False)
+    parser.add_argument("--tasklist-name", default="", help=argparse.SUPPRESS)
+    parser.add_argument("--doc-folder-name", default="", help=argparse.SUPPRESS)
+
+
+def _add_init_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
     init = sub.add_parser(
         "init",
         help="Bind or create PM resources for a project",
@@ -36,39 +90,12 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
             "provide --tasklist-guid or --doc-folder-token explicitly."
         ),
     )
-    init.add_argument("--repo-root", default="")
-    init.add_argument("--project-name", default="", help="Primary human-readable project name; defaults to repo name")
-    init.add_argument("--tasklist-guid", default="", help="Bind an existing Feishu tasklist by GUID when name matches are ambiguous")
-    init.add_argument("--agent", default="")
-    init.add_argument("--timeout", type=int, default=0)
-    init.add_argument("--thinking", default="")
-    init.add_argument("--session-key", default="")
-    init.add_argument("--skip-bootstrap-task", action="store_true", default=False)
-    init.add_argument("--skip-auto-run", action="store_true", default=False)
-    init.add_argument("--write-config", action="store_true", default=False)
-    init.add_argument("--english-name", default="", help="Optional ASCII name used for workspace/agent slug generation; required when --project-name contains non-ASCII characters")
-    init.add_argument("--agent-id", default="", help="Optional explicit agent id override for workspace bootstrap")
-    init.add_argument("--group-id", default="", help="Optional Feishu group id; when provided, workspace bootstrap preview/execution is also enabled")
-    init.add_argument("--workspace-root", default="")
-    init.add_argument("--openclaw-config", default="")
-    init.add_argument("--channel", default="feishu")
-    init.add_argument("--doc-folder-token", default="", help="Bind an existing Feishu docs folder by token when name matches are ambiguous")
-    init.add_argument("--task-backend", default="", choices=["", "feishu", "local"])
-    init.add_argument("--doc-backend", default="", choices=["", "feishu", "repo"])
-    init.add_argument("--task-prefix", default="T")
-    init.add_argument("--default-worker", default="codex")
-    init.add_argument("--reviewer-worker", default="reviewer")
-    init.add_argument("--skill", action="append", default=[])
-    init.add_argument("--allow-agent", action="append", default=[])
-    init.add_argument("--model-primary", default="")
-    init.add_argument("--no-auth-bundle", action="store_true", default=False)
-    init.add_argument("--no-main-review-source", action="store_true", default=False)
-    init.add_argument("--no-main-digest-source", action="store_true", default=False)
-    init.add_argument("--force", action="store_true", default=False)
-    init.add_argument("--replace-binding", action="store_true", default=False)
-    init.add_argument("--dry-run", action="store_true", default=False)
-    init.add_argument("--tasklist-name", default="", help=argparse.SUPPRESS)
-    init.add_argument("--doc-folder-name", default="", help=argparse.SUPPRESS)
+    _add_init_shared_arguments(
+        init,
+        require_project_name=False,
+        require_group_id=False,
+        require_repo_root=False,
+    )
     init.set_defaults(func=handlers["init"])
 
     workspace_init = sub.add_parser(
@@ -76,41 +103,16 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
         help="Deprecated alias of init",
         description="Deprecated alias of `init`. Prefer `init`; tasklist/doc names default to --project-name and ambiguity should be resolved via guid/token.",
     )
-    workspace_init.add_argument("--project-name", required=True, help="Primary human-readable project name")
-    workspace_init.add_argument("--english-name", default="", help="Optional ASCII name used for workspace/agent slug generation; required when --project-name contains non-ASCII characters")
-    workspace_init.add_argument("--agent-id", default="", help="Optional explicit agent id override for workspace bootstrap")
-    workspace_init.add_argument("--group-id", required=True, help="Feishu group id for workspace bootstrap")
-    workspace_init.add_argument("--repo-root", required=True)
-    workspace_init.add_argument("--workspace-root", default="")
-    workspace_init.add_argument("--openclaw-config", default="")
-    workspace_init.add_argument("--channel", default="feishu")
-    workspace_init.add_argument("--tasklist-guid", default="", help="Bind an existing Feishu tasklist by GUID when name matches are ambiguous")
-    workspace_init.add_argument("--agent", default="")
-    workspace_init.add_argument("--timeout", type=int, default=0)
-    workspace_init.add_argument("--thinking", default="")
-    workspace_init.add_argument("--session-key", default="")
-    workspace_init.add_argument("--skip-bootstrap-task", action="store_true", default=False)
-    workspace_init.add_argument("--skip-auto-run", action="store_true", default=False)
-    workspace_init.add_argument("--write-config", action="store_true", default=False)
-    workspace_init.add_argument("--doc-folder-token", default="", help="Bind an existing Feishu docs folder by token when name matches are ambiguous")
-    workspace_init.add_argument("--task-backend", default="", choices=["", "feishu", "local"])
-    workspace_init.add_argument("--doc-backend", default="", choices=["", "feishu", "repo"])
-    workspace_init.add_argument("--task-prefix", default="T")
-    workspace_init.add_argument("--default-worker", default="codex")
-    workspace_init.add_argument("--reviewer-worker", default="reviewer")
-    workspace_init.add_argument("--skill", action="append", default=[])
-    workspace_init.add_argument("--allow-agent", action="append", default=[])
-    workspace_init.add_argument("--model-primary", default="")
-    workspace_init.add_argument("--no-auth-bundle", action="store_true", default=False)
-    workspace_init.add_argument("--no-main-review-source", action="store_true", default=False)
-    workspace_init.add_argument("--no-main-digest-source", action="store_true", default=False)
-    workspace_init.add_argument("--force", action="store_true", default=False)
-    workspace_init.add_argument("--replace-binding", action="store_true", default=False)
-    workspace_init.add_argument("--dry-run", action="store_true", default=False)
-    workspace_init.add_argument("--tasklist-name", default="", help=argparse.SUPPRESS)
-    workspace_init.add_argument("--doc-folder-name", default="", help=argparse.SUPPRESS)
+    _add_init_shared_arguments(
+        workspace_init,
+        require_project_name=True,
+        require_group_id=True,
+        require_repo_root=True,
+    )
     workspace_init.set_defaults(func=handlers["init"], _deprecated_command="workspace-init")
 
+
+def _add_gsd_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
     sync_gsd_docs = sub.add_parser("sync-gsd-docs")
     sync_gsd_docs.add_argument("--repo-root", default="")
     sync_gsd_docs.add_argument(
@@ -160,6 +162,8 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     plan_phase.add_argument("--no-state-append", action="store_true", default=False)
     plan_phase.set_defaults(func=handlers["plan_phase"])
 
+
+def _add_flow_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
     context = sub.add_parser("context")
     context.add_argument("--task-id", default="")
     context.add_argument("--task-guid", default="")
@@ -197,6 +201,15 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     run.add_argument("--session-key", default="")
     run.set_defaults(func=handlers["run"])
 
+
+def _add_task_ref_arguments(parser: argparse.ArgumentParser, *, include_completed: bool = False) -> None:
+    parser.add_argument("--task-id", default="")
+    parser.add_argument("--task-guid", default="")
+    if include_completed:
+        parser.add_argument("--include-completed", action="store_true", default=False)
+
+
+def _add_task_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
     create = sub.add_parser("create")
     create.add_argument("--summary", required=True)
     create.add_argument("--request", default="")
@@ -207,22 +220,16 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     create.set_defaults(func=handlers["create"])
 
     get = sub.add_parser("get")
-    get.add_argument("--task-id", default="")
-    get.add_argument("--task-guid", default="")
-    get.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(get, include_completed=True)
     get.set_defaults(func=handlers["get"])
 
     comment = sub.add_parser("comment")
-    comment.add_argument("--task-id", default="")
-    comment.add_argument("--task-guid", default="")
-    comment.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(comment, include_completed=True)
     comment.add_argument("--content", required=True)
     comment.set_defaults(func=handlers["comment"])
 
     complete = sub.add_parser("complete")
-    complete.add_argument("--task-id", default="")
-    complete.add_argument("--task-guid", default="")
-    complete.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(complete, include_completed=True)
     complete.add_argument("--content", default="")
     complete.add_argument("--content-file", default="")
     complete.add_argument("--file", action="append", default=[])
@@ -232,9 +239,7 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     complete.set_defaults(func=handlers["complete"])
 
     update_description = sub.add_parser("update-description")
-    update_description.add_argument("--task-id", default="")
-    update_description.add_argument("--task-guid", default="")
-    update_description.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(update_description, include_completed=True)
     update_description.add_argument("--mode", choices=("replace", "append"), default="replace")
     update_description.add_argument("--separator", default="\n\n")
     update_description.add_argument("--content", default="")
@@ -267,16 +272,23 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     backfill_assignees.set_defaults(func=handlers["backfill_assignees"])
 
     attachments = sub.add_parser("attachments")
-    attachments.add_argument("--task-id", default="")
-    attachments.add_argument("--task-guid", default="")
-    attachments.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(attachments, include_completed=True)
     attachments.add_argument("--download-dir", default="")
     attachments.set_defaults(func=handlers["attachments"])
 
     upload_attachments = sub.add_parser("upload-attachments")
-    upload_attachments.add_argument("--task-id", default="")
-    upload_attachments.add_argument("--task-guid", default="")
-    upload_attachments.add_argument("--include-completed", action="store_true", default=False)
+    _add_task_ref_arguments(upload_attachments, include_completed=True)
     upload_attachments.add_argument("--file", action="append", default=[])
     upload_attachments.set_defaults(func=handlers["upload_attachments"])
+
+
+def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="PM project orchestration utilities for project workspaces")
+    parser.add_argument("--config", default="")
+    sub = parser.add_subparsers(dest="command", required=True)
+    _add_auth_commands(sub, handlers)
+    _add_init_commands(sub, handlers)
+    _add_gsd_commands(sub, handlers)
+    _add_flow_commands(sub, handlers)
+    _add_task_commands(sub, handlers)
     return parser

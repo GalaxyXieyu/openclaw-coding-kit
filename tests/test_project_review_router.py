@@ -12,7 +12,7 @@ from review_router import route_review, touches_ui_paths
 
 
 class TaskReviewRouterTest(unittest.TestCase):
-    def test_daily_route_uses_code_review_lanes(self) -> None:
+    def test_daily_route_uses_compact_daily_review_lane(self) -> None:
         route = route_review(
             "daily",
             changed_files=["src/pages/home/index.tsx", "docs/review.md"],
@@ -20,7 +20,8 @@ class TaskReviewRouterTest(unittest.TestCase):
         )
         self.assertTrue(route.should_run)
         self.assertEqual("daily_review_card_v1", route.card_kind)
-        self.assertEqual(("code-review", "docs-review", "ui-ux-review"), route.lanes)
+        self.assertEqual(("daily-review",), route.lanes)
+        self.assertTrue(route.requires_uiux)
 
     def test_code_health_route_adds_uiux_for_ui_changes(self) -> None:
         route = route_review(

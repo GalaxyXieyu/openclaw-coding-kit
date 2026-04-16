@@ -25,13 +25,14 @@ MINIAPP_RUNBOOK_FILE = Path("docs/miniapp-runbook.md")
 
 GROUP_ORDER = {
     "entry": 0,
-    "guiquan": 1,
-    "products": 2,
-    "footprint": 3,
-    "account": 4,
-    "public": 5,
-    "candidate": 6,
-    "other": 7,
+    "admin": 1,
+    "guiquan": 2,
+    "products": 3,
+    "footprint": 4,
+    "account": 5,
+    "public": 6,
+    "candidate": 7,
+    "other": 8,
 }
 
 PACKAGE_STYLE = {
@@ -451,6 +452,9 @@ def resolve_scenario_capture_refs(node: dict[str, Any], board_root: Path | None 
 
     refs: list[dict[str, Any]] = []
     for scenario_ref in normalize_scenario_refs((node.get("board_meta") or {}).get("scenario_refs", [])):
+        role = str(scenario_ref.get("role", "")).strip()
+        if role and role not in {"target", "manual"}:
+            continue
         capture_output = str(scenario_ref.get("capture_output", "")).strip()
         scenario_path = str(scenario_ref.get("scenario_path", "")).strip()
         if not capture_output or not scenario_path:
@@ -510,7 +514,16 @@ def score_card_ref(ref: dict[str, Any]) -> tuple[int, int, int]:
     return (priority + quality, mtime, len(str(ref.get("matched_by", ""))))
 
 
-def build_card_images(node: dict[str, Any], board_root: Path | None = None) -> list[dict[str, Any]]:
+def normalize_route_reference(value: str) -> str:
+    normalized = str(value or "").strip()
+    if not normalized:
+        return ""
+    if "://" in normalized:
+        normalized = urlparse(normalized).path
+    return re.sub(r"/+", "/", normalized).strip().lstrip("/")
+
+
+def build_direct_card_images(node: dict[str, Any], board_root: Path | None = None) -> list[dict[str, Any]]:
     merged: dict[str, dict[str, Any]] = {}
     for ref in [*node.get("screenshot_refs", []), *resolve_scenario_capture_refs(node, board_root)]:
         enriched = enrich_card_ref(ref, board_root)
@@ -523,6 +536,45 @@ def build_card_images(node: dict[str, Any], board_root: Path | None = None) -> l
         return [enrich_card_ref(planned_screenshot_ref(node["node_id"]), board_root)]
 
     return sorted(merged.values(), key=lambda item: score_card_ref(item), reverse=True)
+
+
+def redirect_fallback_card_images(node: dict[str, Any], node_by_route: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    board_meta = node.get("board_meta") if isinstance(node.get("board_meta"), dict) else {}
+    if str(board_meta.get("route_mode", "")).strip() != "redirect":
+        return []
+
+    redirect_target = normalize_route_reference(str(board_meta.get("redirect_target", "")))
+    if not redirect_target:
+        return []
+
+    target_node = node_by_route.get(redirect_target)
+    if not target_node:
+        return []
+
+    source_images = target_node.get("_resolved_card_images")
+    if not isinstance(source_images, list):
+        source_images = target_node.get("_direct_card_images")
+    target_images = [copy.deepcopy(ref) for ref in (source_images or []) if ref.get("exists", False)]
+    if not target_images:
+        return []
+
+    inherited: list[dict[str, Any]] = []
+    for ref in target_images:
+        inherited.append(
+            {
+                **ref,
+                "label": f"redirect:{target_node.get('node_id', '')}",
+                "matched_by": f"redirect:{target_node.get('node_id', '')}",
+            }
+        )
+    return inherited
+
+
+def build_card_images(node: dict[str, Any], board_root: Path | None = None) -> list[dict[str, Any]]:
+    images = node.get("_resolved_card_images")
+    if isinstance(images, list) and images:
+        return images
+    return build_direct_card_images(node, board_root)
 
 
 def primary_screenshot_ref(node: dict[str, Any], board_root: Path | None = None) -> dict[str, Any]:
@@ -567,31 +619,170 @@ def normalize_scenario_refs(raw_refs: list[Any] | None) -> list[dict[str, Any]]:
     return normalized
 
 
-def hydrate_manifest_cards(manifest: dict[str, Any], board_root: Path | None = None) -> dict[str, Any]:
-    for node in manifest.get("nodes", []):
-        primary = primary_screenshot_ref(node, board_root)
-        images = build_card_images(node, board_root)
+SCENARIO_ROLE_PRIORITY = {
+    "target": 3,
+    "manual": 2,
+    "entry": 1,
+}
 
-        node["card"] = {
-            "node_id": node["node_id"],
-            "title": node["title"],
-            "status": node["status"],
-            "group": node["group"],
-            "note": str((node.get("board_meta") or {}).get("note", "")),
-            "scenario_refs": normalize_scenario_refs((node.get("board_meta") or {}).get("scenario_refs", [])),
-            "primary_image": {
-                "label": str(primary.get("label", "planned")),
-                "relative_path": str(primary.get("relative_path", "")),
-                "absolute_path": str(primary.get("absolute_path", "")),
-                "exists": bool(primary.get("exists", False)),
-                "source_path": str(primary.get("source_path", "")),
-                "matched_by": str(primary.get("matched_by", "")),
-            },
-            "images": images,
-        }
+
+def scenario_ref_priority(ref: dict[str, Any]) -> tuple[int, int, str]:
+    role = str(ref.get("role", "manual")).strip()
+    scenario_id = str(ref.get("scenario_id", "")).strip()
+    return (
+        SCENARIO_ROLE_PRIORITY.get(role, 0),
+        1 if str(ref.get("capture_output", "")).strip() else 0,
+        scenario_id or str(ref.get("script_path", "")).strip() or str(ref.get("scenario_path", "")).strip(),
+    )
+
+
+def dedupe_scenario_refs(refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, dict[str, Any]] = {}
+    for ref in refs:
+        key = (
+            str(ref.get("scenario_id", "")).strip()
+            or str(ref.get("script_path", "")).strip()
+            or str(ref.get("scenario_path", "")).strip()
+            or str(ref)
+        )
+        current = grouped.get(key)
+        if current is None or scenario_ref_priority(ref) > scenario_ref_priority(current):
+            grouped[key] = ref
+    return sorted(
+        grouped.values(),
+        key=lambda item: (
+            -SCENARIO_ROLE_PRIORITY.get(str(item.get("role", "manual")).strip(), 0),
+            str(item.get("scenario_id", "")).strip() or str(item.get("script_path", "")).strip(),
+        ),
+    )
+
+
+def project_card_scenario_refs(raw_refs: list[Any] | None) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    normalized = dedupe_scenario_refs(normalize_scenario_refs(raw_refs))
+    visible = [ref for ref in normalized if str(ref.get("role", "manual")).strip() in {"target", "manual"}]
+    if not visible:
+        visible = normalized[:1]
+
+    stats = {
+        "all_count": len(normalized),
+        "visible_count": len(visible),
+        "target_count": sum(1 for ref in normalized if str(ref.get("role", "")).strip() == "target"),
+        "manual_count": sum(1 for ref in normalized if str(ref.get("role", "")).strip() == "manual"),
+        "entry_count": sum(1 for ref in normalized if str(ref.get("role", "")).strip() == "entry"),
+        "hidden_count": max(0, len(normalized) - len(visible)),
+    }
+    return visible, normalized, stats
+
+
+def manifest_route_index(nodes: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    return {
+        normalize_route_reference(str(node.get("route", ""))): node
+        for node in nodes
+        if normalize_route_reference(str(node.get("route", "")))
+    }
+
+
+def resolve_cached_card_images(
+    node: dict[str, Any],
+    node_by_route: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    images = list(node.get("_direct_card_images") or [])
+    if any(ref.get("exists", False) for ref in images):
+        return images
+    redirect_images = redirect_fallback_card_images(node, node_by_route)
+    return [*redirect_images, *images] if redirect_images else images
+
+
+def prime_manifest_card_images(
+    nodes: list[dict[str, Any]],
+    *,
+    board_root: Path | None = None,
+) -> None:
+    node_by_route = manifest_route_index(nodes)
+    for node in nodes:
+        node["_direct_card_images"] = build_direct_card_images(node, board_root)
+    for node in nodes:
+        node["_resolved_card_images"] = resolve_cached_card_images(node, node_by_route)
+
+
+def build_card_code_entry(node: dict[str, Any]) -> dict[str, str]:
+    return {
+        "screen_component": str(node.get("screen_component", "")),
+        "page_file": str(node.get("page_file", "")),
+        "config_file": str(node.get("config_file", "")),
+    }
+
+
+def build_manifest_card_payload(node: dict[str, Any], board_root: Path | None = None) -> dict[str, Any]:
+    primary = primary_screenshot_ref(node, board_root)
+    images = build_card_images(node, board_root)
+    visible_scenarios, all_scenarios, scenario_stats = project_card_scenario_refs(
+        (node.get("board_meta") or {}).get("scenario_refs", [])
+    )
+    return {
+        "node_id": node["node_id"],
+        "title": node["title"],
+        "status": node["status"],
+        "group": node["group"],
+        "note": str((node.get("board_meta") or {}).get("note", "")),
+        "scenario_refs": visible_scenarios,
+        "scenario_refs_all": all_scenarios,
+        "scenario_ref_stats": scenario_stats,
+        "code_entry": build_card_code_entry(node),
+        "code_anchors": list(node.get("source_refs") or []),
+        "primary_image": {
+            "label": str(primary.get("label", "planned")),
+            "relative_path": str(primary.get("relative_path", "")),
+            "absolute_path": str(primary.get("absolute_path", "")),
+            "exists": bool(primary.get("exists", False)),
+            "source_path": str(primary.get("source_path", "")),
+            "matched_by": str(primary.get("matched_by", "")),
+        },
+        "images": images,
+    }
+
+
+def clear_manifest_card_images(nodes: list[dict[str, Any]]) -> None:
+    for node in nodes:
+        node.pop("_direct_card_images", None)
+        node.pop("_resolved_card_images", None)
+
+
+def refresh_manifest_card_summary(manifest: dict[str, Any]) -> dict[str, Any]:
+    manifest = refresh_manifest_summary(manifest)
+    summary = manifest.setdefault("summary", {})
+    summary["nodes_with_screenshots"] = sum(
+        1
+        for node in manifest.get("nodes", [])
+        if any(ref.get("exists", False) for ref in (node.get("card") or {}).get("images", []))
+    )
+    summary["attached_screenshot_count"] = sum(
+        1
+        for node in manifest.get("nodes", [])
+        for ref in (node.get("card") or {}).get("images", [])
+        if ref.get("exists", False)
+    )
+    summary["nodes_with_scenarios"] = sum(
+        1 for node in manifest.get("nodes", []) if (node.get("card") or {}).get("scenario_refs")
+    )
+    summary["attached_scenario_count"] = sum(
+        len((node.get("card") or {}).get("scenario_refs", [])) for node in manifest.get("nodes", [])
+    )
+    summary["attached_scenario_binding_count"] = sum(
+        len((node.get("card") or {}).get("scenario_refs_all", [])) for node in manifest.get("nodes", [])
+    )
+    return manifest
+
+
+def hydrate_manifest_cards(manifest: dict[str, Any], board_root: Path | None = None) -> dict[str, Any]:
+    nodes = manifest.get("nodes", [])
+    prime_manifest_card_images(nodes, board_root=board_root)
+    for node in nodes:
+        node["card"] = build_manifest_card_payload(node, board_root)
+    clear_manifest_card_images(nodes)
 
     manifest.setdefault("sources", {})["board_root"] = str(board_root.resolve()) if board_root else ""
-    return manifest
+    return refresh_manifest_card_summary(manifest)
 
 
 def overlay_source_ref(overlay_path: str) -> dict[str, Any]:
@@ -778,8 +969,10 @@ def attach_scenarios(
     scenario_bindings: list[dict[str, Any]],
     *,
     replace_existing: bool = False,
+    skip_missing_nodes: bool = False,
 ) -> dict[str, Any]:
     merged = copy.deepcopy(manifest)
+    skipped_bindings: list[dict[str, Any]] = []
     if replace_existing:
         for node in merged["nodes"]:
             board_meta = dict(node.get("board_meta") or {})
@@ -787,7 +980,19 @@ def attach_scenarios(
                 board_meta["scenario_refs"] = []
                 node["board_meta"] = board_meta
     for binding in scenario_bindings:
-        node = resolve_node_reference(merged["nodes"], str(binding["node_ref"]))
+        try:
+            node = resolve_node_reference(merged["nodes"], str(binding["node_ref"]))
+        except ValueError:
+            if not skip_missing_nodes:
+                raise
+            skipped_bindings.append(
+                {
+                    "scenario_id": str(binding.get("scenario_id", "")),
+                    "node_ref": str(binding.get("node_ref", "")),
+                    "role": str(binding.get("role", "")),
+                }
+            )
+            continue
         board_meta = dict(node.get("board_meta") or {})
         refs = normalize_scenario_refs(board_meta.get("scenario_refs") or [])
         candidate = normalize_scenario_refs([binding])[0]
@@ -796,6 +1001,8 @@ def attach_scenarios(
             refs.append(candidate)
         board_meta["scenario_refs"] = refs
         node["board_meta"] = board_meta
+    if skipped_bindings:
+        merged.setdefault("sources", {})["skipped_scenarios"] = skipped_bindings
     merged["generated_at"] = repo_now_iso()
     return refresh_manifest_summary(merged)
 
@@ -862,7 +1069,9 @@ def attach_screenshots(manifest: dict[str, Any], source_specs: list[str], board_
 
 
 def screenshot_status(node: dict[str, Any]) -> str:
-    attached = [ref["label"] for ref in node.get("screenshot_refs", []) if ref.get("exists", False)]
+    image_refs = (node.get("card") or {}).get("images") or node.get("screenshot_refs", [])
+    attached = [str(ref.get("label") or "").strip() for ref in image_refs if ref.get("exists", False)]
+    attached = [label for label in attached if label]
     return ", ".join(attached) if attached else "planned"
 
 

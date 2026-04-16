@@ -114,25 +114,41 @@
           </div>
           <button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button>
         </div>
-        <div id="modalVersions" class="version-strip"></div>
+        <div class="modal-context">
+          <div id="modalBadges" class="modal-badges"></div>
+          <p id="modalStory" class="modal-story" hidden></p>
+        </div>
+        <div class="modal-preview-panel">
+          <div id="modalPreview" class="modal-preview"></div>
+          <div id="modalVersions" class="version-rail"></div>
+        </div>
       </section>
       <aside class="modal-side">
-        <section class="side-card">
-          <h3>页面备注</h3>
-          <ul id="modalRegions"></ul>
-        </section>
-        <section class="side-card">
-          <h3>来源锚点</h3>
-          <ul id="modalRefs"></ul>
-        </section>
-        <section class="side-card">
-          <h3>自动化场景</h3>
-          <ul id="modalScenarios"></ul>
-        </section>
-        <section class="side-card">
+        <section class="side-card side-card-primary">
           <h3>流向</h3>
-          <ul id="modalEdges"></ul>
+          <div id="modalEdges" class="flow-stack"></div>
         </section>
+        <section class="side-card">
+          <h3>自动化与代码</h3>
+          <div id="modalScenarios" class="meta-stack"></div>
+        </section>
+        <details class="side-card raw-card">
+          <summary>原始信息</summary>
+          <div class="raw-card-body">
+            <section class="raw-block">
+              <h4>页面备注</h4>
+              <ul id="modalRegions"></ul>
+            </section>
+            <section class="raw-block">
+              <h4>来源锚点</h4>
+              <ul id="modalRefs"></ul>
+            </section>
+            <section class="raw-block">
+              <h4>资源路径</h4>
+              <ul id="modalAssets"></ul>
+            </section>
+          </div>
+        </details>
       </aside>
     </div>
   </dialog>

@@ -1,0 +1,45 @@
+{
+  "scenario_id": "prod-admin-admin-dashboard-tenants-tenantid",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-dashboard-tenants-tenantid",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "执行前需要把 tenantId 占位符替换成真实值。 默认复用持久化登录态直接打开目标页。 默认批量回放会跳过该场景：dynamic-route。 当前生成的是 stub，默认不会自动填参。 已解析动态参数: tenantId=cmnyn7fjv005dro08d1gbudi8",
+    "sample_route_params": {
+      "tenantId": "cmnyn7fjv005dro08d1gbudi8"
+    },
+    "sample_open_target": "/dashboard/tenants/cmnyn7fjv005dro08d1gbudi8"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/dashboard/tenants/cmnyn7fjv005dro08d1gbudi8"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "selector",
+      "selector": "#tenant-delete-dialog-title"
+    },
+    {
+      "type": "selector",
+      "selector": "#tenant-delete-dialog-desc"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-admin-dashboard-tenants-tenantid.png"
+  }
+}

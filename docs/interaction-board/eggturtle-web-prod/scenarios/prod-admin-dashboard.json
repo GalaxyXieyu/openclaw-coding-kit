@@ -1,0 +1,42 @@
+{
+  "scenario_id": "prod-admin-dashboard",
+  "engine": "web-playwright-cli",
+  "entry_node_id": "admin-login",
+  "target_node_id": "admin-dashboard",
+  "target": {
+    "base_url": "https://eggturtles-admin.sealoshzh.site",
+    "auth_surface": "admin",
+    "auth_profile": "eggturtle-prod-admin-siri",
+    "timeout_ms": 30000,
+    "browser_channel": "chrome",
+    "viewport_size": "1440,1000",
+    "full_page": true
+  },
+  "context": {
+    "notes": "生产 Admin 登录态场景：复用持久化 session 打开 /dashboard，并校验平台概况。首次执行可通过 --login/--password 自动 bootstrap。"
+  },
+  "steps": [
+    {
+      "action": "open",
+      "target": "/dashboard"
+    },
+    {
+      "action": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "type": "selector",
+      "selector": "text=平台概况"
+    },
+    {
+      "type": "text",
+      "value": "用户总数"
+    }
+  ],
+  "capture": {
+    "mode": "screenshot",
+    "output": "../screenshots/prod-admin-dashboard-auth.png"
+  }
+}

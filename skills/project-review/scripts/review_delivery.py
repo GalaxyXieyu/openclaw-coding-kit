@@ -320,12 +320,8 @@ def send_review_card(
     if not chat_id:
         raise ValueError("review record is missing channel_id")
     reviewer_requests = record.get("reviewer_requests") if isinstance(record.get("reviewer_requests"), list) else []
-    if (
-        str(record.get("card_kind") or "").strip() == "code_health_risk_card_v1"
-        and reviewer_requests
-        and not bool(record.get("llm_ready"))
-    ):
-        raise RuntimeError("code-health review 还没完成，暂不发送卡片")
+    if reviewer_requests and str(record.get("model") or "").strip() and not bool(record.get("llm_ready")):
+        raise RuntimeError("review 还没完成，暂不发送卡片")
 
     card = build_feishu_card(record)
     existing_delivery = record.get("delivery") if isinstance(record.get("delivery"), dict) else {}

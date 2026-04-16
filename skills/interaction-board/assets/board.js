@@ -2,6 +2,7 @@
     const GROUP_ORDER = __GROUP_ORDER__;
     const GROUP_LABELS = {
       entry: "入口",
+      admin: "管理后台",
       guiquan: "龟圈",
       products: "宠物",
       footprint: "足迹",
@@ -10,14 +11,31 @@
       candidate: "候选",
       other: "其他",
     };
+    const boardKind = String(data.project?.app_kind || "").trim();
+    if (boardKind) {
+      document.body.dataset.boardKind = boardKind;
+    }
+    const highDensityCanvas = data.nodes.length > 28 || data.edges.length > 42;
+    if (highDensityCanvas) {
+      document.body.dataset.density = "high";
+    }
+
+    function metricVar(name, fallback) {
+      const bodyStyle = window.getComputedStyle(document.body);
+      const rootStyle = window.getComputedStyle(document.documentElement);
+      const resolved = parseFloat(bodyStyle.getPropertyValue(name) || rootStyle.getPropertyValue(name));
+      if (!Number.isFinite(resolved) || resolved <= 0) return fallback;
+      return resolved;
+    }
+
     const STORAGE_KEY = "interaction-board-layout::" + (data.project?.name || "board") + "::v6";
     const SCALE_STORAGE_KEY = STORAGE_KEY + "::scale";
-    const nodeWidth = 188;
-    const nodeHeight = 346;
-    const laneMinGap = 228;
-    const laneWidth = 196;
-    const lanePaddingTop = 94;
-    const nodeGapY = 344;
+    const nodeWidth = metricVar("--node-width", 188);
+    const nodeHeight = metricVar("--node-height", 346);
+    const laneMinGap = metricVar("--lane-min-gap", 228);
+    const laneWidth = metricVar("--lane-width", 196);
+    const lanePaddingTop = metricVar("--lane-padding-top", 94);
+    const nodeGapY = metricVar("--node-gap-y", 344);
     const minScale = 0.72;
     const maxScale = 1.6;
 
@@ -29,9 +47,13 @@
     const modal = document.getElementById("nodeModal");
     const modalTitle = document.getElementById("modalTitle");
     const modalSubtitle = document.getElementById("modalSubtitle");
+    const modalBadges = document.getElementById("modalBadges");
+    const modalStory = document.getElementById("modalStory");
+    const modalPreview = document.getElementById("modalPreview");
     const modalVersions = document.getElementById("modalVersions");
     const modalRegions = document.getElementById("modalRegions");
     const modalRefs = document.getElementById("modalRefs");
+    const modalAssets = document.getElementById("modalAssets");
     const modalScenarios = document.getElementById("modalScenarios");
     const modalEdges = document.getElementById("modalEdges");
     const modalClose = document.getElementById("modalClose");
@@ -53,6 +75,63 @@
       nodeById.set(node.node_id, node);
     });
     const orderedGroups = Object.keys(grouped).sort((a, b) => (GROUP_ORDER[a] ?? 99) - (GROUP_ORDER[b] ?? 99) || a.localeCompare(b));
+    const layeredCanvasEnabled = boardKind.startsWith("web") || data.nodes.length > 18;
+    const defaultVisibleLevel = layeredCanvasEnabled ? 2 : Number.POSITIVE_INFINITY;
+
+    function routeSegments(node) {
+      return String(node.route || "")
+        .replace(/^\/+|\/+$/g, "")
+        .split("/")
+        .filter(Boolean);
+    }
+
+    function nodeHierarchyLevel(node) {
+      const segments = routeSegments(node);
+      if (!segments.length) return 0;
+      return segments.length;
+    }
+
+    function isGroupExpanded(group) {
+      return state.expandedGroups.has(group);
+    }
+
+    function isNodeVisible(node) {
+      if (!layeredCanvasEnabled) return true;
+      if (nodeHierarchyLevel(node) <= state.maxVisibleLevel) return true;
+      return isGroupExpanded(node.group);
+    }
+
+    function visibleNodes() {
+      return data.nodes.filter((node) => isNodeVisible(node));
+    }
+
+    function visibleNodeIds() {
+      return new Set(visibleNodes().map((node) => node.node_id));
+    }
+
+    function groupVisibleCount(group) {
+      return (grouped[group] || []).filter((node) => isNodeVisible(node)).length;
+    }
+
+    function groupHiddenCount(group) {
+      return Math.max(0, (grouped[group] || []).length - groupVisibleCount(group));
+    }
+
+    function ensureNodeVisible(node) {
+      if (!node || isNodeVisible(node)) return false;
+      state.expandedGroups.add(node.group);
+      renderBoard();
+      return true;
+    }
+
+    function toggleGroupExpansion(group) {
+      if (!layeredCanvasEnabled) return;
+      if (!grouped[group]?.length) return;
+      if (!groupHiddenCount(group) && !isGroupExpanded(group)) return;
+      if (isGroupExpanded(group)) state.expandedGroups.delete(group);
+      else state.expandedGroups.add(group);
+      renderBoard();
+    }
 
     function computeLaneMetrics() {
       const gutter = 36;
@@ -111,6 +190,8 @@
       dragging: null,
       filter: "",
       pan: null,
+      maxVisibleLevel: defaultVisibleLevel,
+      expandedGroups: new Set(),
     };
 
     function savePositions() {
@@ -133,8 +214,59 @@
       return GROUP_LABELS[group] || group || "未分组";
     }
 
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;",
+      }[char]));
+    }
+
+    function repoRelativePath(value) {
+      const raw = String(value || "");
+      const repoRoot = String(data.project?.repo_root || "");
+      if (repoRoot && raw.startsWith(repoRoot + "/")) {
+        return raw.slice(repoRoot.length + 1);
+      }
+      return raw;
+    }
+
+    function refDisplayPath(ref) {
+      return ref?.relative_path || ref?.path || ref?.source_path || "n/a";
+    }
+
+    function uniqueImageRefs(node) {
+      const seen = new Set();
+      return displayRefs(node).filter((ref) => {
+        const key = `${refDisplayPath(ref)}::${ref?.label || ""}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
     function versionLabel(count) {
       return count > 1 ? `${count} 个版本` : "1 个版本";
+    }
+
+    function scenarioStats(node) {
+      return node.card?.scenario_ref_stats || {
+        all_count: (node.card?.scenario_refs || []).length,
+        visible_count: (node.card?.scenario_refs || []).length,
+        hidden_count: 0,
+        entry_count: 0,
+      };
+    }
+
+    function scenarioSummary(node) {
+      const stats = scenarioStats(node);
+      const visible = stats.visible_count || 0;
+      const hidden = stats.hidden_count || 0;
+      if (!visible && !hidden) return "暂无自动化场景";
+      if (hidden > 0) return `${visible} 个主场景 + ${hidden} 个入口关联`;
+      return `${visible} 个自动化场景`;
     }
 
     function shotBadgeText(node, shot, screenshotCount) {
@@ -171,17 +303,22 @@
     }
 
     function nodeSearchText(node) {
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors || node.source_refs || [];
       return [
         node.title,
         node.route,
         node.route_key,
         node.group,
         node.package,
-        node.screen_component,
+        codeEntry.screen_component || node.screen_component,
+        codeEntry.page_file || node.page_file,
+        codeEntry.config_file || node.config_file,
         node.board_meta?.note,
         ...(node.board_meta?.tags || []),
         ...(node.card?.scenario_refs || []).map((ref) => ref.scenario_id || ref.script_path),
         ...(displayRefs(node) || []).flatMap((ref) => [ref.label, ref.relative_path, ref.source_path]),
+        ...codeAnchors.flatMap((ref) => [ref.path, ref.line]),
         ...(node.aliases || []),
       ].join(" ").toLowerCase();
     }
@@ -212,16 +349,42 @@
       const metrics = computeLaneMetrics();
       return orderedGroups.map((group, index) => {
         const left = metrics.left - 6 + index * metrics.gap;
-        const label = grouped[group].length + " 页";
-        return `<section class="lane" style="left:${left}px;width:${laneWidth}px;"><span class="lane-label"><strong>${groupLabel(group)}</strong><small>${label}</small></span></section>`;
+        const totalCount = grouped[group].length;
+        const visibleCount = groupVisibleCount(group);
+        const hiddenCount = groupHiddenCount(group);
+        const expanded = isGroupExpanded(group);
+        const label = layeredCanvasEnabled
+          ? `${visibleCount} / ${totalCount} 页`
+          : `${totalCount} 页`;
+        const action = layeredCanvasEnabled && (hiddenCount > 0 || expanded)
+          ? `<span class="lane-action">${expanded ? "收起深层" : `展开 ${hiddenCount}`}</span>`
+          : "";
+        return `
+          <section class="lane" style="left:${left}px;width:${laneWidth}px;">
+            <button
+              type="button"
+              class="lane-label ${hiddenCount > 0 || expanded ? "expandable" : ""} ${expanded ? "expanded" : ""}"
+              data-group="${group}"
+              aria-pressed="${expanded ? "true" : "false"}"
+            >
+              <strong>${groupLabel(group)}</strong>
+              <small>${label}</small>
+              ${action}
+            </button>
+          </section>
+        `;
       }).join("");
     }
 
     function ensureCanvasBounds() {
-      const positions = Object.values(state.positions);
+      const metrics = computeLaneMetrics();
+      const laneRight = metrics.left + Math.max(0, orderedGroups.length - 1) * metrics.gap + laneWidth;
+      const positions = visibleNodes()
+        .map((node) => state.positions[node.node_id])
+        .filter(Boolean);
       const maxX = positions.reduce((acc, item) => Math.max(acc, item.x), 0);
       const maxY = positions.reduce((acc, item) => Math.max(acc, item.y), 0);
-      const width = Math.max(960, maxX + nodeWidth + 96);
+      const width = Math.max(960, laneRight + 92, maxX + nodeWidth + 96);
       const height = Math.max(860, maxY + nodeHeight + 132);
       document.documentElement.style.setProperty("--canvas-width", width + "px");
       document.documentElement.style.setProperty("--canvas-height", height + "px");
@@ -298,14 +461,39 @@
     function renderNodes() {
       stage.innerHTML = lanesMarkup();
       stage.appendChild(edgeLayer);
-      data.nodes.forEach((node) => {
+      state.nodeElements.clear();
+      visibleNodes().forEach((node) => {
         const element = buildNodeCard(node);
         state.nodeElements.set(node.node_id, element);
         stage.appendChild(element);
       });
+      bindLaneActions();
       ensureCanvasBounds();
       renderEdges();
       applyFilter();
+    }
+
+    function bindLaneActions() {
+      stage.querySelectorAll(".lane-label[data-group]").forEach((button) => {
+        button.addEventListener("pointerdown", (event) => {
+          event.stopPropagation();
+        });
+        button.addEventListener("click", () => {
+          toggleGroupExpansion(button.dataset.group);
+        });
+      });
+    }
+
+    function renderBoard(options = {}) {
+      const { preserveScroll = true } = options;
+      const previousLeft = frame.scrollLeft;
+      const previousTop = frame.scrollTop;
+      renderNodes();
+      renderSearchResults();
+      if (preserveScroll) {
+        frame.scrollLeft = previousLeft;
+        frame.scrollTop = previousTop;
+      }
     }
 
     function edgePath(from, to, index, total) {
@@ -322,8 +510,10 @@
     function renderEdges() {
       edgeLayer.querySelectorAll("path.edge-line").forEach((item) => item.remove());
       const activeNode = state.highlightedNode;
+      const visibleIds = visibleNodeIds();
       const pairMap = new Map();
       data.edges.forEach((edge) => {
+        if (!visibleIds.has(edge.from) || !visibleIds.has(edge.to)) return;
         const key = `${edge.from}->${edge.to}`;
         const group = pairMap.get(key) || [];
         group.push(edge);
@@ -361,10 +551,12 @@
     function showTooltip(node, event, element) {
       const outgoing = data.edges.filter((edge) => edge.from === node.node_id).length;
       const incoming = data.edges.filter((edge) => edge.to === node.node_id).length;
-      const firstRef = node.source_refs?.[0];
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors?.length ? node.card.code_anchors : (node.source_refs || []);
+      const firstRef = codeAnchors[0];
       const shot = primaryShot(node);
       const screenshotCount = displayRefs(node).filter((item) => item.exists).length;
-      const scenarioCount = (node.card?.scenario_refs || []).length;
+      const stats = scenarioStats(node);
       const note = node.board_meta?.note;
       tooltip.innerHTML = `
         <strong>${node.title}</strong>
@@ -372,12 +564,12 @@
         <div class="tooltip-grid">
           <span>${formatStatus(node)} · ${groupLabel(node.group)}</span>
           <span>${screenshotCount ? `${screenshotCount} 个版本快照` : "暂无真实截图"}</span>
-          <span>${scenarioCount ? `${scenarioCount} 个自动化场景` : "暂无自动化场景"}</span>
+          <span>${scenarioSummary(node)}</span>
           <span>流出 ${outgoing}</span>
           <span>流入 ${incoming}</span>
         </div>
         <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.82);line-height:1.6;">
-          组件：${node.screen_component || "未解析"}<br />
+          组件：${codeEntry.screen_component || node.screen_component || "未解析"}<br />
           锚点：${firstRef ? `${firstRef.path}:${firstRef.line}` : "n/a"}<br />
           主图：${shot?.path || "n/a"}${shot?.matched_by ? `<br />匹配：${shot.matched_by}` : ""}
           ${note ? `<br />备注：${note}` : ""}
@@ -427,6 +619,8 @@
     }
 
     function centerNode(nodeId) {
+      const element = state.nodeElements.get(nodeId);
+      if (!element) return;
       const position = state.positions[nodeId];
       if (!position) return;
       frame.scrollTo({
@@ -436,48 +630,167 @@
       });
     }
 
+    function renderModalGallery(node, galleryRefs, pendingRefs, activeIndex = 0) {
+      const safeIndex = Math.min(Math.max(activeIndex, 0), Math.max(0, galleryRefs.length - 1));
+      if (!galleryRefs.length) {
+        modalPreview.innerHTML = `
+          <div class="empty-note preview-empty">
+            暂无真实快照
+            ${pendingRefs.length ? `<br /><code>已规划 ${pendingRefs.length} 个待补截图</code>` : ""}
+          </div>
+        `;
+        modalVersions.innerHTML = "";
+        return;
+      }
+
+      const activeRef = galleryRefs[safeIndex];
+      modalPreview.innerHTML = `
+        <figure class="preview-figure">
+          <div class="preview-frame">
+            <img src="${activeRef.relative_path || activeRef.path}" alt="${escapeHtml(node.title)} ${escapeHtml(activeRef.label || "")}" loading="lazy" />
+          </div>
+          <figcaption class="preview-caption">
+            <div>
+              <strong>${readableImageLabel(activeRef)}</strong>
+              <span>${galleryRefs.length > 1 ? `版本 ${safeIndex + 1} / ${galleryRefs.length}` : "当前版本"}</span>
+            </div>
+            <code>${escapeHtml(refDisplayPath(activeRef))}</code>
+          </figcaption>
+        </figure>
+      `;
+
+      modalVersions.innerHTML = `
+        <div class="version-rail-track">
+          ${galleryRefs.map((ref, index) => `
+            <button
+              type="button"
+              class="version-thumb ${index === safeIndex ? "active" : ""}"
+              data-index="${index}"
+            >
+              <span class="version-thumb-media">
+                <img src="${ref.relative_path || ref.path}" alt="${escapeHtml(node.title)} ${escapeHtml(ref.label || "")}" loading="lazy" />
+              </span>
+              <span class="version-thumb-meta">
+                <strong>${readableImageLabel(ref)}</strong>
+                <small>${index === 0 ? "主版本" : `版本 ${index + 1}`}</small>
+              </span>
+            </button>
+          `).join("")}
+        </div>
+        ${pendingRefs.length ? `<div class="version-pending-note">另有 ${pendingRefs.length} 个待补截图已折叠，不在主预览区展示。</div>` : ""}
+      `;
+
+      modalVersions.querySelectorAll(".version-thumb").forEach((button) => {
+        button.addEventListener("click", () => {
+          renderModalGallery(node, galleryRefs, pendingRefs, Number(button.dataset.index || 0));
+        });
+      });
+    }
+
+    function renderModalFlows(node, outgoing, incoming) {
+      const sections = [
+        { label: "后续页面", items: outgoing, direction: "out" },
+        { label: "上游入口", items: incoming, direction: "in" },
+      ].filter((section) => section.items.length);
+
+      if (!sections.length) {
+        modalEdges.innerHTML = `<div class="empty-note compact">当前节点还没有登记流向。</div>`;
+        return;
+      }
+
+      modalEdges.innerHTML = sections.map((section) => `
+        <section class="flow-group">
+          <h4>${section.label}</h4>
+          <div class="flow-group-list">
+            ${section.items.map((edge) => {
+              const targetId = section.direction === "out" ? edge.to : edge.from;
+              const targetNode = nodeById.get(targetId);
+              const title = targetNode?.title || targetId;
+              return `
+                <button type="button" class="flow-item" data-target-node="${escapeHtml(targetId)}">
+                  <span class="flow-direction">${section.direction === "out" ? "→" : "←"} ${escapeHtml(edge.kind || "link")}</span>
+                  <strong>${escapeHtml(title)}</strong>
+                  <code>${escapeHtml(edge.trigger || "n/a")}</code>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </section>
+      `).join("");
+
+      modalEdges.querySelectorAll(".flow-item[data-target-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const targetNode = nodeById.get(button.dataset.targetNode);
+          if (!targetNode) return;
+          openNodeModal(targetNode);
+        });
+      });
+    }
+
+    function renderModalAutomation(node, codeEntry, codeAnchors, scenarioRefs) {
+      const pageFile = repoRelativePath(codeEntry.page_file || node.page_file || "");
+      const screenComponent = codeEntry.screen_component || node.screen_component || "";
+      const mainAnchor = codeAnchors[0];
+      const visibleScenarios = scenarioRefs.slice(0, 4);
+      modalScenarios.innerHTML = `
+        <article class="meta-card accent">
+          <span class="meta-label">页面文件</span>
+          <code>${escapeHtml(pageFile || "未解析")}</code>
+        </article>
+        <article class="meta-card">
+          <span class="meta-label">组件</span>
+          <code>${escapeHtml(screenComponent || "未解析")}</code>
+        </article>
+        ${mainAnchor ? `
+          <article class="meta-card">
+            <span class="meta-label">主锚点</span>
+            <code>${escapeHtml(repoRelativePath(mainAnchor.path || ""))}:${escapeHtml(mainAnchor.line || "")}</code>
+          </article>
+        ` : ""}
+        <article class="meta-card">
+          <span class="meta-label">自动化场景</span>
+          ${visibleScenarios.length ? `
+            <div class="meta-tags">
+              ${visibleScenarios.map((ref) => `<span class="meta-tag">${escapeHtml(ref.scenario_id || "scenario")}</span>`).join("")}
+            </div>
+            ${scenarioRefs.length > visibleScenarios.length ? `<p class="meta-note">另有 ${scenarioRefs.length - visibleScenarios.length} 个场景已折叠。</p>` : ""}
+          ` : `<p class="meta-note">当前没有自动化场景。</p>`}
+        </article>
+      `;
+    }
+
     function openNodeModal(node) {
+      ensureNodeVisible(node);
       const outgoing = data.edges.filter((edge) => edge.from === node.node_id);
       const incoming = data.edges.filter((edge) => edge.to === node.node_id);
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors?.length ? node.card.code_anchors : (node.source_refs || []);
+      const scenarioRefs = node.card?.scenario_refs || [];
+      const allRefs = uniqueImageRefs(node);
+      const existingRefs = allRefs.filter((ref) => ref.exists);
+      const pendingRefs = allRefs.filter((ref) => !ref.exists);
+      const pageFile = repoRelativePath(codeEntry.page_file || node.page_file || "");
+      const storyParts = [...new Set([node.board_meta?.note, ...(node.regions || [])].filter(Boolean))];
+
       modalTitle.textContent = node.title;
-      modalSubtitle.innerHTML = `<code>${node.route}</code><br />${node.screen_component || "未解析组件"}`;
+      modalSubtitle.innerHTML = `<code>${escapeHtml(node.route || "/")}</code>${pageFile ? `<span>${escapeHtml(pageFile)}</span>` : ""}`;
+      modalBadges.innerHTML = [
+        `<span class="modal-badge">${escapeHtml(formatStatus(node))}</span>`,
+        `<span class="modal-badge subtle">${escapeHtml(groupLabel(node.group))}</span>`,
+        `<span class="modal-badge subtle">${existingRefs.length ? `${existingRefs.length} 个版本` : "暂无快照"}</span>`,
+        `<span class="modal-badge subtle">${escapeHtml(scenarioSummary(node))}</span>`,
+      ].join("");
+      modalStory.hidden = !storyParts.length;
+      modalStory.textContent = storyParts.slice(0, 3).join(" · ");
+      renderModalGallery(node, existingRefs, pendingRefs, 0);
+      renderModalFlows(node, outgoing, incoming);
+      renderModalAutomation(node, codeEntry, codeAnchors, scenarioRefs);
 
-      const refs = displayRefs(node);
-      modalVersions.innerHTML = refs.length ? refs.map((ref) => {
-        if (!ref.exists) {
-          return `<article class="version-card"><div class="empty-note">待补截图<br /><code>${ref.relative_path || ref.path || "n/a"}</code></div><div class="meta"><strong>${readableImageLabel(ref)}</strong><code>${ref.relative_path || ref.path || "n/a"}</code></div></article>`;
-        }
-        return `
-          <article class="version-card">
-            <img src="${ref.relative_path || ref.path}" alt="${node.title} ${ref.label}" loading="lazy" />
-            <div class="meta">
-              <strong>${readableImageLabel(ref)}</strong>
-              <code>${ref.relative_path || ref.path}</code>
-              ${ref.matched_by ? `<code>${ref.matched_by}</code>` : ""}
-              ${ref.source_path ? `<code>${ref.source_path}</code>` : ""}
-            </div>
-          </article>
-        `;
-      }).join("") : `<div class="empty-note">暂无版本快照。</div>`;
+      fillList(modalRegions, node.regions || [], (item) => escapeHtml(item));
+      fillList(modalRefs, codeAnchors, (ref) => `<code>${escapeHtml(repoRelativePath(ref.path || ""))}:${escapeHtml(ref.line || "")}</code>`);
+      fillList(modalAssets, allRefs, (ref) => `<strong>${escapeHtml(readableImageLabel(ref))}</strong><br /><code>${escapeHtml(refDisplayPath(ref))}</code>`);
 
-      fillList(modalRegions, node.regions || [], (item) => item);
-      fillList(modalRefs, node.source_refs || [], (ref) => `<code>${ref.path}:${ref.line}</code>`);
-      fillList(
-        modalScenarios,
-        node.card?.scenario_refs || [],
-        (ref) => `<strong>${ref.scenario_id || "scenario"}</strong> · ${ref.role || "manual"}<br /><code>${ref.script_path || ref.scenario_path || "n/a"}</code>`
-      );
-      fillList(
-        modalEdges,
-        [...outgoing.map((edge) => ({ direction: "out", edge })), ...incoming.map((edge) => ({ direction: "in", edge }))],
-        ({ direction, edge }) => {
-          const targetId = direction === "out" ? edge.to : edge.from;
-          const targetNode = nodeById.get(targetId);
-          return `<strong>${direction === "out" ? "→" : "←"} ${targetNode?.title || targetId}</strong> · ${edge.kind}<br /><code>${edge.trigger}</code>`;
-        }
-      );
-
-      modal.showModal();
+      if (!modal.open) modal.showModal();
       centerNode(node.node_id);
       setHighlight(node.node_id);
     }
@@ -547,10 +860,10 @@
     }
 
     function applyFilter() {
-      data.nodes.forEach((node) => {
-        const matched = nodeMatchesFilter(node);
-        const element = state.nodeElements.get(node.node_id);
-        if (element) element.classList.toggle("dim", !matched);
+      state.nodeElements.forEach((element, nodeId) => {
+        const node = nodeById.get(nodeId);
+        if (!node) return;
+        element.classList.toggle("dim", !nodeMatchesFilter(node));
       });
       renderEdges();
     }
@@ -563,7 +876,7 @@
       }
       searchResults.innerHTML = matches.map((node) => {
         const shot = primaryShot(node);
-        const scenarios = (node.card?.scenario_refs || []).length;
+        const stats = scenarioStats(node);
         const versions = displayRefs(node).filter((item) => item.exists).length;
         return `
           <button type="button" class="search-result" data-node-id="${node.node_id}">
@@ -573,7 +886,7 @@
               <span>${formatStatus(node)}</span>
               <span>${groupLabel(node.group)}</span>
               <span>${versions ? `${versions} 个版本` : "无快照"}</span>
-              <span>${scenarios ? `${scenarios} 个场景` : "无场景"}</span>
+              <span>${stats.visible_count ? `${stats.visible_count} 个主场景` : "无场景"}</span>
               ${shot?.label ? `<span>${readableImageLabel(shot)}</span>` : ""}
             </div>
           </button>
@@ -666,17 +979,13 @@
       window.localStorage.removeItem(SCALE_STORAGE_KEY);
       state.positions = defaultPositions();
       state.scale = 1;
-      state.nodeElements.forEach((element, nodeId) => {
-        element.style.left = state.positions[nodeId].x + "px";
-        element.style.top = state.positions[nodeId].y + "px";
-      });
-      ensureCanvasBounds();
-      renderEdges();
+      state.expandedGroups.clear();
+      renderBoard({ preserveScroll: false });
     });
 
     let panState = null;
     frame.addEventListener("pointerdown", (event) => {
-      if (event.target.closest(".node")) return;
+      if (event.target.closest("button, a, input, textarea, select, summary, [role='button'], [data-no-pan='true']")) return;
       panState = {
         x: event.clientX,
         y: event.clientY,
@@ -704,7 +1013,6 @@
       setScale(state.scale * factor, event.clientX - rect.left, event.clientY - rect.top);
     }, { passive: false });
 
-    renderNodes();
-    renderSearchResults();
+    renderBoard({ preserveScroll: false });
     frame.scrollLeft = 0;
     frame.scrollTop = 0;

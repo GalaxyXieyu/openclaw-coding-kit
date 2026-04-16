@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-04-15T17:20:00+08:00",
+  "project": {
+    "name": "Eggturtle 生产后台",
+    "repo_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "app_kind": "web-admin"
+  },
+  "sources": {
+    "notes": "手工维护的生产后台 board seed，后续继续往里追加 Web/Admin 节点。"
+  },
+  "summary": {},
+  "nodes": [
+    {
+      "node_id": "admin-login",
+      "route_key": "adminLogin",
+      "title": "后台登录",
+      "route": "login",
+      "aliases": [
+        "login",
+        "admin-login"
+      ],
+      "package": "main",
+      "group": "entry",
+      "status": "registered",
+      "screen_component": "apps/admin/app/login/page.tsx",
+      "page_file": "apps/admin/app/login/page.tsx",
+      "config_file": "",
+      "regions": [
+        "账号或手机号",
+        "密码登录",
+        "短信登录"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-login.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx",
+          "line": 72
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx",
+          "line": 147
+        }
+      ],
+      "board_meta": {
+        "note": "生产后台入口页，当前已绑定登录页 smoke 和登录后跳转场景。",
+        "tags": [
+          "prod",
+          "admin",
+          "auth"
+        ]
+      }
+    },
+    {
+      "node_id": "admin-dashboard",
+      "route_key": "adminDashboard",
+      "title": "平台概况",
+      "route": "dashboard",
+      "aliases": [
+        "dashboard",
+        "admin-dashboard"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/page.tsx",
+      "page_file": "apps/admin/app/dashboard/page.tsx",
+      "config_file": "",
+      "regions": [
+        "平台概况",
+        "营收概览",
+        "租户运营"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 41
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 127
+        }
+      ],
+      "board_meta": {
+        "note": "生产后台总览页，优先展示最新已登录 dashboard 截图。",
+        "tags": [
+          "prod",
+          "admin",
+          "overview"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "admin-login-admin-dashboard-password-login",
+      "from": "admin-login",
+      "to": "admin-dashboard",
+      "trigger": "password-login:router.replace",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx",
+          "line": 165
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx",
+          "line": 177
+        }
+      ],
+      "label": "登录成功后进入平台概况"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-login-middleware-redirect",
+      "from": "admin-dashboard",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 5
+        },
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 15
+        }
+      ],
+      "label": "未登录时强制回到登录页"
+    }
+  ],
+  "conflicts": []
+}

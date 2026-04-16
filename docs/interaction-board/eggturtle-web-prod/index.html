@@ -1,0 +1,1890 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eggturtle 生产后台 Interaction Board</title>
+  <style>    :root {
+      --paper: #f7f1e8;
+      --paper-deep: #ece1d0;
+      --ink: #1b1611;
+      --muted: #6d655b;
+      --line: rgba(34, 26, 18, 0.08);
+      --line-strong: rgba(34, 26, 18, 0.14);
+      --card: rgba(255, 252, 247, 0.76);
+      --card-soft: rgba(255, 251, 246, 0.52);
+      --panel: rgba(251, 246, 238, 0.92);
+      --tooltip-bg: rgba(24, 19, 14, 0.92);
+      --blue: #2c607a;
+      --amber: #b87431;
+      --rose: #8d5850;
+      --green: #5e7c62;
+      --shadow-soft: 0 18px 56px rgba(27, 19, 11, 0.10);
+      --shadow-card: 0 18px 44px rgba(20, 15, 10, 0.12);
+      --shadow-card-active: 0 24px 64px rgba(16, 12, 8, 0.18);
+      --canvas-width: 1420px;
+      --canvas-height: 1120px;
+      --node-width: 182px;
+      --node-height: 334px;
+      --lane-min-gap: 228px;
+      --lane-width: 196px;
+      --lane-padding-top: 94px;
+      --node-gap-y: 344px;
+      --version-media-max-height: 420px;
+    }
+
+    body[data-board-kind^="web"] {
+      --node-width: 296px;
+      --node-height: 214px;
+      --lane-min-gap: 338px;
+      --lane-width: 304px;
+      --node-gap-y: 252px;
+      --version-media-max-height: 360px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(44, 96, 122, 0.10), transparent 24%),
+        radial-gradient(circle at 84% 14%, rgba(184, 116, 49, 0.10), transparent 24%),
+        radial-gradient(circle at 78% 82%, rgba(94, 124, 98, 0.08), transparent 24%),
+        linear-gradient(180deg, #fbf7f1 0%, #f4ecdf 48%, #ebdfcd 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.32;
+      background-image:
+        linear-gradient(rgba(94, 79, 59, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 79, 59, 0.032) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,0.9) 0 1px, transparent 1px),
+        radial-gradient(circle at 72% 42%, rgba(0,0,0,0.5) 0 0.8px, transparent 0.8px),
+        radial-gradient(circle at 44% 80%, rgba(255,255,255,0.8) 0 1px, transparent 1px);
+      background-size: 20px 20px, 28px 28px, 24px 24px;
+      mix-blend-mode: soft-light;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .board-app,
+    .board-shell {
+      min-height: 100vh;
+    }
+
+    .board-frame {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
+      padding: 0 28px 120px;
+      cursor: grab;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(34, 26, 18, 0.18) transparent;
+    }
+
+    .board-frame:active { cursor: grabbing; }
+
+    .board-frame::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .board-frame::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(34, 26, 18, 0.18);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .board-frame::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .board-viewport {
+      position: relative;
+      width: var(--canvas-width);
+      height: var(--canvas-height);
+      margin: 0 auto;
+    }
+
+    .board-stage {
+      position: relative;
+      width: var(--canvas-width);
+      height: var(--canvas-height);
+      isolation: isolate;
+      transform-origin: top left;
+    }
+
+    .board-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(255,255,255,0.45), transparent 22%),
+        radial-gradient(circle at 84% 18%, rgba(44, 96, 122, 0.08), transparent 20%),
+        radial-gradient(circle at 78% 78%, rgba(184, 116, 49, 0.08), transparent 18%);
+    }
+
+    .lane {
+      position: absolute;
+      top: 20px;
+      height: 52px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .lane-label {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      display: grid;
+      gap: 1px;
+      min-width: 82px;
+      padding: 7px 12px 8px;
+      border-radius: 999px;
+      text-align: center;
+      background: rgba(255, 252, 246, 0.76);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 24px rgba(26, 19, 12, 0.05);
+      border: 1px solid rgba(255,255,255,0.62);
+    }
+
+    .lane-label strong {
+      font-size: 10px;
+      line-height: 1.05;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+    }
+
+    .lane-label small {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    #edgeLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .edge-line {
+      fill: none;
+      stroke-width: 1.55;
+      opacity: 0.13;
+      transition: opacity 140ms ease, stroke-width 140ms ease, filter 140ms ease;
+    }
+
+    .edge-line.kind-navigateTo { stroke: var(--blue); }
+    .edge-line.kind-switchTab { stroke: var(--green); }
+    .edge-line.kind-reLaunch { stroke: var(--amber); }
+    .edge-line.kind-redirect { stroke: var(--rose); }
+    .edge-line.kind-prototype {
+      stroke: rgba(34, 26, 18, 0.44);
+      stroke-dasharray: 10 7;
+    }
+
+    .edge-line.muted {
+      opacity: 0.035;
+    }
+
+    .edge-line.active {
+      opacity: 0.92;
+      stroke-width: 2.8;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.66));
+    }
+
+    .node {
+      position: absolute;
+      z-index: 3;
+      width: var(--node-width);
+      height: var(--node-height);
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: var(--shadow-card);
+      cursor: grab;
+      overflow: visible;
+      isolation: isolate;
+      user-select: none;
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease, filter 120ms ease;
+    }
+
+    .node:focus-visible {
+      outline: 2px solid rgba(44, 96, 122, 0.32);
+      outline-offset: 4px;
+    }
+
+    .node:not(.dragging):hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-card-active);
+    }
+
+    .node.dragging {
+      cursor: grabbing;
+      box-shadow: var(--shadow-card-active);
+      transform: rotate(-0.8deg) scale(1.02);
+      z-index: 12;
+    }
+
+    .node.dim {
+      opacity: 0.12;
+      filter: saturate(0.35);
+    }
+
+    .node.active {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: var(--shadow-card-active);
+    }
+
+    .node-shot {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.18)),
+        rgba(244, 236, 226, 0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.58);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.65),
+        inset 0 -24px 30px rgba(0,0,0,0.03);
+    }
+
+    .node-shot.missing-shot {
+      background:
+        radial-gradient(circle at 18% 18%, rgba(44, 96, 122, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 24%, rgba(184, 116, 49, 0.16), transparent 26%),
+        linear-gradient(160deg, #ddd0bd, #cfc0ac 60%, #efe7db);
+    }
+
+    .node-shot img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center top;
+      padding: 18px 12px 12px;
+      background: transparent;
+      opacity: 0.995;
+    }
+
+    .node-shot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 28%, rgba(16, 12, 8, 0.05) 100%);
+      pointer-events: none;
+    }
+
+    .node-overlay {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      z-index: 2;
+      max-width: calc(100% - 20px);
+      pointer-events: none;
+    }
+
+    .node-title-wrap {
+      display: grid;
+      gap: 2px;
+      max-width: 100%;
+      padding: 9px 11px 10px;
+      border-radius: 18px;
+      background: rgba(255, 252, 247, 0.82);
+      border: 1px solid rgba(255,255,255,0.68);
+      box-shadow: 0 10px 28px rgba(20, 15, 10, 0.10);
+      backdrop-filter: blur(16px);
+    }
+
+    .node-title {
+      display: block;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 16px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .node-subtitle {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+      line-height: 1.15;
+    }
+
+    .node-shot-grid {
+      position: absolute;
+      inset: 16px;
+      z-index: 1;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.38);
+      background:
+        linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    .node-empty-badge {
+      position: absolute;
+      inset: auto auto 14px 14px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 11px;
+      border-radius: 999px;
+      background: rgba(20, 16, 13, 0.42);
+      color: #fff8ed;
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+
+    .hud {
+      position: fixed;
+      z-index: 26;
+    }
+
+    .hud-dock {
+      right: 22px;
+      bottom: 22px;
+      display: grid;
+      gap: 12px;
+      justify-items: end;
+      align-items: end;
+    }
+
+    .dock-panel {
+      width: min(360px, calc(100vw - 32px));
+      padding: 16px;
+      border-radius: 28px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.62);
+      backdrop-filter: blur(22px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .dock-panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .dock-panel-head p {
+      margin: 8px 0 0;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .dock-kicker {
+      display: inline-flex;
+      width: fit-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.64);
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .panel-reset {
+      flex: none;
+      min-height: 38px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.76);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.84);
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      min-height: 70px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.62);
+    }
+
+    .metric span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      font-weight: 700;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.58);
+    }
+
+    .legend i {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .legend .registered { background: var(--blue); }
+    .legend .candidate { background: var(--amber); }
+    .legend .draft { background: var(--rose); }
+    .legend .drag { background: var(--green); }
+
+    .notes-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .note-card {
+      padding: 14px 14px 15px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.68);
+      border: 1px solid rgba(255,255,255,0.62);
+    }
+
+    .note-card h2 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .note-card p,
+    .note-card ul {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+
+    .note-card ul {
+      padding-left: 18px;
+    }
+
+    .note-card li + li {
+      margin-top: 6px;
+    }
+
+    .dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dock-button,
+    .dock-fab {
+      border: none;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
+    }
+
+    .dock-button:hover,
+    .dock-fab:hover {
+      transform: translateY(-1px);
+      opacity: 0.96;
+    }
+
+    .dock-button.primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 152px;
+      min-height: 50px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: rgba(20, 17, 13, 0.94);
+      color: #fff9f1;
+      box-shadow: 0 16px 32px rgba(17, 13, 9, 0.18);
+    }
+
+    .dock-button kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font: inherit;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .dock-fab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.76);
+      color: var(--ink);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .tooltip {
+      position: fixed;
+      z-index: 40;
+      width: min(320px, calc(100vw - 24px));
+      padding: 14px 15px;
+      border-radius: 20px;
+      background: var(--tooltip-bg);
+      color: #f8f3ea;
+      box-shadow: 0 24px 64px rgba(14, 11, 8, 0.34);
+      border: 1px solid rgba(255,255,255,0.12);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 100ms ease, transform 100ms ease;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tooltip strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    .tooltip code {
+      font-size: 11px;
+      color: rgba(255,255,255,0.76);
+      word-break: break-all;
+    }
+
+    .tooltip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tooltip-grid span {
+      display: block;
+      padding: 7px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      font-size: 11px;
+      color: rgba(255,255,255,0.84);
+    }
+
+    .search-dialog,
+    #nodeModal {
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .search-dialog::backdrop,
+    #nodeModal::backdrop {
+      background: rgba(20, 16, 12, 0.42);
+      backdrop-filter: blur(10px);
+    }
+
+    .search-panel {
+      width: min(720px, calc(100vw - 28px));
+      padding: 18px;
+      border-radius: 30px;
+      background: rgba(248, 242, 233, 0.98);
+      box-shadow: 0 34px 104px rgba(0,0,0,0.28);
+    }
+
+    .search-panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .search-panel-head strong {
+      display: block;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    .search-panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .search-close,
+    .modal-close {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(255,255,255,0.82);
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .search-input-shell {
+      display: block;
+      margin-top: 16px;
+      padding: 0 16px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.84);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+    }
+
+    .search-input-shell input {
+      width: 100%;
+      min-height: 60px;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 18px;
+      outline: none;
+    }
+
+    .search-hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .search-results {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      max-height: 56vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .search-result {
+      display: grid;
+      gap: 6px;
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.72);
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(34, 24, 14, 0.06);
+    }
+
+    .search-result:hover,
+    .search-result:focus-visible {
+      outline: none;
+      background: rgba(255,255,255,0.92);
+      transform: translateY(-1px);
+    }
+
+    .search-result strong {
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    .search-result code {
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .search-result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .search-result-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(245, 239, 230, 0.9);
+    }
+
+    .search-empty {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.62);
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    #nodeModal {
+      width: min(1140px, calc(100vw - 28px));
+      max-height: calc(100vh - 28px);
+      border-radius: 30px;
+      background: rgba(248, 242, 233, 0.98);
+      box-shadow: 0 34px 104px rgba(0,0,0,0.28);
+      overflow: hidden;
+    }
+
+    .modal-shell {
+      display: grid;
+      grid-template-columns: 1.18fr 0.92fr;
+      min-height: 64vh;
+    }
+
+    .modal-main {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(248,242,233,0.96));
+    }
+
+    .modal-side {
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      border-left: 1px solid var(--line);
+      background: rgba(244, 237, 227, 0.88);
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-family: "Songti SC", "STSong", serif;
+      font-size: 34px;
+      line-height: 1.02;
+    }
+
+    .modal-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .version-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .version-card {
+      border-radius: 24px;
+      background: rgba(255,255,255,0.74);
+      overflow: hidden;
+      box-shadow: 0 16px 42px rgba(36, 28, 20, 0.08);
+    }
+
+    .version-card img {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: var(--version-media-max-height);
+      margin: 0 auto;
+      padding: 10px;
+      background: linear-gradient(180deg, rgba(25, 21, 15, 0.04), rgba(25, 21, 15, 0.08));
+    }
+
+    .version-card .meta {
+      display: grid;
+      gap: 6px;
+      padding: 12px 14px 14px;
+    }
+
+    .version-card strong {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    .version-card code,
+    .side-card code {
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .side-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.62);
+    }
+
+    .side-card h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .side-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .side-card li + li {
+      margin-top: 6px;
+    }
+
+    .empty-note {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.48);
+      color: var(--muted);
+    }
+
+    @media (max-width: 1080px) {
+      .modal-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-side {
+        border-left: none;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+      }
+
+      body::before,
+      body::after {
+        display: none;
+      }
+
+      .board-app {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 0 24px;
+      }
+
+      .board-shell {
+        order: 2;
+      }
+
+      .board-frame {
+        width: auto;
+        height: 76vh;
+        margin: 0 12px;
+        padding: 0;
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12));
+        box-shadow: var(--shadow-soft);
+      }
+
+      .board-viewport {
+        margin: 0;
+      }
+
+      .hud {
+        position: relative;
+      }
+
+      .hud-dock {
+        order: 1;
+        right: auto;
+        bottom: auto;
+        margin: 0 12px;
+        justify-items: stretch;
+      }
+
+      .dock-panel {
+        width: auto;
+      }
+
+      .dock-actions {
+        justify-content: flex-end;
+      }
+
+      .metric-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .tooltip-grid,
+      .version-strip,
+      .metric-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .search-panel {
+        padding: 14px;
+        border-radius: 26px;
+      }
+
+      .search-input-shell input {
+        font-size: 16px;
+      }
+
+      .dock-actions {
+        gap: 8px;
+      }
+
+      .dock-button.primary {
+        min-width: 0;
+        flex: 1 1 0;
+      }
+    }
+</style>
+</head>
+<body>
+  <main class="board-app">
+    <section class="board-shell">
+      <div id="boardFrame" class="board-frame">
+        <div id="boardViewport" class="board-viewport">
+          <div id="boardStage" class="board-stage">
+            <svg id="edgeLayer" aria-hidden="true">
+              <defs>
+                <marker id="edgeArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 z" fill="currentColor"></path>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hud hud-dock" aria-label="Canvas controls">
+      <section id="dockPanel" class="dock-panel" aria-label="Board notes" hidden>
+        <div class="dock-panel-head">
+          <div>
+            <span class="dock-kicker">产品画布</span>
+            <p>默认只展示当前画布关系。统计、说明和待处理项都收进这里。</p>
+          </div>
+          <button id="resetLayout" type="button" class="panel-reset">重置布局</button>
+        </div>
+
+        <div class="metric-strip">
+          <div class="metric"><span>已注册</span><strong>2</strong></div>
+          <div class="metric"><span>候选页</span><strong>0</strong></div>
+          <div class="metric"><span>关系边</span><strong>2</strong></div>
+          <div class="metric"><span>冲突</span><strong>0</strong></div>
+          <div class="metric"><span>有截图</span><strong>2</strong></div>
+          <div class="metric"><span>快照数</span><strong>2</strong></div>
+        </div>
+
+        <div class="legend">
+          <span><i class="registered"></i> 已注册</span>
+          <span><i class="candidate"></i> 候选</span>
+          <span><i class="draft"></i> AI 草稿</span>
+          <span><i class="drag"></i> 可拖拽</span>
+        </div>
+
+        <div class="notes-grid">
+          <section class="note-card">
+            <h2>候选页提醒</h2>
+            <p>当前未注册但已经在 route constants / wrapper 页面中存在的节点：无</p>
+          </section>
+          <section class="note-card">
+            <h2>待截图节点</h2>
+            <p>这些卡片当前没有命中真实截图源，所以只展示占位卡：后台登录, 平台概况</p>
+          </section>
+          <section class="note-card">
+            <h2>冲突预览</h2>
+            <ul><li>当前没有冲突。</li></ul>
+          </section>
+        </div>
+      </section>
+
+      <div class="dock-actions">
+        <button
+          id="togglePanel"
+          type="button"
+          class="dock-fab ghost"
+          aria-controls="dockPanel"
+          aria-expanded="false"
+          aria-label="Open canvas panel"
+        >
+          画布
+        </button>
+        <button id="openSearch" type="button" class="dock-button primary">
+          <span>搜索节点</span>
+          <kbd>⌘K</kbd>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <aside id="boardTooltip" class="tooltip" aria-hidden="true"></aside>
+
+  <dialog id="searchDialog" class="search-dialog">
+    <div class="search-panel">
+      <div class="search-panel-head">
+        <div>
+          <strong>搜索节点</strong>
+          <p>页面、路由、组件、截图标签、自动化场景</p>
+        </div>
+        <button id="closeSearch" class="search-close" type="button" aria-label="Close search">×</button>
+      </div>
+      <label class="search-input-shell" for="boardSearch">
+        <input id="boardSearch" type="search" placeholder="输入页面、组件、路由、截图来源" autocomplete="off" />
+      </label>
+      <p class="search-hint">Enter 打开首个结果，Esc 关闭，Ctrl/⌘ + K 快速唤起。</p>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </dialog>
+
+  <dialog id="nodeModal">
+    <div class="modal-shell">
+      <section class="modal-main">
+        <div class="modal-head">
+          <div>
+            <h2 id="modalTitle"></h2>
+            <p id="modalSubtitle"></p>
+          </div>
+          <button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button>
+        </div>
+        <div id="modalVersions" class="version-strip"></div>
+      </section>
+      <aside class="modal-side">
+        <section class="side-card">
+          <h3>页面备注</h3>
+          <ul id="modalRegions"></ul>
+        </section>
+        <section class="side-card">
+          <h3>来源锚点</h3>
+          <ul id="modalRefs"></ul>
+        </section>
+        <section class="side-card">
+          <h3>自动化场景</h3>
+          <ul id="modalScenarios"></ul>
+        </section>
+        <section class="side-card">
+          <h3>流向</h3>
+          <ul id="modalEdges"></ul>
+        </section>
+      </aside>
+    </div>
+  </dialog>
+
+  <script id="board-data" type="application/json">{"schema_version": "1.0", "generated_at": "2026-04-15T17:21:29+08:00", "project": {"name": "Eggturtle 生产后台", "repo_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library", "app_kind": "web-admin"}, "sources": {"notes": "手工维护的生产后台 board seed，后续继续往里追加 Web/Admin 节点。", "manifest_seed": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/board.seed.json", "skipped_scenarios": [{"scenario_id": "prod-web-home", "node_ref": "web-home", "role": "target"}, {"scenario_id": "prod-web-home", "node_ref": "web-home", "role": "entry"}], "board_root": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod"}, "summary": {"registered_count": 2, "candidate_count": 0, "draft_count": 0, "edge_count": 2, "conflict_count": 0, "nodes_with_screenshots": 2, "attached_screenshot_count": 2, "nodes_with_scenarios": 2, "attached_scenario_count": 3}, "nodes": [{"node_id": "admin-login", "route_key": "adminLogin", "title": "后台登录", "route": "login", "aliases": ["login", "admin-login"], "package": "main", "group": "entry", "status": "registered", "screen_component": "apps/admin/app/login/page.tsx", "page_file": "apps/admin/app/login/page.tsx", "config_file": "", "regions": ["账号或手机号", "密码登录", "短信登录"], "screenshot_refs": [{"label": "planned", "path": "screenshots/admin-login.png", "exists": false}], "source_refs": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 72}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 147}], "board_meta": {"note": "生产后台入口页，当前已绑定登录页 smoke 和登录后跳转场景。", "tags": ["prod", "admin", "auth"], "scenario_refs": [{"scenario_id": "prod-admin-dashboard", "script_path": "prod-admin-dashboard.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json", "capture_output": "../screenshots/prod-admin-dashboard-auth.png", "engine": "web-playwright-cli", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site", "auth_surface": "admin", "auth_profile": "eggturtle-prod-admin-siri", "timeout_ms": 30000, "browser_channel": "chrome", "viewport_size": "1440,1000", "full_page": true}, "assertions": [{"type": "selector", "selector": "text=平台概况"}, {"type": "text", "value": "用户总数"}], "role": "entry"}, {"scenario_id": "prod-admin-login", "script_path": "prod-admin-login.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.json", "capture_output": "../screenshots/prod-admin-login.png", "engine": "web-playwright-spec", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site"}, "assertions": [{"type": "selector", "selector": "text=管理后台登录", "min_count": 1}, {"type": "selector", "selector": "text=仅超级管理员账号可访问", "min_count": 1}], "role": "target"}]}, "card": {"node_id": "admin-login", "title": "后台登录", "status": "registered", "group": "entry", "note": "生产后台入口页，当前已绑定登录页 smoke 和登录后跳转场景。", "scenario_refs": [{"scenario_id": "prod-admin-dashboard", "script_path": "prod-admin-dashboard.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json", "capture_output": "../screenshots/prod-admin-dashboard-auth.png", "engine": "web-playwright-cli", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site", "auth_surface": "admin", "auth_profile": "eggturtle-prod-admin-siri", "timeout_ms": 30000, "browser_channel": "chrome", "viewport_size": "1440,1000", "full_page": true}, "assertions": [{"type": "selector", "selector": "text=平台概况"}, {"type": "text", "value": "用户总数"}], "role": "entry"}, {"scenario_id": "prod-admin-login", "script_path": "prod-admin-login.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-login.json", "capture_output": "../screenshots/prod-admin-login.png", "engine": "web-playwright-spec", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site"}, "assertions": [{"type": "selector", "selector": "text=管理后台登录", "min_count": 1}, {"type": "selector", "selector": "text=仅超级管理员账号可访问", "min_count": 1}], "role": "target"}], "code_entry": {"screen_component": "apps/admin/app/login/page.tsx", "page_file": "apps/admin/app/login/page.tsx", "config_file": ""}, "code_anchors": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 72}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 147}], "primary_image": {"label": "scenario:prod-admin-login", "relative_path": "screenshots/prod-admin-login.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png", "exists": true, "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png", "matched_by": "scenario:target"}, "images": [{"label": "scenario:prod-admin-login", "relative_path": "screenshots/prod-admin-login.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png", "exists": true, "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-login.png", "matched_by": "scenario:target", "image_mean": 172.12108101851854, "image_stddev": 42.299701067781385}, {"label": "planned", "relative_path": "screenshots/admin-login.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/admin-login.png", "exists": false, "source_path": "", "matched_by": "", "image_mean": null, "image_stddev": null}]}}, {"node_id": "admin-dashboard", "route_key": "adminDashboard", "title": "平台概况", "route": "dashboard", "aliases": ["dashboard", "admin-dashboard"], "package": "main", "group": "admin", "status": "registered", "screen_component": "apps/admin/app/dashboard/page.tsx", "page_file": "apps/admin/app/dashboard/page.tsx", "config_file": "", "regions": ["平台概况", "营收概览", "租户运营"], "screenshot_refs": [{"label": "planned", "path": "screenshots/admin-dashboard.png", "exists": false}], "source_refs": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx", "line": 41}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx", "line": 127}], "board_meta": {"note": "生产后台总览页，优先展示最新已登录 dashboard 截图。", "tags": ["prod", "admin", "overview"], "scenario_refs": [{"scenario_id": "prod-admin-dashboard", "script_path": "prod-admin-dashboard.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json", "capture_output": "../screenshots/prod-admin-dashboard-auth.png", "engine": "web-playwright-cli", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site", "auth_surface": "admin", "auth_profile": "eggturtle-prod-admin-siri", "timeout_ms": 30000, "browser_channel": "chrome", "viewport_size": "1440,1000", "full_page": true}, "assertions": [{"type": "selector", "selector": "text=平台概况"}, {"type": "text", "value": "用户总数"}], "role": "target"}]}, "card": {"node_id": "admin-dashboard", "title": "平台概况", "status": "registered", "group": "admin", "note": "生产后台总览页，优先展示最新已登录 dashboard 截图。", "scenario_refs": [{"scenario_id": "prod-admin-dashboard", "script_path": "prod-admin-dashboard.spec.ts", "script_absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.spec.ts", "scenario_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json", "capture_output": "../screenshots/prod-admin-dashboard-auth.png", "engine": "web-playwright-cli", "target": {"base_url": "https://eggturtles-admin.sealoshzh.site", "auth_surface": "admin", "auth_profile": "eggturtle-prod-admin-siri", "timeout_ms": 30000, "browser_channel": "chrome", "viewport_size": "1440,1000", "full_page": true}, "assertions": [{"type": "selector", "selector": "text=平台概况"}, {"type": "text", "value": "用户总数"}], "role": "target"}], "code_entry": {"screen_component": "apps/admin/app/dashboard/page.tsx", "page_file": "apps/admin/app/dashboard/page.tsx", "config_file": ""}, "code_anchors": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx", "line": 41}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx", "line": 127}], "primary_image": {"label": "scenario:prod-admin-dashboard", "relative_path": "screenshots/prod-admin-dashboard-auth.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png", "exists": true, "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png", "matched_by": "scenario:target"}, "images": [{"label": "scenario:prod-admin-dashboard", "relative_path": "screenshots/prod-admin-dashboard-auth.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png", "exists": true, "source_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png", "matched_by": "scenario:target", "image_mean": 247.62318341227322, "image_stddev": 27.644229626731953}, {"label": "planned", "relative_path": "screenshots/admin-dashboard.png", "absolute_path": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/admin-dashboard.png", "exists": false, "source_path": "", "matched_by": "", "image_mean": null, "image_stddev": null}]}}], "edges": [{"edge_id": "admin-login-admin-dashboard-password-login", "from": "admin-login", "to": "admin-dashboard", "trigger": "password-login:router.replace", "kind": "navigateTo", "source_refs": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 165}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx", "line": 177}], "label": "登录成功后进入平台概况"}, {"edge_id": "admin-dashboard-admin-login-middleware-redirect", "from": "admin-dashboard", "to": "admin-login", "trigger": "middleware:missing-session", "kind": "redirect", "source_refs": [{"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts", "line": 5}, {"path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts", "line": 15}], "label": "未登录时强制回到登录页"}], "conflicts": []}</script>
+  <script>    const data = JSON.parse(document.getElementById("board-data").textContent);
+    const GROUP_ORDER = {"entry": 0, "admin": 1, "guiquan": 2, "products": 3, "footprint": 4, "account": 5, "public": 6, "candidate": 7, "other": 8};
+    const GROUP_LABELS = {
+      entry: "入口",
+      admin: "管理后台",
+      guiquan: "龟圈",
+      products: "宠物",
+      footprint: "足迹",
+      account: "账号",
+      public: "公开",
+      candidate: "候选",
+      other: "其他",
+    };
+    const boardKind = String(data.project?.app_kind || "").trim();
+    if (boardKind) {
+      document.body.dataset.boardKind = boardKind;
+    }
+
+    function metricVar(name, fallback) {
+      const bodyStyle = window.getComputedStyle(document.body);
+      const rootStyle = window.getComputedStyle(document.documentElement);
+      const resolved = parseFloat(bodyStyle.getPropertyValue(name) || rootStyle.getPropertyValue(name));
+      if (!Number.isFinite(resolved) || resolved <= 0) return fallback;
+      return resolved;
+    }
+
+    const STORAGE_KEY = "interaction-board-layout::" + (data.project?.name || "board") + "::v6";
+    const SCALE_STORAGE_KEY = STORAGE_KEY + "::scale";
+    const nodeWidth = metricVar("--node-width", 188);
+    const nodeHeight = metricVar("--node-height", 346);
+    const laneMinGap = metricVar("--lane-min-gap", 228);
+    const laneWidth = metricVar("--lane-width", 196);
+    const lanePaddingTop = metricVar("--lane-padding-top", 94);
+    const nodeGapY = metricVar("--node-gap-y", 344);
+    const minScale = 0.72;
+    const maxScale = 1.6;
+
+    const viewport = document.getElementById("boardViewport");
+    const stage = document.getElementById("boardStage");
+    const frame = document.getElementById("boardFrame");
+    const edgeLayer = document.getElementById("edgeLayer");
+    const tooltip = document.getElementById("boardTooltip");
+    const modal = document.getElementById("nodeModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalSubtitle = document.getElementById("modalSubtitle");
+    const modalVersions = document.getElementById("modalVersions");
+    const modalRegions = document.getElementById("modalRegions");
+    const modalRefs = document.getElementById("modalRefs");
+    const modalScenarios = document.getElementById("modalScenarios");
+    const modalEdges = document.getElementById("modalEdges");
+    const modalClose = document.getElementById("modalClose");
+
+    const searchDialog = document.getElementById("searchDialog");
+    const searchInput = document.getElementById("boardSearch");
+    const searchResults = document.getElementById("searchResults");
+    const openSearchButton = document.getElementById("openSearch");
+    const closeSearchButton = document.getElementById("closeSearch");
+    const togglePanelButton = document.getElementById("togglePanel");
+    const resetButton = document.getElementById("resetLayout");
+    const dockPanel = document.getElementById("dockPanel");
+
+    const grouped = {};
+    const nodeById = new Map();
+    data.nodes.forEach((node) => {
+      grouped[node.group] = grouped[node.group] || [];
+      grouped[node.group].push(node);
+      nodeById.set(node.node_id, node);
+    });
+    const orderedGroups = Object.keys(grouped).sort((a, b) => (GROUP_ORDER[a] ?? 99) - (GROUP_ORDER[b] ?? 99) || a.localeCompare(b));
+
+    function computeLaneMetrics() {
+      const gutter = 36;
+      const groupCount = Math.max(1, orderedGroups.length);
+      const frameWidth = Math.max(frame?.clientWidth || 0, window.innerWidth || 0);
+      const calculatedGap = groupCount > 1
+        ? Math.floor((frameWidth - gutter * 2 - nodeWidth) / (groupCount - 1))
+        : 0;
+      return {
+        left: gutter,
+        gap: Math.max(laneMinGap, calculatedGap),
+      };
+    }
+
+    function defaultPositions() {
+      const metrics = computeLaneMetrics();
+      const positions = {};
+      orderedGroups.forEach((group, groupIndex) => {
+        grouped[group].forEach((node, nodeIndex) => {
+          const offsetX = ((nodeIndex + groupIndex) % 2 === 0 ? 14 : -14) + ((nodeIndex % 3) - 1) * 4;
+          const offsetY = (groupIndex % 2) * 12 + (nodeIndex % 3) * 6;
+          positions[node.node_id] = {
+            x: metrics.left + groupIndex * metrics.gap + offsetX,
+            y: lanePaddingTop + nodeIndex * nodeGapY + offsetY,
+          };
+        });
+      });
+      return positions;
+    }
+
+    function loadPositions() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultPositions();
+        return { ...defaultPositions(), ...JSON.parse(raw) };
+      } catch {
+        return defaultPositions();
+      }
+    }
+
+    function loadScale() {
+      try {
+        const raw = Number(window.localStorage.getItem(SCALE_STORAGE_KEY) || "1");
+        if (!Number.isFinite(raw)) return 1;
+        return Math.min(maxScale, Math.max(minScale, raw));
+      } catch {
+        return 1;
+      }
+    }
+
+    const state = {
+      positions: loadPositions(),
+      scale: loadScale(),
+      nodeElements: new Map(),
+      highlightedNode: "",
+      dragging: null,
+      filter: "",
+      pan: null,
+    };
+
+    function savePositions() {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.positions));
+    }
+
+    function saveScale() {
+      window.localStorage.setItem(SCALE_STORAGE_KEY, String(state.scale));
+    }
+
+    function displayRefs(node) {
+      return node.card?.images?.length ? node.card.images : (node.screenshot_refs || []);
+    }
+
+    function formatStatus(node) {
+      return node.status === "candidate" ? "候选页" : node.status === "draft" ? "草稿页" : "已注册";
+    }
+
+    function groupLabel(group) {
+      return GROUP_LABELS[group] || group || "未分组";
+    }
+
+    function versionLabel(count) {
+      return count > 1 ? `${count} 个版本` : "1 个版本";
+    }
+
+    function shotBadgeText(node, shot, screenshotCount) {
+      if (!shot || !shot.exists) {
+        return node.status === "draft" ? "AI 草图" : "待补截图";
+      }
+      return screenshotCount > 1 ? `已挂载快照 · ${versionLabel(screenshotCount)}` : "已挂载快照";
+    }
+
+    function readableImageLabel(ref) {
+      const label = String(ref?.label || "").toLowerCase();
+      if (!label || label === "planned") return "待补截图";
+      if (label.startsWith("scenario:")) return "场景截图";
+      if (label.includes("preview")) return "预览截图";
+      if (label.includes("fidelity")) return "当前截图";
+      if (label.includes("smoke")) return "运行截图";
+      if (label.includes("compare") || label.includes("style-pass") || label.includes("gq-")) return "历史版本";
+      return "页面截图";
+    }
+
+    function primaryShot(node) {
+      const primary = node.card?.primary_image;
+      if (primary?.relative_path) {
+        return {
+          label: primary.label,
+          path: primary.relative_path,
+          exists: primary.exists,
+          source_path: primary.source_path,
+          matched_by: primary.matched_by,
+        };
+      }
+      const refs = displayRefs(node);
+      return refs.find((item) => item.exists) || refs[0] || null;
+    }
+
+    function nodeSearchText(node) {
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors || node.source_refs || [];
+      return [
+        node.title,
+        node.route,
+        node.route_key,
+        node.group,
+        node.package,
+        codeEntry.screen_component || node.screen_component,
+        codeEntry.page_file || node.page_file,
+        codeEntry.config_file || node.config_file,
+        node.board_meta?.note,
+        ...(node.board_meta?.tags || []),
+        ...(node.card?.scenario_refs || []).map((ref) => ref.scenario_id || ref.script_path),
+        ...(displayRefs(node) || []).flatMap((ref) => [ref.label, ref.relative_path, ref.source_path]),
+        ...codeAnchors.flatMap((ref) => [ref.path, ref.line]),
+        ...(node.aliases || []),
+      ].join(" ").toLowerCase();
+    }
+
+    function nodeMatchesFilter(node) {
+      if (!state.filter) return true;
+      return nodeSearchText(node).includes(state.filter);
+    }
+
+    function filteredNodes() {
+      const query = state.filter;
+      const nodes = data.nodes.filter((node) => nodeMatchesFilter(node));
+      return nodes.sort((left, right) => {
+        if (!query) return left.title.localeCompare(right.title, "zh-CN");
+        const leftText = nodeSearchText(left);
+        const rightText = nodeSearchText(right);
+        const leftIndex = leftText.indexOf(query);
+        const rightIndex = rightText.indexOf(query);
+        return (
+          (leftIndex === -1 ? 9999 : leftIndex) - (rightIndex === -1 ? 9999 : rightIndex)
+          || left.title.length - right.title.length
+          || left.title.localeCompare(right.title, "zh-CN")
+        );
+      });
+    }
+
+    function lanesMarkup() {
+      const metrics = computeLaneMetrics();
+      return orderedGroups.map((group, index) => {
+        const left = metrics.left - 6 + index * metrics.gap;
+        const label = grouped[group].length + " 页";
+        return `<section class="lane" style="left:${left}px;width:${laneWidth}px;"><span class="lane-label"><strong>${groupLabel(group)}</strong><small>${label}</small></span></section>`;
+      }).join("");
+    }
+
+    function ensureCanvasBounds() {
+      const positions = Object.values(state.positions);
+      const maxX = positions.reduce((acc, item) => Math.max(acc, item.x), 0);
+      const maxY = positions.reduce((acc, item) => Math.max(acc, item.y), 0);
+      const width = Math.max(960, maxX + nodeWidth + 96);
+      const height = Math.max(860, maxY + nodeHeight + 132);
+      document.documentElement.style.setProperty("--canvas-width", width + "px");
+      document.documentElement.style.setProperty("--canvas-height", height + "px");
+      edgeLayer.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      applyScale();
+    }
+
+    function applyScale() {
+      const width = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--canvas-width")) || 0;
+      const height = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--canvas-height")) || 0;
+      const scaledWidth = width * state.scale;
+      const scaledHeight = height * state.scale;
+      viewport.style.width = `${scaledWidth}px`;
+      viewport.style.height = `${scaledHeight}px`;
+      stage.style.transform = `scale(${state.scale})`;
+    }
+
+    function setScale(nextScale, anchorX, anchorY) {
+      const bounded = Math.min(maxScale, Math.max(minScale, nextScale));
+      if (Math.abs(bounded - state.scale) < 0.001) return;
+      const previousScale = state.scale;
+      const pointerX = anchorX ?? frame.clientWidth / 2;
+      const pointerY = anchorY ?? frame.clientHeight / 2;
+      const contentX = (frame.scrollLeft + pointerX) / previousScale;
+      const contentY = (frame.scrollTop + pointerY) / previousScale;
+      state.scale = bounded;
+      applyScale();
+      frame.scrollLeft = contentX * bounded - pointerX;
+      frame.scrollTop = contentY * bounded - pointerY;
+      saveScale();
+    }
+
+    function buildNodeCard(node) {
+      const shot = primaryShot(node);
+      const screenshotCount = displayRefs(node).filter((item) => item.exists).length;
+      const placeholderLabel = node.status === "draft" ? "AI 草图" : "待截图";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `node ${node.status}`;
+      button.dataset.nodeId = node.node_id;
+      button.dataset.group = node.group;
+      button.style.left = state.positions[node.node_id].x + "px";
+      button.style.top = state.positions[node.node_id].y + "px";
+      button.setAttribute("aria-label", `${node.title} · ${formatStatus(node)} · ${node.route}`);
+      button.innerHTML = `
+        <div class="node-shot ${shot && shot.exists ? "has-shot" : "missing-shot"}">
+          ${shot && shot.exists ? `<img src="${shot.path}" alt="${node.title}" loading="lazy" />` : ""}
+          ${shot && shot.exists ? "" : `<span class="node-shot-grid" aria-hidden="true"></span><span class="node-empty-badge">${placeholderLabel}</span>`}
+          <div class="node-overlay">
+            <span class="node-title-wrap">
+              <span class="node-title">${node.title}</span>
+              <span class="node-subtitle">${shotBadgeText(node, shot, screenshotCount)}</span>
+            </span>
+          </div>
+        </div>
+      `;
+
+      button.addEventListener("mouseenter", (event) => showTooltip(node, event, button));
+      button.addEventListener("mousemove", (event) => moveTooltip(event));
+      button.addEventListener("mouseleave", () => hideTooltip());
+      button.addEventListener("focus", () => showTooltip(node, null, button));
+      button.addEventListener("blur", () => hideTooltip());
+      button.addEventListener("click", () => {
+        if (button.dataset.dragMoved === "true") {
+          button.dataset.dragMoved = "false";
+          return;
+        }
+        openNodeModal(node);
+      });
+      button.addEventListener("pointerdown", (event) => startDrag(event, node, button));
+      return button;
+    }
+
+    function renderNodes() {
+      stage.innerHTML = lanesMarkup();
+      stage.appendChild(edgeLayer);
+      data.nodes.forEach((node) => {
+        const element = buildNodeCard(node);
+        state.nodeElements.set(node.node_id, element);
+        stage.appendChild(element);
+      });
+      ensureCanvasBounds();
+      renderEdges();
+      applyFilter();
+    }
+
+    function edgePath(from, to, index, total) {
+      const spread = (index - (total - 1) / 2) * 22;
+      const startX = from.x + nodeWidth - 4;
+      const startY = from.y + nodeHeight * 0.5 + spread * 0.34;
+      const endX = to.x + 4;
+      const endY = to.y + nodeHeight * 0.5 - spread * 0.34;
+      const bend = Math.max(92, Math.abs(endX - startX) * 0.42);
+      const lift = spread * 0.9;
+      return `M ${startX} ${startY} C ${startX + bend} ${startY + lift}, ${endX - bend} ${endY - lift}, ${endX} ${endY}`;
+    }
+
+    function renderEdges() {
+      edgeLayer.querySelectorAll("path.edge-line").forEach((item) => item.remove());
+      const activeNode = state.highlightedNode;
+      const pairMap = new Map();
+      data.edges.forEach((edge) => {
+        const key = `${edge.from}->${edge.to}`;
+        const group = pairMap.get(key) || [];
+        group.push(edge);
+        pairMap.set(key, group);
+      });
+
+      Array.from(pairMap.entries()).forEach(([pairKey, group]) => {
+        const [edge] = group;
+        const from = state.positions[edge.from];
+        const to = state.positions[edge.to];
+        if (!from || !to) return;
+        const index = 0;
+        const edgeMatched = !state.filter || nodeMatchesFilter(nodeById.get(edge.from)) || nodeMatchesFilter(nodeById.get(edge.to));
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", edgePath(from, to, index, group.length));
+        path.setAttribute(
+          "class",
+          `edge-line kind-${edge.kind} ${activeNode && (edge.from === activeNode || edge.to === activeNode) ? "active" : ""} ${edgeMatched ? "" : "muted"}`
+        );
+        path.dataset.edgePair = pairKey;
+        path.dataset.edgeCount = String(group.length);
+        path.setAttribute("marker-end", "url(#edgeArrow)");
+        edgeLayer.appendChild(path);
+      });
+    }
+
+    function setHighlight(nodeId) {
+      state.highlightedNode = nodeId || "";
+      state.nodeElements.forEach((element, currentId) => {
+        element.classList.toggle("active", currentId === state.highlightedNode);
+      });
+      renderEdges();
+    }
+
+    function showTooltip(node, event, element) {
+      const outgoing = data.edges.filter((edge) => edge.from === node.node_id).length;
+      const incoming = data.edges.filter((edge) => edge.to === node.node_id).length;
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors?.length ? node.card.code_anchors : (node.source_refs || []);
+      const firstRef = codeAnchors[0];
+      const shot = primaryShot(node);
+      const screenshotCount = displayRefs(node).filter((item) => item.exists).length;
+      const scenarioCount = (node.card?.scenario_refs || []).length;
+      const note = node.board_meta?.note;
+      tooltip.innerHTML = `
+        <strong>${node.title}</strong>
+        <code>${node.route}</code>
+        <div class="tooltip-grid">
+          <span>${formatStatus(node)} · ${groupLabel(node.group)}</span>
+          <span>${screenshotCount ? `${screenshotCount} 个版本快照` : "暂无真实截图"}</span>
+          <span>${scenarioCount ? `${scenarioCount} 个自动化场景` : "暂无自动化场景"}</span>
+          <span>流出 ${outgoing}</span>
+          <span>流入 ${incoming}</span>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.82);line-height:1.6;">
+          组件：${codeEntry.screen_component || node.screen_component || "未解析"}<br />
+          锚点：${firstRef ? `${firstRef.path}:${firstRef.line}` : "n/a"}<br />
+          主图：${shot?.path || "n/a"}${shot?.matched_by ? `<br />匹配：${shot.matched_by}` : ""}
+          ${note ? `<br />备注：${note}` : ""}
+        </div>
+      `;
+      tooltip.classList.add("visible");
+      tooltip.setAttribute("aria-hidden", "false");
+      if (event) {
+        moveTooltip(event);
+      } else {
+        const rect = element.getBoundingClientRect();
+        moveTooltip({ clientX: rect.right - 20, clientY: rect.top + 20 });
+      }
+      setHighlight(node.node_id);
+    }
+
+    function moveTooltip(event) {
+      const offsetX = 18;
+      const offsetY = 18;
+      const maxX = window.innerWidth - tooltip.offsetWidth - 12;
+      const maxY = window.innerHeight - tooltip.offsetHeight - 12;
+      const x = Math.min(maxX, event.clientX + offsetX);
+      const y = Math.min(maxY, event.clientY + offsetY);
+      tooltip.style.left = `${Math.max(12, x)}px`;
+      tooltip.style.top = `${Math.max(12, y)}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove("visible");
+      tooltip.setAttribute("aria-hidden", "true");
+      if (!modal.open) setHighlight("");
+    }
+
+    function fillList(target, items, formatter) {
+      target.innerHTML = "";
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.textContent = "暂无";
+        target.appendChild(li);
+        return;
+      }
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerHTML = formatter(item);
+        target.appendChild(li);
+      });
+    }
+
+    function centerNode(nodeId) {
+      const position = state.positions[nodeId];
+      if (!position) return;
+      frame.scrollTo({
+        left: Math.max(0, position.x - frame.clientWidth / 2 + nodeWidth / 2),
+        top: Math.max(0, position.y - frame.clientHeight / 2 + nodeHeight / 2),
+        behavior: "smooth",
+      });
+    }
+
+    function openNodeModal(node) {
+      const outgoing = data.edges.filter((edge) => edge.from === node.node_id);
+      const incoming = data.edges.filter((edge) => edge.to === node.node_id);
+      const codeEntry = node.card?.code_entry || {};
+      const codeAnchors = node.card?.code_anchors?.length ? node.card.code_anchors : (node.source_refs || []);
+      modalTitle.textContent = node.title;
+      modalSubtitle.innerHTML = `<code>${node.route}</code><br />${codeEntry.screen_component || node.screen_component || "未解析组件"}`;
+
+      const refs = displayRefs(node);
+      modalVersions.innerHTML = refs.length ? refs.map((ref) => {
+        if (!ref.exists) {
+          return `<article class="version-card"><div class="empty-note">待补截图<br /><code>${ref.relative_path || ref.path || "n/a"}</code></div><div class="meta"><strong>${readableImageLabel(ref)}</strong><code>${ref.relative_path || ref.path || "n/a"}</code></div></article>`;
+        }
+        return `
+          <article class="version-card">
+            <img src="${ref.relative_path || ref.path}" alt="${node.title} ${ref.label}" loading="lazy" />
+            <div class="meta">
+              <strong>${readableImageLabel(ref)}</strong>
+              <code>${ref.relative_path || ref.path}</code>
+              ${ref.matched_by ? `<code>${ref.matched_by}</code>` : ""}
+              ${ref.source_path ? `<code>${ref.source_path}</code>` : ""}
+            </div>
+          </article>
+        `;
+      }).join("") : `<div class="empty-note">暂无版本快照。</div>`;
+
+      fillList(modalRegions, node.regions || [], (item) => item);
+      fillList(modalRefs, codeAnchors, (ref) => `<code>${ref.path}:${ref.line}</code>`);
+      fillList(
+        modalScenarios,
+        node.card?.scenario_refs || [],
+        (ref) => `<strong>${ref.scenario_id || "scenario"}</strong> · ${ref.role || "manual"}<br /><code>${ref.script_path || ref.scenario_path || "n/a"}</code>`
+      );
+      fillList(
+        modalEdges,
+        [...outgoing.map((edge) => ({ direction: "out", edge })), ...incoming.map((edge) => ({ direction: "in", edge }))],
+        ({ direction, edge }) => {
+          const targetId = direction === "out" ? edge.to : edge.from;
+          const targetNode = nodeById.get(targetId);
+          return `<strong>${direction === "out" ? "→" : "←"} ${targetNode?.title || targetId}</strong> · ${edge.kind}<br /><code>${edge.trigger}</code>`;
+        }
+      );
+
+      modal.showModal();
+      centerNode(node.node_id);
+      setHighlight(node.node_id);
+    }
+
+    modalClose.addEventListener("click", () => {
+      modal.close();
+      setHighlight("");
+    });
+
+    modal.addEventListener("click", (event) => {
+      const rect = modal.getBoundingClientRect();
+      const inside = rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
+      if (!inside) {
+        modal.close();
+        setHighlight("");
+      }
+    });
+    modal.addEventListener("close", () => setHighlight(""));
+
+    function startDrag(event, node, element) {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      const origin = state.positions[node.node_id];
+      state.dragging = {
+        nodeId: node.node_id,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: origin.x,
+        originY: origin.y,
+      };
+      element.dataset.dragMoved = "false";
+      element.classList.add("dragging");
+      element.setPointerCapture(event.pointerId);
+      setHighlight(node.node_id);
+
+      const handleMove = (moveEvent) => {
+        if (!state.dragging || state.dragging.pointerId !== moveEvent.pointerId) return;
+        const dx = moveEvent.clientX - state.dragging.startX;
+        const dy = moveEvent.clientY - state.dragging.startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          element.dataset.dragMoved = "true";
+        }
+        state.positions[node.node_id] = {
+          x: Math.max(18, state.dragging.originX + dx),
+          y: Math.max(18, state.dragging.originY + dy),
+        };
+        element.style.left = state.positions[node.node_id].x + "px";
+        element.style.top = state.positions[node.node_id].y + "px";
+        ensureCanvasBounds();
+        renderEdges();
+      };
+
+      const handleUp = (upEvent) => {
+        if (!state.dragging || state.dragging.pointerId !== upEvent.pointerId) return;
+        element.classList.remove("dragging");
+        element.releasePointerCapture(upEvent.pointerId);
+        state.dragging = null;
+        savePositions();
+        renderEdges();
+        window.removeEventListener("pointermove", handleMove);
+        window.removeEventListener("pointerup", handleUp);
+      };
+
+      window.addEventListener("pointermove", handleMove);
+      window.addEventListener("pointerup", handleUp);
+    }
+
+    function applyFilter() {
+      data.nodes.forEach((node) => {
+        const matched = nodeMatchesFilter(node);
+        const element = state.nodeElements.get(node.node_id);
+        if (element) element.classList.toggle("dim", !matched);
+      });
+      renderEdges();
+    }
+
+    function renderSearchResults() {
+      const matches = filteredNodes().slice(0, 18);
+      if (!matches.length) {
+        searchResults.innerHTML = `<div class="search-empty">${state.filter ? "没有命中节点，试试路由、组件名或截图来源标签。" : "输入关键词后会显示匹配节点。"} </div>`;
+        return;
+      }
+      searchResults.innerHTML = matches.map((node) => {
+        const shot = primaryShot(node);
+        const scenarios = (node.card?.scenario_refs || []).length;
+        const versions = displayRefs(node).filter((item) => item.exists).length;
+        return `
+          <button type="button" class="search-result" data-node-id="${node.node_id}">
+            <strong>${node.title}</strong>
+            <code>${node.route}</code>
+            <div class="search-result-meta">
+              <span>${formatStatus(node)}</span>
+              <span>${groupLabel(node.group)}</span>
+              <span>${versions ? `${versions} 个版本` : "无快照"}</span>
+              <span>${scenarios ? `${scenarios} 个场景` : "无场景"}</span>
+              ${shot?.label ? `<span>${readableImageLabel(shot)}</span>` : ""}
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      searchResults.querySelectorAll(".search-result").forEach((button) => {
+        button.addEventListener("click", () => {
+          const node = nodeById.get(button.dataset.nodeId);
+          if (!node) return;
+          searchDialog.close();
+          clearSearch();
+          openNodeModal(node);
+        });
+      });
+    }
+
+    function clearSearch() {
+      state.filter = "";
+      searchInput.value = "";
+      applyFilter();
+      renderSearchResults();
+    }
+
+    function openSearchDialog() {
+      renderSearchResults();
+      if (!searchDialog.open) searchDialog.showModal();
+      window.setTimeout(() => searchInput.focus(), 0);
+    }
+
+    function closeSearchDialog(clear = true) {
+      if (searchDialog.open) searchDialog.close();
+      if (clear) clearSearch();
+    }
+
+    openSearchButton.addEventListener("click", () => openSearchDialog());
+    closeSearchButton.addEventListener("click", () => closeSearchDialog(true));
+
+    searchDialog.addEventListener("click", (event) => {
+      const rect = searchDialog.getBoundingClientRect();
+      const inside = rect.top <= event.clientY && event.clientY <= rect.top + rect.height && rect.left <= event.clientX && event.clientX <= rect.left + rect.width;
+      if (!inside) closeSearchDialog(true);
+    });
+
+    searchInput.addEventListener("input", (event) => {
+      state.filter = event.target.value.trim().toLowerCase();
+      applyFilter();
+      renderSearchResults();
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const [first] = filteredNodes();
+        if (!first) return;
+        closeSearchDialog(true);
+        openNodeModal(first);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const shortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (shortcut) {
+        event.preventDefault();
+        if (searchDialog.open) closeSearchDialog(false);
+        else openSearchDialog();
+      }
+      if (event.key === "Escape" && searchDialog.open) {
+        closeSearchDialog(true);
+      }
+      if (event.key === "Escape" && !searchDialog.open && !modal.open && !dockPanel.hasAttribute("hidden")) {
+        dockPanel.setAttribute("hidden", "");
+        togglePanelButton.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    togglePanelButton.addEventListener("click", () => {
+      const hidden = dockPanel.hasAttribute("hidden");
+      if (hidden) {
+        dockPanel.removeAttribute("hidden");
+        togglePanelButton.setAttribute("aria-expanded", "true");
+      } else {
+        dockPanel.setAttribute("hidden", "");
+        togglePanelButton.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    resetButton.addEventListener("click", () => {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(SCALE_STORAGE_KEY);
+      state.positions = defaultPositions();
+      state.scale = 1;
+      state.nodeElements.forEach((element, nodeId) => {
+        element.style.left = state.positions[nodeId].x + "px";
+        element.style.top = state.positions[nodeId].y + "px";
+      });
+      ensureCanvasBounds();
+      renderEdges();
+    });
+
+    let panState = null;
+    frame.addEventListener("pointerdown", (event) => {
+      if (event.target.closest(".node")) return;
+      panState = {
+        x: event.clientX,
+        y: event.clientY,
+        left: frame.scrollLeft,
+        top: frame.scrollTop,
+      };
+      frame.setPointerCapture(event.pointerId);
+    });
+    frame.addEventListener("pointermove", (event) => {
+      if (!panState) return;
+      frame.scrollLeft = panState.left - (event.clientX - panState.x);
+      frame.scrollTop = panState.top - (event.clientY - panState.y);
+    });
+    frame.addEventListener("pointerup", (event) => {
+      if (!panState) return;
+      panState = null;
+      frame.releasePointerCapture(event.pointerId);
+    });
+
+    frame.addEventListener("wheel", (event) => {
+      if (modal.open || searchDialog.open) return;
+      event.preventDefault();
+      const factor = Math.exp(-event.deltaY * 0.0012);
+      const rect = frame.getBoundingClientRect();
+      setScale(state.scale * factor, event.clientX - rect.left, event.clientY - rect.top);
+    }, { passive: false });
+
+    renderNodes();
+    renderSearchResults();
+    frame.scrollLeft = 0;
+    frame.scrollTop = 0;
+</script>
+</body>
+</html>

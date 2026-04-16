@@ -1,0 +1,2810 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-04-15T17:55:17+08:00",
+  "project": {
+    "name": "admin",
+    "repo_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "app_kind": "web-admin"
+  },
+  "sources": {
+    "extractor": "nextjs-route-first",
+    "app_dir": "apps/admin",
+    "app_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin"
+  },
+  "summary": {
+    "registered_count": 36,
+    "candidate_count": 0,
+    "draft_count": 0,
+    "edge_count": 74,
+    "conflict_count": 0,
+    "nodes_with_screenshots": 0,
+    "attached_screenshot_count": 0,
+    "nodes_with_scenarios": 0,
+    "attached_scenario_count": 0
+  },
+  "nodes": [
+    {
+      "node_id": "admin-root",
+      "route_key": "Adminroot",
+      "title": "后台根入口",
+      "route": "",
+      "aliases": [
+        "/",
+        "admin-root",
+        "board",
+        "root"
+      ],
+      "package": "main",
+      "group": "entry",
+      "status": "registered",
+      "screen_component": "apps/admin/app/page.tsx",
+      "page_file": "apps/admin/app/page.tsx",
+      "config_file": "",
+      "regions": [
+        "后台根入口",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-root.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "entry"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-login",
+      "route_key": "AdminLogin",
+      "title": "后台登录",
+      "route": "login",
+      "aliases": [
+        "/login",
+        "admin-login",
+        "board",
+        "login"
+      ],
+      "package": "main",
+      "group": "entry",
+      "status": "registered",
+      "screen_component": "apps/admin/app/login/page.tsx",
+      "page_file": "apps/admin/app/login/page.tsx",
+      "config_file": "",
+      "regions": [
+        "后台登录",
+        "use client",
+        "react",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-login.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/login/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "entry"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "entry-auth-page"
+      }
+    },
+    {
+      "node_id": "admin-dashboard",
+      "route_key": "AdminDashboard",
+      "title": "数据",
+      "route": "dashboard",
+      "aliases": [
+        "/dashboard",
+        "admin-dashboard",
+        "board",
+        "dashboard"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/page.tsx",
+      "page_file": "apps/admin/app/dashboard/page.tsx",
+      "config_file": "",
+      "regions": [
+        "数据",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 29
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-analytics",
+      "route_key": "AdminDashboardAnalytics",
+      "title": "活跃度看板",
+      "route": "dashboard/analytics",
+      "aliases": [
+        "/dashboard/analytics",
+        "admin-dashboard-analytics",
+        "board",
+        "dashboard-analytics",
+        "dashboard/analytics"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/analytics/page.tsx",
+      "page_file": "apps/admin/app/dashboard/analytics/page.tsx",
+      "config_file": "",
+      "regions": [
+        "活跃度看板",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-analytics.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/analytics/page.tsx",
+          "line": 15
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-audit-logs",
+      "route_key": "AdminDashboardAuditLogs",
+      "title": "治理记录",
+      "route": "dashboard/audit-logs",
+      "aliases": [
+        "/dashboard/audit-logs",
+        "admin-dashboard-audit-logs",
+        "board",
+        "dashboard-audit-logs",
+        "dashboard/audit-logs"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/audit-logs/page.tsx",
+      "page_file": "apps/admin/app/dashboard/audit-logs/page.tsx",
+      "config_file": "",
+      "regions": [
+        "治理记录",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-audit-logs.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/audit-logs/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/settings/audit-logs",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-billing",
+      "route_key": "AdminDashboardBilling",
+      "title": "账单跳转",
+      "route": "dashboard/billing",
+      "aliases": [
+        "/dashboard/billing",
+        "admin-dashboard-billing",
+        "board",
+        "dashboard-billing",
+        "dashboard/billing"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/billing/page.tsx",
+      "page_file": "apps/admin/app/dashboard/billing/page.tsx",
+      "config_file": "",
+      "regions": [
+        "账单跳转",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-billing.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/billing/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/analytics/revenue",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-guiquan-management",
+      "route_key": "AdminDashboardGuiquanManagement",
+      "title": "社区入口",
+      "route": "dashboard/guiquan-management",
+      "aliases": [
+        "/dashboard/guiquan-management",
+        "admin-dashboard-guiquan-management",
+        "board",
+        "dashboard-guiquan-management",
+        "dashboard/guiquan-management"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/guiquan-management/page.tsx",
+      "page_file": "apps/admin/app/dashboard/guiquan-management/page.tsx",
+      "config_file": "",
+      "regions": [
+        "社区入口",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-guiquan-management.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/guiquan-management/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/commerce/community",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-usage",
+      "route_key": "AdminDashboardUsage",
+      "title": "用量看板",
+      "route": "dashboard/usage",
+      "aliases": [
+        "/dashboard/usage",
+        "admin-dashboard-usage",
+        "board",
+        "dashboard-usage",
+        "dashboard/usage"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/usage/page.tsx",
+      "page_file": "apps/admin/app/dashboard/usage/page.tsx",
+      "config_file": "",
+      "regions": [
+        "用量看板",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-usage.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/usage/page.tsx",
+          "line": 30
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-analytics-activity",
+      "route_key": "AdminDashboardAnalyticsActivity",
+      "title": "活跃度看板",
+      "route": "dashboard/analytics/activity",
+      "aliases": [
+        "/dashboard/analytics/activity",
+        "admin-dashboard-analytics-activity",
+        "board",
+        "dashboard-analytics-activity",
+        "dashboard/analytics/activity"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/analytics/activity/page.tsx",
+      "page_file": "apps/admin/app/dashboard/analytics/activity/page.tsx",
+      "config_file": "",
+      "regions": [
+        "活跃度看板",
+        "@/app/dashboard/analytics/page"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-analytics-activity.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/analytics/activity/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-analytics-revenue",
+      "route_key": "AdminDashboardAnalyticsRevenue",
+      "title": "付费看板",
+      "route": "dashboard/analytics/revenue",
+      "aliases": [
+        "/dashboard/analytics/revenue",
+        "admin-dashboard-analytics-revenue",
+        "board",
+        "dashboard-analytics-revenue",
+        "dashboard/analytics/revenue"
+      ],
+      "package": "main",
+      "group": "admin",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/analytics/revenue/page.tsx",
+      "page_file": "apps/admin/app/dashboard/analytics/revenue/page.tsx",
+      "config_file": "",
+      "regions": [
+        "付费看板"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-analytics-revenue.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/analytics/revenue/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "admin"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-memberships",
+      "route_key": "AdminDashboardMemberships",
+      "title": "会员入口",
+      "route": "dashboard/memberships",
+      "aliases": [
+        "/dashboard/memberships",
+        "admin-dashboard-memberships",
+        "board",
+        "dashboard-memberships",
+        "dashboard/memberships"
+      ],
+      "package": "main",
+      "group": "users",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/memberships/page.tsx",
+      "page_file": "apps/admin/app/dashboard/memberships/page.tsx",
+      "config_file": "",
+      "regions": [
+        "会员入口",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-memberships.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/memberships/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "users"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/tenant-management",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-tenant-management",
+      "route_key": "AdminDashboardTenantManagement",
+      "title": "平台用户",
+      "route": "dashboard/tenant-management",
+      "aliases": [
+        "/dashboard/tenant-management",
+        "admin-dashboard-tenant-management",
+        "board",
+        "dashboard-tenant-management",
+        "dashboard/tenant-management"
+      ],
+      "package": "main",
+      "group": "users",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/tenant-management/page.tsx",
+      "page_file": "apps/admin/app/dashboard/tenant-management/page.tsx",
+      "config_file": "",
+      "regions": [
+        "平台用户",
+        "use client",
+        "react",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-tenant-management.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenant-management/page.tsx",
+          "line": 16
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "users"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-tenants",
+      "route_key": "AdminDashboardTenants",
+      "title": "Tenants",
+      "route": "dashboard/tenants",
+      "aliases": [
+        "/dashboard/tenants",
+        "admin-dashboard-tenants",
+        "dashboard-tenants",
+        "dashboard/tenants",
+        "tenants"
+      ],
+      "package": "main",
+      "group": "users",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/tenants/page.tsx",
+      "page_file": "apps/admin/app/dashboard/tenants/page.tsx",
+      "config_file": "",
+      "regions": [
+        "Tenants",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-tenants.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "users"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/tenant-management",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-tenants-tenantid",
+      "route_key": "AdminDashboardTenantsTenantid",
+      "title": "租户详情",
+      "route": "dashboard/tenants/[tenantId]",
+      "aliases": [
+        "/dashboard/tenants/[tenantId]",
+        "admin-dashboard-tenants-tenantid",
+        "board",
+        "dashboard-tenants-tenantid",
+        "dashboard/tenants/[tenantId]"
+      ],
+      "package": "main",
+      "group": "users",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+      "page_file": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+      "config_file": "",
+      "regions": [
+        "租户详情",
+        "use client",
+        "react",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-tenants-tenantid.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+          "line": 32
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "users"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": true,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "dynamic-route"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-tenants-tenantid-livestock",
+      "route_key": "AdminDashboardTenantsTenantidLivestock",
+      "title": "宠物档案摘要",
+      "route": "dashboard/tenants/[tenantId]/livestock",
+      "aliases": [
+        "/dashboard/tenants/[tenantId]/livestock",
+        "admin-dashboard-tenants-tenantid-livestock",
+        "board",
+        "dashboard-tenants-tenantid-livestock",
+        "dashboard/tenants/[tenantId]/livestock"
+      ],
+      "package": "main",
+      "group": "users",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/tenants/[tenantId]/livestock/page.tsx",
+      "page_file": "apps/admin/app/dashboard/tenants/[tenantId]/livestock/page.tsx",
+      "config_file": "",
+      "regions": [
+        "宠物档案摘要",
+        "use client",
+        "react",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-tenants-tenantid-livestock.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/livestock/page.tsx",
+          "line": 16
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "users"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": true,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "dynamic-route"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce",
+      "route_key": "AdminDashboardCommerce",
+      "title": "经营",
+      "route": "dashboard/commerce",
+      "aliases": [
+        "/dashboard/commerce",
+        "admin-dashboard-commerce",
+        "board",
+        "dashboard-commerce",
+        "dashboard/commerce"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/page.tsx",
+      "config_file": "",
+      "regions": [
+        "经营",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/commerce/catalog",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-catalog",
+      "route_key": "AdminDashboardCommerceCatalog",
+      "title": "商品目录",
+      "route": "dashboard/commerce/catalog",
+      "aliases": [
+        "/dashboard/commerce/catalog",
+        "admin-dashboard-commerce-catalog",
+        "board",
+        "dashboard-commerce-catalog",
+        "dashboard/commerce/catalog"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/catalog/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/catalog/page.tsx",
+      "config_file": "",
+      "regions": [
+        "商品目录"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-catalog.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/catalog/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-community",
+      "route_key": "AdminDashboardCommerceCommunity",
+      "title": "社区",
+      "route": "dashboard/commerce/community",
+      "aliases": [
+        "/dashboard/commerce/community",
+        "admin-dashboard-commerce-community",
+        "board",
+        "dashboard-commerce-community",
+        "dashboard/commerce/community"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/community/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/community/page.tsx",
+      "config_file": "",
+      "regions": [
+        "社区"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-community.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/community/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-fulfillment",
+      "route_key": "AdminDashboardCommerceFulfillment",
+      "title": "发货履约",
+      "route": "dashboard/commerce/fulfillment",
+      "aliases": [
+        "/dashboard/commerce/fulfillment",
+        "admin-dashboard-commerce-fulfillment",
+        "board",
+        "dashboard-commerce-fulfillment",
+        "dashboard/commerce/fulfillment"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/fulfillment/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/fulfillment/page.tsx",
+      "config_file": "",
+      "regions": [
+        "发货履约"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-fulfillment.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/fulfillment/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-marketplace",
+      "route_key": "AdminDashboardCommerceMarketplace",
+      "title": "二级市场",
+      "route": "dashboard/commerce/marketplace",
+      "aliases": [
+        "/dashboard/commerce/marketplace",
+        "admin-dashboard-commerce-marketplace",
+        "board",
+        "dashboard-commerce-marketplace",
+        "dashboard/commerce/marketplace"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/marketplace/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/marketplace/page.tsx",
+      "config_file": "",
+      "regions": [
+        "二级市场"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-marketplace.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/marketplace/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-orders",
+      "route_key": "AdminDashboardCommerceOrders",
+      "title": "订单管理",
+      "route": "dashboard/commerce/orders",
+      "aliases": [
+        "/dashboard/commerce/orders",
+        "admin-dashboard-commerce-orders",
+        "board",
+        "dashboard-commerce-orders",
+        "dashboard/commerce/orders"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/orders/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/orders/page.tsx",
+      "config_file": "",
+      "regions": [
+        "订单管理",
+        "@/features/commerce/orders/orders-page"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-orders.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/orders/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-support",
+      "route_key": "AdminDashboardCommerceSupport",
+      "title": "售后客服",
+      "route": "dashboard/commerce/support",
+      "aliases": [
+        "/dashboard/commerce/support",
+        "admin-dashboard-commerce-support",
+        "board",
+        "dashboard-commerce-support",
+        "dashboard/commerce/support"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/support/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/support/page.tsx",
+      "config_file": "",
+      "regions": [
+        "售后客服",
+        "@/features/commerce/support/support-page"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-support.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/support/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-catalog-productid",
+      "route_key": "AdminDashboardCommerceCatalogProductid",
+      "title": "商品详情",
+      "route": "dashboard/commerce/catalog/[productId]",
+      "aliases": [
+        "/dashboard/commerce/catalog/[productId]",
+        "admin-dashboard-commerce-catalog-productid",
+        "board",
+        "dashboard-commerce-catalog-productid",
+        "dashboard/commerce/catalog/[productId]"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/catalog/[productId]/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/catalog/[productId]/page.tsx",
+      "config_file": "",
+      "regions": [
+        "商品详情",
+        "edit"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-catalog-productid.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/catalog/[productId]/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": true,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "dynamic-route"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-catalog-new",
+      "route_key": "AdminDashboardCommerceCatalogNew",
+      "title": "新建商品",
+      "route": "dashboard/commerce/catalog/new",
+      "aliases": [
+        "/dashboard/commerce/catalog/new",
+        "admin-dashboard-commerce-catalog-new",
+        "board",
+        "dashboard-commerce-catalog-new",
+        "dashboard/commerce/catalog/new"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/catalog/new/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/catalog/new/page.tsx",
+      "config_file": "",
+      "regions": [
+        "新建商品",
+        "create"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-catalog-new.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/catalog/new/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-community-postid",
+      "route_key": "AdminDashboardCommerceCommunityPostid",
+      "title": "帖子详情",
+      "route": "dashboard/commerce/community/[postId]",
+      "aliases": [
+        "/dashboard/commerce/community/[postId]",
+        "admin-dashboard-commerce-community-postid",
+        "board",
+        "dashboard-commerce-community-postid",
+        "dashboard/commerce/community/[postId]"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/community/[postId]/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/community/[postId]/page.tsx",
+      "config_file": "",
+      "regions": [
+        "帖子详情",
+        "edit"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-community-postid.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/community/[postId]/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": true,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "dynamic-route"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-community-new",
+      "route_key": "AdminDashboardCommerceCommunityNew",
+      "title": "新建帖子",
+      "route": "dashboard/commerce/community/new",
+      "aliases": [
+        "/dashboard/commerce/community/new",
+        "admin-dashboard-commerce-community-new",
+        "board",
+        "dashboard-commerce-community-new",
+        "dashboard/commerce/community/new"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/community/new/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/community/new/page.tsx",
+      "config_file": "",
+      "regions": [
+        "新建帖子",
+        "create"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-community-new.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/community/new/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-commerce-marketplace-listingid",
+      "route_key": "AdminDashboardCommerceMarketplaceListingid",
+      "title": "挂牌详情",
+      "route": "dashboard/commerce/marketplace/[listingId]",
+      "aliases": [
+        "/dashboard/commerce/marketplace/[listingId]",
+        "admin-dashboard-commerce-marketplace-listingid",
+        "board",
+        "dashboard-commerce-marketplace-listingid",
+        "dashboard/commerce/marketplace/[listingId]"
+      ],
+      "package": "main",
+      "group": "commerce",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/commerce/marketplace/[listingId]/page.tsx",
+      "page_file": "apps/admin/app/dashboard/commerce/marketplace/[listingId]/page.tsx",
+      "config_file": "",
+      "regions": [
+        "挂牌详情"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-commerce-marketplace-listingid.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/marketplace/[listingId]/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "commerce"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": true,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "dynamic-route"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings",
+      "route_key": "AdminDashboardSettings",
+      "title": "设置入口",
+      "route": "dashboard/settings",
+      "aliases": [
+        "/dashboard/settings",
+        "admin-dashboard-settings",
+        "board",
+        "dashboard-settings",
+        "dashboard/settings"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/page.tsx",
+      "config_file": "",
+      "regions": [
+        "设置入口",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/settings/pricing",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-audit-logs",
+      "route_key": "AdminDashboardSettingsAuditLogs",
+      "title": "审计记录",
+      "route": "dashboard/settings/audit-logs",
+      "aliases": [
+        "/dashboard/settings/audit-logs",
+        "admin-dashboard-settings-audit-logs",
+        "board",
+        "dashboard-settings-audit-logs",
+        "dashboard/settings/audit-logs"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/audit-logs/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/audit-logs/page.tsx",
+      "config_file": "",
+      "regions": [
+        "审计记录"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-audit-logs.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/audit-logs/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-footprint-achievements",
+      "route_key": "AdminDashboardSettingsFootprintAchievements",
+      "title": "徽章分享素材",
+      "route": "dashboard/settings/footprint-achievements",
+      "aliases": [
+        "/dashboard/settings/footprint-achievements",
+        "admin-dashboard-settings-footprint-achievements",
+        "board",
+        "dashboard-settings-footprint-achievements",
+        "dashboard/settings/footprint-achievements"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/footprint-achievements/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/footprint-achievements/page.tsx",
+      "config_file": "",
+      "regions": [
+        "徽章分享素材",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-footprint-achievements.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/footprint-achievements/page.tsx",
+          "line": 19
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-market-intelligence",
+      "route_key": "AdminDashboardSettingsMarketIntelligence",
+      "title": "市场参考运营台",
+      "route": "dashboard/settings/market-intelligence",
+      "aliases": [
+        "/dashboard/settings/market-intelligence",
+        "admin-dashboard-settings-market-intelligence",
+        "board",
+        "dashboard-settings-market-intelligence",
+        "dashboard/settings/market-intelligence"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/market-intelligence/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/market-intelligence/page.tsx",
+      "config_file": "",
+      "regions": [
+        "市场参考运营台",
+        "use client",
+        "@/components/dashboard/polish-primitives",
+        "@/components/ui-preferences"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-market-intelligence.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/market-intelligence/page.tsx",
+          "line": 14
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-notifications",
+      "route_key": "AdminDashboardSettingsNotifications",
+      "title": "微信服务号通道健康位",
+      "route": "dashboard/settings/notifications",
+      "aliases": [
+        "/dashboard/settings/notifications",
+        "admin-dashboard-settings-notifications",
+        "board",
+        "dashboard-settings-notifications",
+        "dashboard/settings/notifications"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/notifications/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/notifications/page.tsx",
+      "config_file": "",
+      "regions": [
+        "微信服务号通道健康位",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-notifications.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/notifications/page.tsx",
+          "line": 17
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-platform-branding",
+      "route_key": "AdminDashboardSettingsPlatformBranding",
+      "title": "平台品牌",
+      "route": "dashboard/settings/platform-branding",
+      "aliases": [
+        "/dashboard/settings/platform-branding",
+        "admin-dashboard-settings-platform-branding",
+        "board",
+        "dashboard-settings-platform-branding",
+        "dashboard/settings/platform-branding"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/platform-branding/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/platform-branding/page.tsx",
+      "config_file": "",
+      "regions": [
+        "平台品牌",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-platform-branding.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/platform-branding/page.tsx",
+          "line": 16
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-pricing",
+      "route_key": "AdminDashboardSettingsPricing",
+      "title": "套餐定价",
+      "route": "dashboard/settings/pricing",
+      "aliases": [
+        "/dashboard/settings/pricing",
+        "admin-dashboard-settings-pricing",
+        "board",
+        "dashboard-settings-pricing",
+        "dashboard/settings/pricing"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/pricing/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/pricing/page.tsx",
+      "config_file": "",
+      "regions": [
+        "套餐定价",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-pricing.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/pricing/page.tsx",
+          "line": 23
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-supply",
+      "route_key": "AdminDashboardSettingsSupply",
+      "title": "供给入口",
+      "route": "dashboard/settings/supply",
+      "aliases": [
+        "/dashboard/settings/supply",
+        "admin-dashboard-settings-supply",
+        "board",
+        "dashboard-settings-supply",
+        "dashboard/settings/supply"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/supply/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/supply/page.tsx",
+      "config_file": "",
+      "regions": [
+        "供给入口",
+        "next/navigation"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-supply.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/supply/page.tsx",
+          "line": 1
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "redirect",
+        "redirect_target": "/dashboard/commerce/catalog",
+        "requires_parameters": false,
+        "batch_capture_default": false,
+        "batch_capture_skip_reason": "redirect-only"
+      }
+    },
+    {
+      "node_id": "admin-dashboard-settings-tenant-branding",
+      "route_key": "AdminDashboardSettingsTenantBranding",
+      "title": "租户品牌",
+      "route": "dashboard/settings/tenant-branding",
+      "aliases": [
+        "/dashboard/settings/tenant-branding",
+        "admin-dashboard-settings-tenant-branding",
+        "board",
+        "dashboard-settings-tenant-branding",
+        "dashboard/settings/tenant-branding"
+      ],
+      "package": "main",
+      "group": "settings",
+      "status": "registered",
+      "screen_component": "apps/admin/app/dashboard/settings/tenant-branding/page.tsx",
+      "page_file": "apps/admin/app/dashboard/settings/tenant-branding/page.tsx",
+      "config_file": "",
+      "regions": [
+        "租户品牌",
+        "use client",
+        "react",
+        "@eggturtle/shared"
+      ],
+      "screenshot_refs": [
+        {
+          "label": "planned",
+          "path": "screenshots/admin-dashboard-settings-tenant-branding.png",
+          "exists": false
+        }
+      ],
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/tenant-branding/page.tsx",
+          "line": 17
+        }
+      ],
+      "board_meta": {
+        "note": "",
+        "tags": [
+          "web-admin",
+          "settings"
+        ],
+        "route_mode": "screen",
+        "redirect_target": "",
+        "requires_parameters": false,
+        "batch_capture_default": true,
+        "batch_capture_skip_reason": ""
+      }
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "admin-root-admin-dashboard-apps-admin-app-page-tsx-redirect",
+      "from": "admin-root",
+      "to": "admin-dashboard",
+      "trigger": "apps/admin/app/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-tenant-management-apps-admin-app-dashboard-page-tsx-href",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "apps/admin/app/dashboard/page.tsx:href",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 135
+        }
+      ],
+      "label": "链接入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-settings-audit-logs-apps-admin-app-dashboard-page-tsx-href",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-settings-audit-logs",
+      "trigger": "apps/admin/app/dashboard/page.tsx:href",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 167
+        }
+      ],
+      "label": "链接入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-tenants-tenantid-apps-admin-app-dashboard-page-tsx-href-template",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-tenants-tenantid",
+      "trigger": "apps/admin/app/dashboard/page.tsx:href.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/page.tsx",
+          "line": 251
+        }
+      ],
+      "label": "模板链接"
+    },
+    {
+      "edge_id": "admin-dashboard-audit-logs-admin-dashboard-settings-audit-logs-apps-admin-app-dashboard-audit-logs-page-tsx-redirect",
+      "from": "admin-dashboard-audit-logs",
+      "to": "admin-dashboard-settings-audit-logs",
+      "trigger": "apps/admin/app/dashboard/audit-logs/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/audit-logs/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-billing-admin-dashboard-analytics-revenue-apps-admin-app-dashboard-billing-page-tsx-redirect",
+      "from": "admin-dashboard-billing",
+      "to": "admin-dashboard-analytics-revenue",
+      "trigger": "apps/admin/app/dashboard/billing/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/billing/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-guiquan-management-admin-dashboard-commerce-community-apps-admin-app-dashboard-guiquan-management-page-tsx-redirect",
+      "from": "admin-dashboard-guiquan-management",
+      "to": "admin-dashboard-commerce-community",
+      "trigger": "apps/admin/app/dashboard/guiquan-management/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/guiquan-management/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-memberships-admin-dashboard-tenant-management-apps-admin-app-dashboard-memberships-page-tsx-redirect",
+      "from": "admin-dashboard-memberships",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "apps/admin/app/dashboard/memberships/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/memberships/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-tenant-management-admin-dashboard-tenants-tenantid-apps-admin-app-dashboard-tenant-management-page-tsx-router-push-template",
+      "from": "admin-dashboard-tenant-management",
+      "to": "admin-dashboard-tenants-tenantid",
+      "trigger": "apps/admin/app/dashboard/tenant-management/page.tsx:router.push.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenant-management/page.tsx",
+          "line": 241
+        }
+      ],
+      "label": "模板跳转"
+    },
+    {
+      "edge_id": "admin-dashboard-tenant-management-admin-dashboard-tenants-tenantid-apps-admin-app-dashboard-tenant-management-page-tsx-href-template",
+      "from": "admin-dashboard-tenant-management",
+      "to": "admin-dashboard-tenants-tenantid",
+      "trigger": "apps/admin/app/dashboard/tenant-management/page.tsx:href.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenant-management/page.tsx",
+          "line": 380
+        }
+      ],
+      "label": "模板链接"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-admin-dashboard-tenant-management-apps-admin-app-dashboard-tenants-page-tsx-redirect",
+      "from": "admin-dashboard-tenants",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "apps/admin/app/dashboard/tenants/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-admin-dashboard-tenant-management-apps-admin-app-dashboard-tenants-tenantid-page-tsx-router-push",
+      "from": "admin-dashboard-tenants-tenantid",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx:router.push",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+          "line": 506
+        }
+      ],
+      "label": "路由跳转"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-admin-dashboard-tenant-management-apps-admin-app-dashboard-tenants-tenantid-page-tsx-href",
+      "from": "admin-dashboard-tenants-tenantid",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx:href",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+          "line": 519
+        }
+      ],
+      "label": "链接入口"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-admin-dashboard-settings-audit-logs-apps-admin-app-dashboard-tenants-tenantid-page-tsx-href-template",
+      "from": "admin-dashboard-tenants-tenantid",
+      "to": "admin-dashboard-settings-audit-logs",
+      "trigger": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx:href.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+          "line": 883
+        }
+      ],
+      "label": "模板链接"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-admin-dashboard-tenants-tenantid-livestock-apps-admin-app-dashboard-tenants-tenantid-page-tsx-href-template",
+      "from": "admin-dashboard-tenants-tenantid",
+      "to": "admin-dashboard-tenants-tenantid-livestock",
+      "trigger": "apps/admin/app/dashboard/tenants/[tenantId]/page.tsx:href.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/page.tsx",
+          "line": 886
+        }
+      ],
+      "label": "模板链接"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-livestock-admin-dashboard-tenants-tenantid-apps-admin-app-dashboard-tenants-tenantid-livestock-page-tsx-href-template",
+      "from": "admin-dashboard-tenants-tenantid-livestock",
+      "to": "admin-dashboard-tenants-tenantid",
+      "trigger": "apps/admin/app/dashboard/tenants/[tenantId]/livestock/page.tsx:href.template",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/tenants/[tenantId]/livestock/page.tsx",
+          "line": 143
+        }
+      ],
+      "label": "模板链接"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-catalog-apps-admin-app-dashboard-commerce-page-tsx-redirect",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-catalog",
+      "trigger": "apps/admin/app/dashboard/commerce/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/commerce/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-pricing-apps-admin-app-dashboard-settings-page-tsx-redirect",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-pricing",
+      "trigger": "apps/admin/app/dashboard/settings/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-supply-admin-dashboard-commerce-catalog-apps-admin-app-dashboard-settings-supply-page-tsx-redirect",
+      "from": "admin-dashboard-settings-supply",
+      "to": "admin-dashboard-commerce-catalog",
+      "trigger": "apps/admin/app/dashboard/settings/supply/page.tsx:redirect",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/app/dashboard/settings/supply/page.tsx",
+          "line": 4
+        }
+      ],
+      "label": "代码重定向"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-tenant-management-sidebar-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "sidebar:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/nav-config.ts",
+          "line": 44
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-commerce-catalog-sidebar-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-commerce-catalog",
+      "trigger": "sidebar:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/nav-config.ts",
+          "line": 60
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-commerce-community-sidebar-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-commerce-community",
+      "trigger": "sidebar:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/nav-config.ts",
+          "line": 70
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-settings-platform-branding-sidebar-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-settings-platform-branding",
+      "trigger": "sidebar:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/nav-config.ts",
+          "line": 86
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-tenant-management-top-tabs-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-tenant-management",
+      "trigger": "top-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-top-tabs.tsx",
+          "line": 11
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-commerce-top-tabs-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-commerce",
+      "trigger": "top-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-top-tabs.tsx",
+          "line": 12
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-dashboard-settings-platform-branding-top-tabs-config",
+      "from": "admin-dashboard",
+      "to": "admin-dashboard-settings-platform-branding",
+      "trigger": "top-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-top-tabs.tsx",
+          "line": 13
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-catalog-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-catalog",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 10
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-community-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-community",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 14
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-marketplace-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-marketplace",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 18
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-orders-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-orders",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 22
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-support-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-support",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 26
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-dashboard-commerce-fulfillment-commerce-tabs-config",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-dashboard-commerce-fulfillment",
+      "trigger": "commerce-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-commerce-tabs.tsx",
+          "line": 30
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-login-settings-tabs-router-replace",
+      "from": "admin-dashboard-settings",
+      "to": "admin-login",
+      "trigger": "settings-tabs:router.replace",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 67
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-pricing-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-pricing",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 12
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-platform-branding-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-platform-branding",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 16
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-tenant-branding-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-tenant-branding",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 20
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-market-intelligence-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-market-intelligence",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 24
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-footprint-achievements-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-footprint-achievements",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 28
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-audit-logs-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-audit-logs",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 32
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-dashboard-settings-notifications-settings-tabs-config",
+      "from": "admin-dashboard-settings",
+      "to": "admin-dashboard-settings-notifications",
+      "trigger": "settings-tabs:config",
+      "kind": "navigateTo",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/components/dashboard/dashboard-settings-tabs.tsx",
+          "line": 36
+        }
+      ],
+      "label": "导航入口"
+    },
+    {
+      "edge_id": "admin-dashboard-admin-login-middleware-missing-session",
+      "from": "admin-dashboard",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-analytics-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-analytics",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-audit-logs-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-audit-logs",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-billing-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-billing",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-guiquan-management-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-guiquan-management",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-usage-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-usage",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-analytics-activity-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-analytics-activity",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-analytics-revenue-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-analytics-revenue",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-memberships-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-memberships",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-tenant-management-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-tenant-management",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-tenants",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-tenants-tenantid",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-tenants-tenantid-livestock-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-tenants-tenantid-livestock",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-catalog-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-catalog",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-community-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-community",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-fulfillment-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-fulfillment",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-marketplace-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-marketplace",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-orders-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-orders",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-support-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-support",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-catalog-productid-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-catalog-productid",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-catalog-new-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-catalog-new",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-community-postid-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-community-postid",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-community-new-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-community-new",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-commerce-marketplace-listingid-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-commerce-marketplace-listingid",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-audit-logs-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-audit-logs",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-footprint-achievements-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-footprint-achievements",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-market-intelligence-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-market-intelligence",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-notifications-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-notifications",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-platform-branding-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-platform-branding",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-pricing-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-pricing",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-supply-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-supply",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    },
+    {
+      "edge_id": "admin-dashboard-settings-tenant-branding-admin-login-middleware-missing-session",
+      "from": "admin-dashboard-settings-tenant-branding",
+      "to": "admin-login",
+      "trigger": "middleware:missing-session",
+      "kind": "redirect",
+      "source_refs": [
+        {
+          "path": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/admin/middleware.ts",
+          "line": 17
+        }
+      ],
+      "label": "未登录跳转登录页"
+    }
+  ],
+  "conflicts": []
+}

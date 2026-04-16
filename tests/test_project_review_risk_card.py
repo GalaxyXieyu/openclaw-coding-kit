@@ -90,38 +90,37 @@ class TaskReviewRiskCardTest(unittest.TestCase):
         self.assertEqual(1, card["stats"]["completed_count"])
         self.assertEqual("官网做了首页，还差表单，下一步先接提交。", card["projects"][0]["summary"])
 
-    def test_build_daily_review_card_is_code_review_focused_and_has_no_actions(self) -> None:
+    def test_build_daily_review_card_uses_compact_business_payload(self) -> None:
         bundle = build_review_bundle(
             {
                 "trigger_kind": "daily",
                 "project_name": "选育溯源小程序",
                 "changed_files": ["src/pages/home/index.tsx", "docs/review.md"],
                 "commits": [{"hash": "abc123", "subject": "fix: update home"}],
-                "file_stats": [{"path": "src/pages/home/index.tsx", "line_count": 920}],
-                "reference_errors": [],
                 "doc_updates": [
                     {
                         "path": "docs/review.md",
-                        "summary": "补充 nightly review 的自动修复规则和文档回写口径",
+                        "summary": "补充首页优化功能说明",
                     }
                 ],
                 "llm_reviews": {
-                    "code-review": {
-                        "lane": "code-review",
-                        "findings": [
+                    "daily-review": {
+                        "lane": "daily-review",
+                        "summary": "今天把首页体验优化和文档同步一起收口了。",
+                        "done_items": ["优化了首页浏览体验", "补充了首页功能说明"],
+                        "docs_sync": {
+                            "status": "synced",
+                            "summary": "业务文档已补充首页优化功能。",
+                            "items": ["业务文档已补充首页优化功能"],
+                        },
+                        "risk_items": [
                             {
                                 "severity": "P1",
-                                "title": "退款后状态可能不对",
-                                "summary": "退款处理完了，前端可能还显示退款中。",
-                                "file": "src/orders/refund.ts",
-                                "suggestion": "补主订单状态回写",
+                                "title": "真机体验还没走完",
+                                "summary": "首页交互还需要再做一次真机确认。",
                             }
                         ],
-                        "next_actions": ["先补主订单状态回写"],
-                    },
-                    "docs-review": {
-                        "lane": "docs-review",
-                        "docs_flags": ["AGENTS.md 需要更新"],
+                        "next_action": "先补一轮真机验收。",
                     },
                 },
             }
@@ -130,18 +129,13 @@ class TaskReviewRiskCardTest(unittest.TestCase):
         self.assertEqual("daily_review_card_v1", card["card_kind"])
         self.assertEqual("每日项目回顾", card["title"])
         self.assertEqual([], card["actions"])
-        self.assertEqual({"P0": 0, "P1": 1, "P2": 0}, card["severity_counts"])
-        self.assertEqual(["AGENTS.md 需要更新"], card["docs_flags"])
-        self.assertEqual(
-            [{"path": "docs/review.md", "summary": "补充 nightly review 的自动修复规则和文档回写口径"}],
-            card["doc_updates"],
-        )
-        self.assertEqual(["更新 home"], card["today_updates"])
-        self.assertEqual(["src/pages/home/index.tsx", "docs/review.md"], card["file_highlights"][:2])
-        checks = {item["label"]: item for item in card["audit_checks"]}
-        self.assertEqual("warn", checks["单文件 > 1000 行"]["status"])
-        self.assertEqual("ok", checks["导入/引用异常"]["status"])
-        self.assertEqual("warn", checks["功能文档同步"]["status"])
+        self.assertEqual("今天把首页体验优化和文档同步一起收口了。", card["review_summary"])
+        self.assertEqual(["优化了首页浏览体验", "补充了首页功能说明"], card["done_items"])
+        self.assertEqual("synced", card["docs_sync"]["status"])
+        self.assertEqual("业务文档已补充首页优化功能。", card["docs_sync"]["summary"])
+        self.assertEqual("真机体验还没走完", card["risk_items"][0]["title"])
+        self.assertEqual("先补一轮真机验收。", card["next_action"])
+        self.assertTrue(card["changed_scope"]["requires_uiux"])
 
 
 if __name__ == "__main__":

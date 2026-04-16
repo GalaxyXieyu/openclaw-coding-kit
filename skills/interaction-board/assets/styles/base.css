@@ -1,0 +1,144 @@
+    :root {
+      --paper: #f7f1e8;
+      --paper-deep: #ece1d0;
+      --ink: #1b1611;
+      --muted: #6d655b;
+      --line: rgba(34, 26, 18, 0.08);
+      --line-strong: rgba(34, 26, 18, 0.14);
+      --card: rgba(255, 252, 247, 0.76);
+      --card-soft: rgba(255, 251, 246, 0.52);
+      --panel: rgba(251, 246, 238, 0.92);
+      --tooltip-bg: rgba(24, 19, 14, 0.92);
+      --blue: #2c607a;
+      --amber: #b87431;
+      --rose: #8d5850;
+      --green: #5e7c62;
+      --shadow-soft: 0 18px 56px rgba(27, 19, 11, 0.10);
+      --shadow-card: 0 18px 44px rgba(20, 15, 10, 0.12);
+      --shadow-card-active: 0 24px 64px rgba(16, 12, 8, 0.18);
+      --canvas-width: 1420px;
+      --canvas-height: 1120px;
+      --node-width: 182px;
+      --node-height: 334px;
+      --lane-min-gap: 228px;
+      --lane-width: 196px;
+      --lane-padding-top: 94px;
+      --node-gap-y: 344px;
+      --version-media-max-height: 420px;
+    }
+
+    body[data-board-kind^="web"] {
+      --node-width: 296px;
+      --node-height: 214px;
+      --lane-min-gap: 338px;
+      --lane-width: 304px;
+      --node-gap-y: 252px;
+      --version-media-max-height: 360px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(44, 96, 122, 0.10), transparent 24%),
+        radial-gradient(circle at 84% 14%, rgba(184, 116, 49, 0.10), transparent 24%),
+        radial-gradient(circle at 78% 82%, rgba(94, 124, 98, 0.08), transparent 24%),
+        linear-gradient(180deg, #fbf7f1 0%, #f4ecdf 48%, #ebdfcd 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.32;
+      background-image:
+        linear-gradient(rgba(94, 79, 59, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 79, 59, 0.032) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,0.9) 0 1px, transparent 1px),
+        radial-gradient(circle at 72% 42%, rgba(0,0,0,0.5) 0 0.8px, transparent 0.8px),
+        radial-gradient(circle at 44% 80%, rgba(255,255,255,0.8) 0 1px, transparent 1px);
+      background-size: 20px 20px, 28px 28px, 24px 24px;
+      mix-blend-mode: soft-light;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .board-app,
+    .board-shell {
+      min-height: 100vh;
+    }
+
+    .board-frame {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
+      padding: 0 28px 120px;
+      cursor: grab;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(34, 26, 18, 0.18) transparent;
+    }
+
+    .board-frame:active { cursor: grabbing; }
+
+    .board-frame::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .board-frame::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(34, 26, 18, 0.18);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .board-frame::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .board-viewport {
+      position: relative;
+      width: var(--canvas-width);
+      height: var(--canvas-height);
+      margin: 0 auto;
+    }
+
+    .board-stage {
+      position: relative;
+      width: var(--canvas-width);
+      height: var(--canvas-height);
+      isolation: isolate;
+      transform-origin: top left;
+    }
+
+    .board-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(255,255,255,0.45), transparent 22%),
+        radial-gradient(circle at 84% 18%, rgba(44, 96, 122, 0.08), transparent 20%),
+        radial-gradient(circle at 78% 78%, rgba(184, 116, 49, 0.08), transparent 18%);
+    }

@@ -268,6 +268,48 @@ class TaskReviewReviewOrchestratorTest(unittest.TestCase):
             self.assertEqual("codex", stored["model"])
             self.assertEqual([], stored["pending_llm_lanes"])
 
+    def test_prepare_and_ingest_daily_review_uses_single_daily_lane(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            state_path = Path(tmp_dir) / "project-review-state.json"
+            prepared = prepare_review(
+                {
+                    "trigger_kind": "daily",
+                    "project_name": "主项目群",
+                    "channel_id": "oc_demo",
+                    "changed_files": ["src/pages/home/index.tsx", "docs/review.md"],
+                    "commits": [{"hash": "abc123", "subject": "feat: improve home review flow"}],
+                },
+                state_path=state_path,
+                now_iso="2026-04-15T09:00:00+08:00",
+                model="codex",
+            )
+            self.assertEqual(["daily-review"], prepared["pending_llm_lanes"])
+
+            ingested = ingest_review_results(
+                prepared["review_id"],
+                {
+                    "daily-review": {
+                        "lane": "daily-review",
+                        "summary": "今天把首页回顾链路收口了。",
+                        "done_items": ["优化了首页回顾流程"],
+                        "docs_sync": {
+                            "status": "synced",
+                            "summary": "业务文档已补充首页回顾功能。",
+                            "items": ["业务文档已补充首页回顾功能"],
+                        },
+                        "risk_items": [],
+                        "next_action": "先做一轮真机验收。",
+                    }
+                },
+                state_path=state_path,
+                now_iso="2026-04-15T09:10:00+08:00",
+                model="codex",
+            )
+
+            self.assertTrue(ingested["llm_ready"])
+            self.assertEqual([], ingested["pending_llm_lanes"])
+            self.assertEqual("业务文档已补充首页回顾功能。", ingested["card"]["docs_sync"]["summary"])
+
 
 if __name__ == "__main__":
     unittest.main()

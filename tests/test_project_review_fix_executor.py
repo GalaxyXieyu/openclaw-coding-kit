@@ -135,6 +135,65 @@ class ProjectReviewFixExecutorTest(unittest.TestCase):
             stored = load_state(state_path)["reviews"][0]
             self.assertEqual("coder_completed", stored["fix_execution"]["status"])
 
+    def test_execute_fix_flow_persists_coder_failure_without_aborting(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            state_path = repo_root / "project-review-state.json"
+            prepared = prepare_review(
+                {
+                    "trigger_kind": "code-health",
+                    "project_name": "主项目群",
+                    "channel_id": "oc_demo",
+                    "repo_root": str(repo_root),
+                    "changed_files": ["src/api/home.ts"],
+                    "commits": [{"hash": "abc123", "subject": "fix api"}],
+                    "findings": [
+                        {
+                            "severity": "P1",
+                            "title": "接口拼装重复",
+                            "summary": "home 和 profile 有重复逻辑",
+                            "file": "src/api/home.ts",
+                        }
+                    ],
+                },
+                state_path=state_path,
+                now_iso="2026-04-15T12:00:00+08:00",
+            )
+
+            fake_pm = SimpleNamespace(
+                ACTIVE_CONFIG={},
+                load_config=lambda path: {"repo_root": str(repo_root), "task": {"tasklist_name": "demo"}, "coder": {"agent_id": "codex"}},
+                ensure_tasklist=lambda: {"guid": "tl_demo", "owner": {"id": "ou_demo"}},
+                find_existing_task_by_summary=lambda summary, include_completed=True: None,
+                next_task_id=lambda: "T11",
+                build_description=lambda task_id, summary, request, repo_root_value, kind: "FIX DESC",
+                task_kind=lambda: "task",
+                create_task=lambda **kwargs: {"guid": "task_guid_demo", "summary": kwargs["summary"], "description": kwargs["description"]},
+                refresh_context_cache=lambda **kwargs: {"task_guid": kwargs.get("task_guid")},
+                parse_task_summary=lambda summary: {"task_id": "T11"},
+                create_task_comment=lambda guid, content: {"guid": guid, "content": content},
+                build_coder_context=lambda task_guid="": ({"current_task": {"guid": task_guid, "task_id": "T11"}}, repo_root / ".pm" / "coder-context.json"),
+                build_run_message=lambda bundle: "run fix task",
+                run_codex_cli=lambda **kwargs: (_ for _ in ()).throw(SystemExit("codex exec timed out after 1800s")),
+                persist_run_side_effects=lambda bundle, result: {"comment_result": {"ok": True}},
+            )
+
+            with patch("fix_executor._load_pm_module", return_value=fake_pm):
+                result = execute_fix_flow(
+                    prepared["review_id"],
+                    state_path=state_path,
+                    now_iso="2026-04-15T12:10:00+08:00",
+                    auto_run=True,
+                    model="codex",
+                )
+
+            self.assertEqual("coder_failed", result["status"])
+            self.assertEqual("T11", result["task_id"])
+            self.assertIn("timed out", result["coder_error"])
+            stored = load_state(state_path)["reviews"][0]
+            self.assertEqual("coder_failed", stored["fix_execution"]["status"])
+            self.assertIn("timed out", stored["fix_execution"]["coder_error"])
+
 
 if __name__ == "__main__":
     unittest.main()
