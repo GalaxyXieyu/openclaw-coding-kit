@@ -1,0 +1,66 @@
+{
+  "ok": true,
+  "manifestPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/board.manifest.json",
+  "totalCount": 5,
+  "resolvedCount": 0,
+  "previewCount": 4,
+  "alreadyResolvedCount": 0,
+  "unresolvedCount": 1,
+  "results": [
+    {
+      "nodeId": "admin-dashboard-tenants-tenantid",
+      "route": "dashboard/tenants/[tenantId]",
+      "scenarioId": "prod-admin-admin-dashboard-tenants-tenantid",
+      "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/scenarios/prod-admin-admin-dashboard-tenants-tenantid.json",
+      "status": "preview",
+      "params": {
+        "tenantId": "cmnyn7fjv005dro08d1gbudi8"
+      },
+      "openTarget": "/dashboard/tenants/cmnyn7fjv005dro08d1gbudi8",
+      "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri.session.json"
+    },
+    {
+      "nodeId": "admin-dashboard-tenants-tenantid-livestock",
+      "route": "dashboard/tenants/[tenantId]/livestock",
+      "scenarioId": "prod-admin-admin-dashboard-tenants-tenantid-livestock",
+      "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/scenarios/prod-admin-admin-dashboard-tenants-tenantid-livestock.json",
+      "status": "preview",
+      "params": {
+        "tenantId": "cmnyn7fjv005dro08d1gbudi8"
+      },
+      "openTarget": "/dashboard/tenants/cmnyn7fjv005dro08d1gbudi8/livestock",
+      "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri.session.json"
+    },
+    {
+      "nodeId": "admin-dashboard-commerce-catalog-productid",
+      "route": "dashboard/commerce/catalog/[productId]",
+      "scenarioId": "prod-admin-admin-dashboard-commerce-catalog-productid",
+      "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/scenarios/prod-admin-admin-dashboard-commerce-catalog-productid.json",
+      "status": "preview",
+      "params": {
+        "productId": "cmnybc6gh0001rofi0koa7q15"
+      },
+      "openTarget": "/dashboard/commerce/catalog/cmnybc6gh0001rofi0koa7q15",
+      "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri.session.json"
+    },
+    {
+      "nodeId": "admin-dashboard-commerce-community-postid",
+      "route": "dashboard/commerce/community/[postId]",
+      "scenarioId": "prod-admin-admin-dashboard-commerce-community-postid",
+      "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/scenarios/prod-admin-admin-dashboard-commerce-community-postid.json",
+      "status": "preview",
+      "params": {
+        "postId": "preview-post-20260413-24a"
+      },
+      "openTarget": "/dashboard/commerce/community/preview-post-20260413-24a",
+      "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri.session.json"
+    },
+    {
+      "nodeId": "admin-dashboard-commerce-marketplace-listingid",
+      "route": "dashboard/commerce/marketplace/[listingId]",
+      "scenarioId": "prod-admin-admin-dashboard-commerce-marketplace-listingid",
+      "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-admin-route-first/scenarios/prod-admin-admin-dashboard-commerce-marketplace-listingid.json",
+      "status": "sample-not-found"
+    }
+  ]
+}

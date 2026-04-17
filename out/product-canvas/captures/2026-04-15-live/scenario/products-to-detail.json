@@ -1,0 +1,66 @@
+{
+  "ok": false,
+  "autoMiniprogramRoot": "/Volumes/DATABASE/code/auto-miniprogram",
+  "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+  "targetOptions": {
+    "inputPath": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "targetName": "main-live-37768",
+    "idePort": 37768,
+    "automatorPort": 37381,
+    "label": null,
+    "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json"
+  },
+  "resolvedTarget": {
+    "ok": true,
+    "inputPath": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "cwd": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit",
+    "appRoot": "/Volumes/DATABASE/code/Eggturtle-breeding-library/apps/miniapp",
+    "worktreeRoot": "/Volumes/DATABASE/code/Eggturtle-breeding-library",
+    "projectRoot": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+  },
+  "brokerProbe": null,
+  "runnerResult": {
+    "ok": false,
+    "scenarioId": "products-to-detail",
+    "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-miniapp/scenarios/products-to-detail.json",
+    "engine": "miniapp-devtools",
+    "entryNodeId": "products",
+    "targetNodeId": "productdetail",
+    "target": {
+      "project_root": "/Volumes/DATABASE/code/Eggturtle-breeding-library"
+    },
+    "stepResults": [
+      {
+        "action": "relaunch",
+        "target": "/pages/products/index",
+        "ok": true
+      }
+    ],
+    "assertionResults": [],
+    "screenshot": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/captures/2026-04-15-live/scenario/products-to-detail.png",
+    "screenshotMode": "connect",
+    "screenshotAttempts": [
+      {
+        "mode": "connect",
+        "ok": true,
+        "currentPage": {
+          "path": "pages/products/index",
+          "query": {}
+        },
+        "routeRestoreError": null
+      }
+    ],
+    "screenshotError": null,
+    "errors": [
+      "wait condition not satisfied within 6000ms: {\"selector\":\".workspace-product-card--interactive\",\"text\":\"\",\"path\":\"\"}"
+    ],
+    "currentPage": null,
+    "pageStack": [],
+    "systemInfo": {},
+    "textSnippets": [],
+    "selectorSummaries": [],
+    "storage": {},
+    "consoleLogs": [],
+    "exceptionLogs": []
+  }
+}

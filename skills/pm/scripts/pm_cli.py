@@ -202,6 +202,24 @@ def _add_flow_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser],
     run.set_defaults(func=handlers["run"])
 
 
+def _add_board_commands(sub: argparse._SubParsersAction[argparse.ArgumentParser], handlers: dict[str, Any]) -> None:
+    board = sub.add_parser("board")
+    board.add_argument("--refresh", action="store_true", default=False)
+    board.add_argument("--include-completed", action="store_true", default=False)
+    board.add_argument("--all-visible-tasklists", action="store_true", default=False)
+    board.add_argument("--tasklist-guid", default="")
+    board.add_argument("--limit", type=int, default=20)
+    board.add_argument("--comment-limit", type=int, default=5)
+    board.add_argument("--recent-events-limit", type=int, default=10)
+    board.set_defaults(func=handlers["board"])
+
+    board_task = sub.add_parser("board-task")
+    _add_task_ref_arguments(board_task, include_completed=True)
+    board_task.add_argument("--refresh", action="store_true", default=False)
+    board_task.add_argument("--comment-limit", type=int, default=20)
+    board_task.set_defaults(func=handlers["board_task"])
+
+
 def _add_task_ref_arguments(parser: argparse.ArgumentParser, *, include_completed: bool = False) -> None:
     parser.add_argument("--task-id", default="")
     parser.add_argument("--task-guid", default="")
@@ -289,6 +307,7 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     _add_auth_commands(sub, handlers)
     _add_init_commands(sub, handlers)
     _add_gsd_commands(sub, handlers)
+    _add_board_commands(sub, handlers)
     _add_flow_commands(sub, handlers)
     _add_task_commands(sub, handlers)
     return parser

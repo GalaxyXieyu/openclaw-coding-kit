@@ -140,6 +140,17 @@ python3 skills/pm/scripts/pm.py next --refresh
 python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 ```
 
+For board-style read models:
+
+```bash
+python3 skills/pm/scripts/pm.py board --include-completed
+python3 skills/pm/scripts/pm.py board-task --task-id T123 --include-completed
+```
+
+`board` returns a project/task/review aggregate for frontend or adapter debugging.
+`board-task` returns one task with parsed progress timeline and related review summaries.
+If task comments contain a `[[pm_event]] ... [[/pm_event]]` block, PM will parse it as structured progress metadata while preserving the human-readable comment body.
+
 ### 2. Create or Resolve a Task
 
 When the user gives a new tracked request:

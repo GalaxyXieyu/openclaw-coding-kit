@@ -20,6 +20,13 @@ from pm_runtime import run_codex_cli
 from pm_runtime import run_openclaw_agent
 from pm_worker import effective_task as resolve_effective_task
 
+from pm_api_board import build_board_task
+from pm_api_board import build_project_board
+from pm_api_board import build_review_summary
+from pm_api_board import build_task_board_detail
+from pm_api_board import comment_to_board_event
+from pm_api_board import load_latest_review_summary
+from pm_api_board import parse_pm_event_block
 from pm_api_context import build_coder_context
 from pm_api_context import build_context_payload
 from pm_api_context import build_planning_bundle
@@ -147,10 +154,17 @@ def _config_api_exports() -> dict[str, object]:
 
 def _context_api_exports() -> dict[str, object]:
     return {
+        "build_board_task": build_board_task,
         "build_context_payload": build_context_payload,
+        "build_project_board": build_project_board,
+        "build_review_summary": build_review_summary,
+        "build_task_board_detail": build_task_board_detail,
         "build_coder_context": build_coder_context,
         "build_planning_bundle": build_planning_bundle,
         "build_run_message": build_run_message,
+        "comment_to_board_event": comment_to_board_event,
+        "load_latest_review_summary": load_latest_review_summary,
+        "parse_pm_event_block": parse_pm_event_block,
         "persist_dispatch_side_effects": persist_dispatch_side_effects,
         "persist_run_side_effects": persist_run_side_effects,
         "refresh_context_cache": refresh_context_cache,

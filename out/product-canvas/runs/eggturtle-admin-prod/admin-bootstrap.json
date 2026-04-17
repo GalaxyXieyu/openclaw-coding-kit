@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "authSurface": "admin",
+  "authProfile": "eggturtle-prod-admin-siri",
+  "baseUrl": "https://eggturtles-admin.sealoshzh.site",
+  "loginUrl": "https://eggturtles-admin.sealoshzh.site/api/auth/password-login",
+  "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri.session.json",
+  "cookiesWritten": [
+    "eggturtle.admin.access_token"
+  ],
+  "responseStatus": 200,
+  "userSummary": {
+    "userId": "cmm7k8qep00005iojw491vkd4",
+    "email": "646928196@qq.com",
+    "isSuperAdmin": true
+  }
+}

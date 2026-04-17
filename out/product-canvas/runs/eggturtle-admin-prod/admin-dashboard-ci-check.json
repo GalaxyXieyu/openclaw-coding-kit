@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "scenarioId": "prod-admin-dashboard",
+  "scenarioPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/scenarios/prod-admin-dashboard.json",
+  "url": "https://eggturtles-admin.sealoshzh.site/dashboard",
+  "outputPath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png",
+  "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri-ci-check.session.json",
+  "waitSelector": "text=平台概况",
+  "waitForTimeoutMs": 1200,
+  "timeoutMs": 30000,
+  "browserChannel": "chrome",
+  "viewportSize": "1440,1000",
+  "authBootstrap": {
+    "ok": true,
+    "authSurface": "admin",
+    "authProfile": "eggturtle-prod-admin-siri-ci-check",
+    "baseUrl": "https://eggturtles-admin.sealoshzh.site",
+    "loginUrl": "https://eggturtles-admin.sealoshzh.site/api/auth/password-login",
+    "storageStatePath": "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri-ci-check.session.json",
+    "cookiesWritten": [
+      "eggturtle.admin.access_token"
+    ],
+    "responseStatus": 200,
+    "userSummary": {
+      "userId": "cmm7k8qep00005iojw491vkd4",
+      "email": "646928196@qq.com",
+      "isSuperAdmin": true
+    }
+  },
+  "command": [
+    "npx",
+    "playwright",
+    "screenshot",
+    "--channel",
+    "chrome",
+    "--load-storage",
+    "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri-ci-check.session.json",
+    "--save-storage",
+    "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/out/product-canvas/auth/eggturtle-prod-admin-siri-ci-check.session.json",
+    "--viewport-size",
+    "1440,1000",
+    "--timeout",
+    "30000",
+    "--full-page",
+    "--wait-for-selector",
+    "text=平台概况",
+    "--wait-for-timeout",
+    "1200",
+    "https://eggturtles-admin.sealoshzh.site/dashboard",
+    "/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png"
+  ],
+  "stdout": "Navigating to https://eggturtles-admin.sealoshzh.site/dashboard\nWaiting for selector text=平台概况...\nWaiting for timeout 1200...\nCapturing screenshot into /Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/docs/interaction-board/eggturtle-web-prod/screenshots/prod-admin-dashboard-auth.png",
+  "stderr": ""
+}

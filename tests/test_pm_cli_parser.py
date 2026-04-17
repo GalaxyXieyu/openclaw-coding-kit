@@ -23,6 +23,8 @@ def _build_handlers() -> dict[str, object]:
         "materialize_gsd_tasks",
         "route_gsd",
         "plan_phase",
+        "board",
+        "board_task",
         "context",
         "next",
         "plan",
@@ -79,6 +81,25 @@ class PmCliParserTest(unittest.TestCase):
         self.assertEqual(args.task_id, "T1")
         self.assertEqual(args.file, ["evidence.txt"])
         self.assertIs(args.func, handlers["upload_attachments"])
+
+    def test_board_task_parser_accepts_task_ref_and_limits(self) -> None:
+        handlers = _build_handlers()
+        parser = build_parser(handlers=handlers)
+        args = parser.parse_args(
+            [
+                "board-task",
+                "--task-id",
+                "T9",
+                "--include-completed",
+                "--comment-limit",
+                "15",
+            ]
+        )
+        self.assertEqual(args.command, "board-task")
+        self.assertEqual(args.task_id, "T9")
+        self.assertTrue(args.include_completed)
+        self.assertEqual(args.comment_limit, 15)
+        self.assertIs(args.func, handlers["board_task"])
 
 
 if __name__ == "__main__":
