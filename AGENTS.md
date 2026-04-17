@@ -10,6 +10,7 @@
 - `current_task` 描述是本次执行索引卡；如果 handoff 没有 GSD 字段，回退到 PM task/doc 上下文。
 - `brownfield` 仓库在做大范围改动前先做 codebase mapping 或最小必要的上下文收敛，再进入编辑。
 - 编码完成后通过 PM 写回进度或完成结果，不要只停留在本地修改。
+- 每日/夜间复盘若要发到 Feishu，默认走 `project-review` 卡片链路；不要用 cron `announce` 直接发 agent 文本。
 
 ## 工作方式
 
