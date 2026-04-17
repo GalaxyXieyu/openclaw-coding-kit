@@ -64,7 +64,12 @@
             "agent:*:main"
           ],
           "childSessionPrefixes": [
-            "agent:codex:acp:"
+            "agent:codex:acp:",
+            "agent:claude:acp:",
+            "agent:claudecode:acp:",
+            "agent:gemini:acp:",
+            "agent:opencode:acp:",
+            "agent:pi:acp:"
           ],
           "pollIntervalMs": 3000,
           "firstProgressDelayMs": 5000,
@@ -86,7 +91,7 @@
 
 当前推荐契约是：
 
-- 默认子会话作用域：`agent:codex:acp:`
+- 默认子会话作用域：`agent:codex:acp:`、`agent:claude:acp:`、`agent:claudecode:acp:`、`agent:gemini:acp:`、`agent:opencode:acp:`、`agent:pi:acp:`
 - 默认父会话作用域：`agent:*:feishu:group:` 和 `agent:*:main`
 - 默认行为模型：plugin 只回推内部 `[[acp_bridge_update]]`，真正对用户可见的话术仍由父会话生成
 
@@ -96,7 +101,7 @@
 
 - `parentSessionPrefixes`：哪些父会话允许接收 bridge 内部更新
 - `childSessionPrefixes`：哪些 ACP 子会话会被观察
-- 目前是 Codex-first，不要把“可加前缀”误解成“所有 provider 已默认兼容”
+- 默认已覆盖常见 ACP provider，但“被观察”不等于“所有 provider 都已做过同等级生产验证”
 
 ### 节流
 
@@ -116,7 +121,7 @@
 
 - 只做本地 main session 验证：通常不用改前缀
 - 需要接真实 Feishu 群：保留默认 `parentSessionPrefixes`，再补 `bindings/channels`
-- 需要额外 provider：再显式扩展 `childSessionPrefixes`
+- 需要自定义 provider：再显式扩展 `childSessionPrefixes`
 
 ## 片段 C：可选 Feishu `bindings/channels`
 
@@ -163,19 +168,22 @@
 
 ## 多 agent 进度回传示例
 
-如果还想让 `claude`、`opencode` 一起参与 bridge 观察，可以把 `childSessionPrefixes` 改成：
+如果还想让自定义 agent 一起参与 bridge 观察，可以把 `childSessionPrefixes` 扩成：
 
 ```json
 {
   "childSessionPrefixes": [
     "agent:codex:acp:",
     "agent:claude:acp:",
-    "agent:opencode:acp:"
+    "agent:claudecode:acp:",
+    "agent:gemini:acp:",
+    "agent:opencode:acp:",
+    "agent:your-custom-agent:acp:"
   ]
 }
 ```
 
-但这只表示“prefix 层面允许发现这些子会话”，不等于这些 provider 已完成同等级验证。前提仍然是：
+但这只表示“prefix 层面允许发现这些子会话”，前提仍然是：
 
 - 这些 provider 走的是 ACP 子会话
 - stream 里也会产出兼容的 `:progress` / `:done` 事件

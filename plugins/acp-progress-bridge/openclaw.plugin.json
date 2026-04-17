@@ -2,7 +2,7 @@
   "id": "acp-progress-bridge",
   "name": "ACP Progress Bridge",
   "version": "0.1.0",
-  "description": "Relay ACP child-session progress and completion into internal parent-session updates. Default scope is Codex ACP children reporting back to Feishu group or main parent sessions.",
+  "description": "Relay ACP child-session progress and completion into internal parent-session updates. Default scope covers common ACP providers reporting back to Feishu group or main parent sessions.",
   "configSchema": {
     "type": "object",
     "properties": {
@@ -20,8 +20,15 @@
       "childSessionPrefixes": {
         "type": "array",
         "items": { "type": "string" },
-        "default": ["agent:codex:acp:"],
-        "description": "ACP child-session prefixes to watch. Default is Codex-first; add other providers only if they emit compatible ACP progress/done events."
+        "default": [
+          "agent:codex:acp:",
+          "agent:claude:acp:",
+          "agent:claudecode:acp:",
+          "agent:gemini:acp:",
+          "agent:opencode:acp:",
+          "agent:pi:acp:"
+        ],
+        "description": "ACP child-session prefixes to watch. Defaults cover common providers; add custom prefixes only when they emit compatible ACP progress/done events."
       },
       "pollIntervalMs": {
         "type": "number",

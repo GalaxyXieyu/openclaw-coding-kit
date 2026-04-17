@@ -16,7 +16,7 @@ WORKSPACE_TEMPLATE_ENV_VARS = ("PM_WORKSPACE_TEMPLATE_ROOT", "OPENCLAW_PM_TEMPLA
 TOKEN_RE = re.compile(r"\{\{\s*([a-zA-Z0-9_]+)\s*\}\}")
 SLUG_RE = re.compile(r"[^a-z0-9]+")
 DEFAULT_SKILLS = ("pm", "coder", "code-review")
-DEFAULT_ALLOW_AGENTS = ("codex", "writer")
+DEFAULT_ALLOW_AGENTS = ("codex", "gemini", "writer")
 
 
 def _first_env_path(env_vars: tuple[str, ...]) -> Path | None:

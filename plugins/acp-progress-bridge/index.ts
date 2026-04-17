@@ -7,7 +7,9 @@ import {
   buildCompletionBridgeMessage,
   buildFallbackProgressText,
   buildProgressBridgeMessage,
+  collectChildAgentSelection,
   compactText,
+  DEFAULT_CHILD_AGENT_IDS,
   evaluateReplayDecision,
   evaluateSettleState,
   formatMs,
@@ -142,6 +144,15 @@ async function loadSessionStore(
   return data as Record<string, SessionStoreEntry>;
 }
 
+async function listKnownChildAgentIds(stateDir: string): Promise<string[]> {
+  try {
+    const entries = await fs.readdir(path.join(stateDir, "agents"), { withFileTypes: true });
+    return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 function resolveStreamPath(stateDir: string, agentId: string, entry: SessionStoreEntry) {
   const sessionFile = typeof entry.sessionFile === "string" ? entry.sessionFile : "";
   const sessionId = typeof entry.sessionId === "string" ? entry.sessionId.trim() : "";
@@ -242,7 +253,7 @@ function formatStatusSummary(
       "ACP progress bridge is enabled.",
       `Scope: children=${formatPrefixList(config.childSessionPrefixes)} -> parents=${formatPrefixList(config.parentSessionPrefixes)}`,
       `Discovery: ${discoverySummary}`,
-      "No recent tracked ACP child runs. Default contract is Codex-first; expand child prefixes only for providers that emit compatible ACP progress/done events.",
+      "No recent tracked ACP child runs. Default contract watches common ACP providers; add custom child prefixes only for providers that emit compatible ACP progress/done events.",
     ].join("\n");
   }
 
@@ -327,14 +338,17 @@ export default function register(api: any) {
       parentPrefixMisses: 0,
       missingStreamPath: 0,
     };
-    const childAgentIds = Array.from(
+    const selection = collectChildAgentSelection(config.childSessionPrefixes);
+    const discoveredAgentIds = selection.hasWildcard ? await listKnownChildAgentIds(stateDir) : [];
+    const agentIds = Array.from(
       new Set(
-        config.childSessionPrefixes
-          .map((prefix) => parseSessionKey(prefix.replace(/\*.*$/, "") + "dummy").agentId)
-          .filter(Boolean),
+        [
+          ...selection.agentIds,
+          ...discoveredAgentIds,
+          ...(selection.agentIds.length === 0 && discoveredAgentIds.length === 0 ? DEFAULT_CHILD_AGENT_IDS : []),
+        ].filter(Boolean),
       ),
     );
-    const agentIds = childAgentIds.length > 0 ? childAgentIds : ["codex"];
 
     for (const agentId of agentIds) {
       const store = await loadSessionStore(stateDir, agentId);

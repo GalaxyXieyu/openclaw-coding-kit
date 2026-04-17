@@ -46,6 +46,30 @@ class PmRuntimeTest(unittest.TestCase):
         self.assertEqual("/tmp/demo-repo", recorded["cmd"][recorded["cmd"].index("-C") + 1])
         self.assertEqual('{"ok":true}', result["result"]["payloads"][0]["text"])
 
+    def test_run_codex_cli_inserts_model_flag_for_gemini(self) -> None:
+        recorded: dict[str, object] = {}
+
+        def fake_run(*args, **kwargs):
+            cmd = args[0]
+            output_index = cmd.index("-o") + 1
+            Path(cmd[output_index]).write_text('{"ok":true}', encoding="utf-8")
+            recorded["cmd"] = cmd
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        with patch("pm_runtime.subprocess.run", side_effect=fake_run):
+            result = run_codex_cli(
+                agent_id="gemini",
+                message='Return exactly {"ok":true}',
+                cwd="/tmp/frontend-repo",
+                timeout_seconds=60,
+                thinking="max",
+                bin_path_fn=lambda: Path("/usr/local/bin/codex"),
+            )
+
+        self.assertEqual(["-m", "gemini"], recorded["cmd"][2:4])
+        self.assertEqual("/tmp/frontend-repo", recorded["cmd"][recorded["cmd"].index("-C") + 1])
+        self.assertEqual('{"ok":true}', result["result"]["payloads"][0]["text"])
+
 
 if __name__ == "__main__":
     unittest.main()

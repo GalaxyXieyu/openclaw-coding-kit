@@ -23,6 +23,36 @@
     "agent_id": "codex",
     "timeout": 900,
     "thinking": "high",
-    "session_key": "main"
+    "session_key": "main",
+    "routing": {
+      "enabled": true,
+      "rules": [
+        {
+          "name": "frontend-to-gemini",
+          "match": {
+            "mode": "any",
+            "task_types": ["frontend", "ui", "ux"],
+            "keywords": ["前端", "ui", "页面", "界面", "交互", "样式", "设计", "landing page", "dashboard"]
+          },
+          "target": {
+            "backend": "codex-cli",
+            "agent_id": "gemini",
+            "thinking": "high"
+          }
+        },
+        {
+          "name": "backend-and-bugfix-to-codex",
+          "match": {
+            "mode": "any",
+            "task_types": ["backend", "bug", "bugfix"],
+            "keywords": ["后端", "api", "bug", "修复", "报错", "异常", "回归", "代码健康", "review risk"]
+          },
+          "target": {
+            "backend": "acp",
+            "agent_id": "codex"
+          }
+        }
+      ]
+    }
   }
 }

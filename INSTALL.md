@@ -467,6 +467,53 @@ openclaw plugins list
 }
 ```
 
+如果要按任务类型切 coder，可在 `pm.json.coder.routing.rules[]` 里声明路由。推荐做法是保留全局默认 coder 作为兜底，只把特定类型的任务切走，例如：
+
+```json
+{
+  "coder": {
+    "backend": "acp",
+    "agent_id": "codex",
+    "routing": {
+      "enabled": true,
+      "rules": [
+        {
+          "name": "frontend-to-gemini",
+          "match": {
+            "mode": "any",
+            "task_types": ["frontend", "ui", "ux"],
+            "keywords": ["前端", "ui", "页面", "界面", "交互", "样式", "设计"]
+          },
+          "target": {
+            "backend": "codex-cli",
+            "agent_id": "gemini"
+          }
+        },
+        {
+          "name": "backend-and-bugfix-to-codex",
+          "match": {
+            "mode": "any",
+            "task_types": ["backend", "bug", "bugfix"],
+            "keywords": ["后端", "api", "bug", "修复", "报错", "异常", "代码健康"]
+          },
+          "target": {
+            "backend": "acp",
+            "agent_id": "codex"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+说明：
+
+- 规则读取当前 task 的 `summary + description`
+- `任务类型：frontend` / `任务类型：bugfix` 这类描述标签也会参与路由
+- 同一条 `pm run` 上如果显式传了 `--agent` / `--backend` / `--timeout`，CLI 参数优先，自动路由只补默认值
+- `backend = "codex-cli"` 时，`agent_id` 会作为 `codex exec -m <model>` 的模型名使用；如果你本机的 Codex CLI 已支持 Gemini，这里就可以直接填 `gemini`
+
 可选的完成时间同步配置：
 
 - 默认 `task.completion_due_mode = "never"`，完成任务时只写 `completed_at`，不会改 `due`

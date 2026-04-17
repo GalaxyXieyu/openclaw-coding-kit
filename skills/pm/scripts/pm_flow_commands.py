@@ -4,6 +4,7 @@ import argparse
 from typing import Any
 
 from pm_command_support import CommandHandler, emit_json
+from pm_coder_routing import resolve_task_coder_route
 
 
 def emit_flow_payload(payload: dict[str, Any]) -> int:
@@ -29,15 +30,39 @@ def coder_context_command_payload(api: Any, args: argparse.Namespace) -> dict[st
     return {"bundle_path": str(path), "bundle": payload}
 
 
-def resolve_run_settings(api: Any, args: argparse.Namespace) -> dict[str, Any]:
+def resolve_run_settings(api: Any, args: argparse.Namespace, bundle: dict[str, Any]) -> dict[str, Any]:
     coder = api.coder_config()
-    return {
-        "backend": str(args.backend or coder.get("backend") or "acp").strip() or "acp",
-        "agent_id": str(args.agent or coder.get("agent_id") or "codex").strip() or "codex",
-        "timeout_seconds": int(args.timeout or coder.get("timeout") or 900),
-        "thinking": str(args.thinking or coder.get("thinking") or "high").strip(),
-        "session_key": str(args.session_key or coder.get("session_key") or "main").strip() or "main",
+    task = api.resolve_effective_task(bundle)
+    routing = resolve_task_coder_route(coder, task)
+    routed_target = routing.get("target") if routing.get("matched") else {}
+    settings = {
+        "backend": str(routed_target.get("backend") or coder.get("backend") or "acp").strip() or "acp",
+        "agent_id": str(routed_target.get("agent_id") or coder.get("agent_id") or "codex").strip() or "codex",
+        "timeout_seconds": int(routed_target.get("timeout_seconds") or coder.get("timeout") or 900),
+        "thinking": str(routed_target.get("thinking") or coder.get("thinking") or "high").strip(),
+        "session_key": str(routed_target.get("session_key") or coder.get("session_key") or "main").strip() or "main",
     }
+    overridden_fields: list[str] = []
+    if args.backend:
+        settings["backend"] = str(args.backend).strip() or settings["backend"]
+        overridden_fields.append("backend")
+    if args.agent:
+        settings["agent_id"] = str(args.agent).strip() or settings["agent_id"]
+        overridden_fields.append("agent_id")
+    if args.timeout:
+        settings["timeout_seconds"] = int(args.timeout)
+        overridden_fields.append("timeout_seconds")
+    if args.thinking:
+        settings["thinking"] = str(args.thinking).strip() or settings["thinking"]
+        overridden_fields.append("thinking")
+    if args.session_key:
+        settings["session_key"] = str(args.session_key).strip() or settings["session_key"]
+        overridden_fields.append("session_key")
+    settings["routing"] = {
+        **routing,
+        "overridden_fields": overridden_fields,
+    }
+    return settings
 
 
 def dispatch_run_backend(
@@ -86,7 +111,7 @@ def dispatch_run_backend(
 
 def run_command_payload(api: Any, args: argparse.Namespace) -> dict[str, Any]:
     bundle, path = api.build_coder_context(task_id=args.task_id, task_guid=args.task_guid)
-    settings = resolve_run_settings(api, args)
+    settings = resolve_run_settings(api, args, bundle)
     message = api.build_run_message(bundle)
     task = api.resolve_effective_task(bundle)
     task_id = str(task.get("task_id") or "").strip()
@@ -99,6 +124,7 @@ def run_command_payload(api: Any, args: argparse.Namespace) -> dict[str, Any]:
         "session_key": settings["session_key"],
         "timeout": settings["timeout_seconds"],
         "thinking": settings["thinking"],
+        "routing": settings.get("routing") or {},
         "message_preview": message[:1200],
         "result": result,
         "side_effects": side_effects,
