@@ -229,10 +229,12 @@ Completion due sync config:
 ## Mandatory Behavioral Rules
 
 - For managed project work, do not skip PM and jump straight to coding.
+- Treat every user requirement that changes project behavior, docs, workflow, or code as managed work unless the user explicitly says it is a throwaway local edit.
 - Prefer `pm context --refresh` before making task-routing decisions.
 - If the user request clearly maps to tracked work, either bind to an existing task or create one first.
 - Treat task state as the execution source of truth.
 - Treat PROJECT / ROADMAP / STATE as long-form narrative truth.
+- If a requirement changes the PM/coder/review/front-agent workflow, update the relevant `skills/*/SKILL.md` and both copies of `AGENTS.md` as part of the same task.
 - When execution happens outside `pm run`, still write the result back via `pm comment`, `pm update-description`, or `pm complete`.
 - Use `pm search` / `pm get` before creating a duplicate task when the request may already be tracked.
 
