@@ -163,11 +163,37 @@ function resolveStreamPath(stateDir: string, agentId: string, entry: SessionStor
 
 async function resolveParentSessionId(stateDir: string, parentSessionKey: string) {
   const { agentId } = parseSessionKey(parentSessionKey);
-  if (!agentId) return undefined;
-  const store = await loadSessionStore(stateDir, agentId);
-  const entry = store[parentSessionKey];
-  if (!entry || typeof entry.sessionId !== "string") return undefined;
-  return entry.sessionId.trim() || undefined;
+  if (agentId) {
+    const store = await loadSessionStore(stateDir, agentId);
+    const entry = store[parentSessionKey];
+    if (entry && typeof entry.sessionId === "string" && entry.sessionId.trim()) {
+      return entry.sessionId.trim();
+    }
+  }
+
+  const agentIds = await listAgentIdsWithSessionStores(stateDir);
+  for (const candidateAgentId of agentIds) {
+    if (candidateAgentId === agentId) continue;
+    const store = await loadSessionStore(stateDir, candidateAgentId);
+    const entry = store[parentSessionKey];
+    if (entry && typeof entry.sessionId === "string" && entry.sessionId.trim()) {
+      return entry.sessionId.trim();
+    }
+  }
+
+  const fallbackSuffix = sessionKeyFallbackSuffix(parentSessionKey);
+  if (!fallbackSuffix) return undefined;
+  const candidates: Array<{ agentId: string; sessionKey: string; entry: SessionStoreEntry }> = [];
+  for (const candidateAgentId of agentIds) {
+    const store = await loadSessionStore(stateDir, candidateAgentId);
+    for (const [sessionKey, entry] of Object.entries(store)) {
+      if (sessionKey.endsWith(fallbackSuffix)) {
+        candidates.push({ agentId: candidateAgentId, sessionKey, entry });
+      }
+    }
+  }
+  const fallback = pickNewestSessionEntry(candidates);
+  return fallback?.entry.sessionId?.trim() || undefined;
 }
 
 type TranscriptSnapshot = {
