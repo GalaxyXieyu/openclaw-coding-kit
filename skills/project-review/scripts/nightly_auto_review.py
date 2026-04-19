@@ -14,7 +14,6 @@ from typing import Any
 
 from commit_window import collect_recent_commits
 from fix_executor import execute_fix_flow
-from risk_card_builder import build_card_payload
 from review_delivery import send_review_card
 from review_orchestrator import execute_review_with_codex, prepare_review
 from review_state_store import default_state_path, get_review_by_id, load_state, upsert_review_record
@@ -23,23 +22,7 @@ DOC_PREFIXES = ("docs/", "doc/", "plan/", ".planning/")
 DOC_FILES = {"README.md", "README.zh-CN.md", "AGENTS.md"}
 CODE_SUFFIXES = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".java", ".rb", ".rs", ".kt")
 TEST_MARKERS = ("test_", "_test.", ".spec.", ".test.", "tests/", "__tests__/")
-NOISE_PREFIXES = (
-    ".planning/",
-    ".pm/",
-    ".agents/",
-    ".github/",
-    "out/",
-    "outbound/",
-    "test-results/",
-    "tmp/",
-    "plan/",
-    "issues/",
-)
-NOISE_SEGMENTS = ("/screenshots/", "/scenarios/")
-NOISE_SUFFIXES = (".png", ".jpg", ".jpeg", ".svg", ".gif", ".webp", ".pdf", ".drawio", ".html")
-NOISE_EXACT_NAMES = {"board.manifest.json", "board.seed.json", "inventory.md"}
 LONG_FILE_TITLES = {"单文件超过 1000 行", "文件接近 1000 行"}
-IGNORED_AUTO_FIX_DOC_FLAGS = {"仓库还没有 AGENTS.md。"}
 DEFAULT_AUTO_FIX_MODE = "long-file-and-docs"
 DEFAULT_TIMEZONE = "Asia/Shanghai"
 DEFAULT_CRON = "30 0 * * *"
@@ -129,41 +112,6 @@ def _is_test_file(path: str) -> bool:
 
 def _is_code_file(path: str) -> bool:
     return path.endswith(CODE_SUFFIXES) and not _is_test_file(path)
-
-
-def _is_review_noise_path(path: str) -> bool:
-    normalized = str(path or "").strip()
-    if not normalized:
-        return True
-    if any(normalized.startswith(prefix) for prefix in NOISE_PREFIXES):
-        return True
-    if any(segment in normalized for segment in NOISE_SEGMENTS):
-        return True
-    if normalized.endswith(NOISE_SUFFIXES):
-        return True
-    name = Path(normalized).name
-    if name in NOISE_EXACT_NAMES:
-        return True
-    if normalized.startswith("docs/interaction-board/") and name != "README.md":
-        return True
-    if normalized.startswith("docs/") and normalized.endswith((".json", ".spec.ts", ".spec.js")):
-        return True
-    return False
-
-
-def _is_business_doc_path(path: str) -> bool:
-    normalized = str(path or "").strip()
-    if not normalized or _is_review_noise_path(normalized):
-        return False
-    if normalized in DOC_FILES:
-        return True
-    if normalized.endswith("SKILL.md"):
-        return True
-    return normalized.startswith(("docs/", "doc/")) and normalized.endswith(".md")
-
-
-def _filter_changed_files_for_review(paths: list[str] | None) -> list[str]:
-    return [path for path in _normalize_paths(paths) if not _is_review_noise_path(path)]
 
 
 def _parse_status_path(raw: str) -> str:
@@ -419,13 +367,14 @@ def _build_payload(
     commits = collect_recent_commits(str(repo_root), since, until)
     commit_files = collect_recent_changed_files(repo_root, since, until)
     dirty_files = collect_dirty_files(repo_root) if include_dirty else []
-    changed_files = _filter_changed_files_for_review(commit_files + dirty_files)
-    changed_code_files = [path for path in changed_files if _is_code_file(path)]
-    file_stat_targets = _normalize_paths(changed_code_files)
-    function_stat_targets = _normalize_paths(changed_code_files)
-    file_stats = collect_file_stats(repo_root, file_stat_targets)
-    function_stats, syntax_errors = collect_python_function_stats(repo_root, function_stat_targets)
-    doc_paths = [path for path in changed_files if _is_business_doc_path(path)]
+    changed_files = _normalize_paths(commit_files + dirty_files)
+    tracked_files = list_tracked_files(repo_root)
+    tracked_code_files = [path for path in tracked_files if _is_code_file(path)]
+    extra_code_files = [path for path in changed_files if _is_code_file(path)]
+    stat_targets = _normalize_paths(tracked_code_files + extra_code_files)
+    file_stats = collect_file_stats(repo_root, stat_targets)
+    function_stats, syntax_errors = collect_python_function_stats(repo_root, stat_targets)
+    doc_paths = [path for path in changed_files if _is_doc_file(path)]
     doc_updates = collect_doc_updates(repo_root, doc_paths, commits)
     project = config.get("project") if isinstance(config.get("project"), dict) else {}
     project_name = str(project.get("name") or "").strip() or repo_root.name
@@ -454,8 +403,7 @@ def _auto_fix_signal(bundle: dict[str, Any], mode: str) -> tuple[bool, str]:
     normalized_mode = str(mode or "off").strip().lower()
     findings = bundle.get("findings") if isinstance(bundle.get("findings"), list) else []
     docs_flags = _normalize_texts(bundle.get("docs_flags"))
-    actionable_docs_flags = [item for item in docs_flags if item not in IGNORED_AUTO_FIX_DOC_FLAGS]
-    has_any = bool(findings or actionable_docs_flags)
+    has_any = bool(findings or docs_flags)
     has_long_file = False
     for item in findings:
         if not isinstance(item, dict):
@@ -472,7 +420,7 @@ def _auto_fix_signal(bundle: dict[str, Any], mode: str) -> tuple[bool, str]:
     if normalized_mode == "long-file":
         return has_long_file, "long file findings"
     if normalized_mode == "long-file-and-docs":
-        return (has_long_file or bool(actionable_docs_flags)), "long file or docs drift"
+        return (has_long_file or bool(docs_flags)), "long file or docs drift"
     raise ValueError(f"Unsupported auto-fix mode: {mode}")
 
 
@@ -488,14 +436,6 @@ def _automation_updates(fix_result: dict[str, Any] | None, *, dry_run: bool, aut
     lines: list[str] = []
     if status == "coder_completed":
         lines.append(f"已自动创建并执行修复任务 {task_id or '未命名任务'}。")
-    elif status == "coder_failed":
-        error_text = str(fix_result.get("coder_error") or fix_result.get("error") or "").strip()
-        if task_id:
-            lines.append(f"自动修复任务 {task_id} 未完成，已保留任务待继续处理。")
-        else:
-            lines.append("自动修复未完成，已保留修复上下文待继续处理。")
-        if error_text:
-            lines.append(f"失败原因：{error_text[:120]}")
     elif status == "task_created":
         lines.append(f"已自动创建修复任务 {task_id or '未命名任务'}，等待后续执行。")
     elif status:
@@ -524,11 +464,14 @@ def _augment_record(
     record = dict(current)
     bundle = dict(record.get("bundle") or {})
     source_payload = dict(record.get("source_payload") or {})
+    card_preview = dict(record.get("card_preview") or {})
     normalized_doc_updates = _normalize_doc_updates(doc_updates)
     if normalized_doc_updates:
         bundle["doc_updates"] = normalized_doc_updates
         source_payload["doc_updates"] = normalized_doc_updates
-    card_preview = build_card_payload(bundle)
+        card_preview["doc_updates"] = normalized_doc_updates
+    if automation_updates:
+        card_preview["automation_updates"] = _normalize_texts(automation_updates)
     if channel_id:
         record["channel_id"] = channel_id
     record["bundle"] = bundle
@@ -536,230 +479,6 @@ def _augment_record(
     record["card_preview"] = card_preview
     record["updated_at"] = now_iso
     return upsert_review_record(state_path, record)
-
-
-def _resolve_nightly_context(
-    *,
-    repo_root: Path,
-    pm_config: str,
-    state_path: str,
-    channel_id: str,
-) -> dict[str, Any]:
-    config_path, config = _load_pm_config(pm_config, repo_root)
-    return {
-        "config_path": config_path,
-        "config": config,
-        "nightly": _nightly_cfg(config),
-        "channel_id": _resolve_channel_id(config, explicit=channel_id),
-        "state_path": Path(state_path).resolve() if state_path else default_state_path(str(repo_root)),
-    }
-
-
-def _execute_review(
-    *,
-    payload: dict[str, Any],
-    state_path: Path,
-    reviewer_model: str,
-    reviewer_timeout_seconds: int,
-    reviewer_thinking: str,
-) -> dict[str, Any]:
-    now_iso = _now_iso()
-    if reviewer_model:
-        return execute_review_with_codex(
-            payload,
-            state_path=state_path,
-            now_iso=now_iso,
-            model=reviewer_model,
-            timeout_seconds=reviewer_timeout_seconds,
-            thinking=reviewer_thinking,
-        )
-    return prepare_review(
-        payload,
-        state_path=state_path,
-        now_iso=now_iso,
-    )
-
-
-def _maybe_execute_auto_fix(
-    *,
-    auto_fix_triggered: bool,
-    dry_run: bool,
-    review_id: str,
-    state_path: Path,
-    auto_fix_model: str,
-    auto_fix_timeout_seconds: int,
-    auto_fix_thinking: str,
-) -> dict[str, Any] | None:
-    if not auto_fix_triggered or dry_run:
-        return None
-    return execute_fix_flow(
-        review_id,
-        state_path=state_path,
-        now_iso=_now_iso(),
-        auto_run=True,
-        model=auto_fix_model,
-        timeout_seconds=auto_fix_timeout_seconds,
-        thinking=auto_fix_thinking,
-    )
-
-
-def _send_nightly_review(
-    *,
-    review_id: str,
-    state_path: Path,
-    channel_id: str,
-    send_if_possible: bool,
-    dry_run: bool,
-) -> dict[str, Any]:
-    if not send_if_possible:
-        return {"status": "skipped", "reason": "disabled_by_flag"}
-    if not channel_id:
-        return {"status": "skipped", "reason": "missing_channel_id"}
-    if dry_run:
-        preview = send_review_card(review_id, state_path=state_path, dry_run=True)
-        return {"status": "dry_run", "preview": preview}
-    delivery = send_review_card(review_id, state_path=state_path)
-    return {"status": "sent", "delivery": delivery}
-
-
-def _project_name(config: dict[str, Any], repo_root: Path) -> str:
-    project = config.get("project") if isinstance(config.get("project"), dict) else {}
-    return str(project.get("name") or "").strip() or repo_root.name
-
-
-def _refresh_augmented_review(
-    *,
-    repo_root: Path,
-    config: dict[str, Any],
-    since: str,
-    until: str | None,
-    channel_id: str,
-    include_dirty: bool,
-    state_path: Path,
-    review_id: str,
-    fix_result: dict[str, Any] | None,
-    dry_run: bool,
-    auto_fix_reason: str,
-    auto_fix_triggered: bool,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    refreshed_payload = _build_payload(
-        repo_root=repo_root,
-        config=config,
-        since=since,
-        until=until,
-        channel_id=channel_id,
-        include_dirty=include_dirty,
-    )
-    automation_updates = _automation_updates(
-        fix_result,
-        dry_run=dry_run,
-        auto_fix_reason=auto_fix_reason,
-        auto_fix_triggered=auto_fix_triggered,
-    )
-    augmented = _augment_record(
-        state_path=state_path,
-        review_id=review_id,
-        channel_id=channel_id,
-        doc_updates=refreshed_payload.get("doc_updates") or [],
-        automation_updates=automation_updates,
-        now_iso=_now_iso(),
-    )
-    return refreshed_payload, augmented
-
-
-def _nightly_result(
-    *,
-    repo_root: Path,
-    config_path: Path,
-    project_name: str,
-    channel_id: str,
-    state_path: Path,
-    review_id: str,
-    reviewer_model: str,
-    auto_fix_mode: str,
-    auto_fix_triggered: bool,
-    auto_fix_reason: str,
-    fix_result: dict[str, Any] | None,
-    refreshed_payload: dict[str, Any],
-    send_result: dict[str, Any],
-    augmented: dict[str, Any],
-    nightly: dict[str, Any],
-    dry_run: bool,
-) -> dict[str, Any]:
-    return {
-        "ok": True,
-        "repo_root": str(repo_root),
-        "pm_config_path": str(config_path),
-        "project_name": project_name,
-        "channel_id": channel_id,
-        "state_path": str(state_path),
-        "review_id": review_id,
-        "reviewer_model": reviewer_model,
-        "auto_fix_mode": auto_fix_mode,
-        "auto_fix_triggered": auto_fix_triggered,
-        "auto_fix_reason": auto_fix_reason,
-        "auto_fix_result": fix_result or {},
-        "doc_updates": refreshed_payload.get("doc_updates") or [],
-        "changed_files": refreshed_payload.get("changed_files") or [],
-        "commits": refreshed_payload.get("commits") or [],
-        "send_result": send_result,
-        "record_status": str(augmented.get("status") or "").strip(),
-        "nightly_config": nightly,
-        "dry_run": dry_run,
-    }
-
-
-def _run_review_cycle(
-    *,
-    repo_root: Path,
-    config: dict[str, Any],
-    since: str,
-    until: str | None,
-    channel_id: str,
-    include_dirty: bool,
-    state_path: Path,
-    reviewer_model: str,
-    reviewer_timeout_seconds: int,
-    reviewer_thinking: str,
-    auto_fix_mode: str,
-    auto_fix_model: str,
-    auto_fix_timeout_seconds: int,
-    auto_fix_thinking: str,
-    dry_run: bool,
-) -> dict[str, Any]:
-    payload = _build_payload(
-        repo_root=repo_root,
-        config=config,
-        since=since,
-        until=until,
-        channel_id=channel_id,
-        include_dirty=include_dirty,
-    )
-    review_result = _execute_review(
-        payload=payload,
-        state_path=state_path,
-        reviewer_model=reviewer_model,
-        reviewer_timeout_seconds=reviewer_timeout_seconds,
-        reviewer_thinking=reviewer_thinking,
-    )
-    review_id = _review_id(review_result)
-    bundle = _review_bundle(review_result)
-    auto_fix_triggered, auto_fix_reason = _auto_fix_signal(bundle, auto_fix_mode)
-    fix_result = _maybe_execute_auto_fix(
-        auto_fix_triggered=auto_fix_triggered,
-        dry_run=dry_run,
-        review_id=review_id,
-        state_path=state_path,
-        auto_fix_model=auto_fix_model,
-        auto_fix_timeout_seconds=auto_fix_timeout_seconds,
-        auto_fix_thinking=auto_fix_thinking,
-    )
-    return {
-        "review_id": review_id,
-        "auto_fix_triggered": auto_fix_triggered,
-        "auto_fix_reason": auto_fix_reason,
-        "fix_result": fix_result,
-    }
 
 
 def run_nightly_review(
@@ -782,73 +501,107 @@ def run_nightly_review(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     resolved_repo_root = Path(repo_root).expanduser().resolve()
-    context = _resolve_nightly_context(
-        repo_root=resolved_repo_root,
-        pm_config=pm_config,
-        state_path=state_path,
-        channel_id=channel_id,
-    )
-    config = context["config"]
-    config_path = context["config_path"]
-    nightly = context["nightly"]
-    resolved_channel_id = str(context["channel_id"] or "")
-    resolved_state_path = Path(context["state_path"]).resolve()
-    cycle = _run_review_cycle(
+    config_path, config = _load_pm_config(pm_config, resolved_repo_root)
+    nightly = _nightly_cfg(config)
+    resolved_channel_id = _resolve_channel_id(config, explicit=channel_id)
+    resolved_state_path = Path(state_path).resolve() if state_path else default_state_path(str(resolved_repo_root))
+    payload = _build_payload(
         repo_root=resolved_repo_root,
         config=config,
         since=since,
         until=until,
         channel_id=resolved_channel_id,
         include_dirty=include_dirty,
-        state_path=resolved_state_path,
-        reviewer_model=reviewer_model,
-        reviewer_timeout_seconds=reviewer_timeout_seconds,
-        reviewer_thinking=reviewer_thinking,
-        auto_fix_model=auto_fix_model,
-        auto_fix_timeout_seconds=auto_fix_timeout_seconds,
-        auto_fix_thinking=auto_fix_thinking,
-        auto_fix_mode=auto_fix_mode,
-        dry_run=dry_run,
     )
-    refreshed_payload, augmented = _refresh_augmented_review(
+
+    if reviewer_model:
+        review_result = execute_review_with_codex(
+            payload,
+            state_path=resolved_state_path,
+            now_iso=_now_iso(),
+            model=reviewer_model,
+            timeout_seconds=reviewer_timeout_seconds,
+            thinking=reviewer_thinking,
+        )
+    else:
+        review_result = prepare_review(
+            payload,
+            state_path=resolved_state_path,
+            now_iso=_now_iso(),
+        )
+
+    review_id = _review_id(review_result)
+    bundle = _review_bundle(review_result)
+    auto_fix_triggered, auto_fix_reason = _auto_fix_signal(bundle, auto_fix_mode)
+    fix_result: dict[str, Any] | None = None
+    if auto_fix_triggered and not dry_run:
+        fix_result = execute_fix_flow(
+            review_id,
+            state_path=resolved_state_path,
+            now_iso=_now_iso(),
+            auto_run=True,
+            model=auto_fix_model,
+            timeout_seconds=auto_fix_timeout_seconds,
+            thinking=auto_fix_thinking,
+        )
+
+    refreshed_payload = _build_payload(
         repo_root=resolved_repo_root,
         config=config,
         since=since,
         until=until,
         channel_id=resolved_channel_id,
         include_dirty=include_dirty,
-        state_path=resolved_state_path,
-        review_id=str(cycle["review_id"] or ""),
-        fix_result=cycle["fix_result"],
-        dry_run=dry_run,
-        auto_fix_reason=str(cycle["auto_fix_reason"] or ""),
-        auto_fix_triggered=bool(cycle["auto_fix_triggered"]),
     )
-    send_result = _send_nightly_review(
-        review_id=str(cycle["review_id"] or ""),
+    automation_updates = _automation_updates(
+        fix_result,
+        dry_run=dry_run,
+        auto_fix_reason=auto_fix_reason,
+        auto_fix_triggered=auto_fix_triggered,
+    )
+    augmented = _augment_record(
         state_path=resolved_state_path,
+        review_id=review_id,
         channel_id=resolved_channel_id,
-        send_if_possible=send_if_possible,
-        dry_run=dry_run,
+        doc_updates=refreshed_payload.get("doc_updates") or [],
+        automation_updates=automation_updates,
+        now_iso=_now_iso(),
     )
-    return _nightly_result(
-        repo_root=resolved_repo_root,
-        config_path=Path(config_path),
-        project_name=_project_name(config, resolved_repo_root),
-        channel_id=resolved_channel_id,
-        state_path=resolved_state_path,
-        review_id=str(cycle["review_id"] or ""),
-        reviewer_model=reviewer_model,
-        auto_fix_mode=auto_fix_mode,
-        auto_fix_triggered=bool(cycle["auto_fix_triggered"]),
-        auto_fix_reason=str(cycle["auto_fix_reason"] or ""),
-        fix_result=cycle["fix_result"],
-        refreshed_payload=refreshed_payload,
-        send_result=send_result,
-        augmented=augmented,
-        nightly=nightly,
-        dry_run=dry_run,
-    )
+
+    send_result: dict[str, Any]
+    if not send_if_possible:
+        send_result = {"status": "skipped", "reason": "disabled_by_flag"}
+    elif not resolved_channel_id:
+        send_result = {"status": "skipped", "reason": "missing_channel_id"}
+    elif dry_run:
+        preview = send_review_card(review_id, state_path=resolved_state_path, dry_run=True)
+        send_result = {"status": "dry_run", "preview": preview}
+    else:
+        delivery = send_review_card(review_id, state_path=resolved_state_path)
+        send_result = {"status": "sent", "delivery": delivery}
+
+    project_name = str((config.get("project") if isinstance(config.get("project"), dict) else {}).get("name") or "").strip() or resolved_repo_root.name
+    return {
+        "ok": True,
+        "repo_root": str(resolved_repo_root),
+        "pm_config_path": str(config_path),
+        "project_name": project_name,
+        "channel_id": resolved_channel_id,
+        "state_path": str(resolved_state_path),
+        "review_id": review_id,
+        "reviewer_model": reviewer_model,
+        "auto_fix_mode": auto_fix_mode,
+        "auto_fix_triggered": auto_fix_triggered,
+        "auto_fix_reason": auto_fix_reason,
+        "auto_fix_result": fix_result or {},
+        "doc_updates": refreshed_payload.get("doc_updates") or [],
+        "changed_files": refreshed_payload.get("changed_files") or [],
+        "commits": refreshed_payload.get("commits") or [],
+        "send_result": send_result,
+        "record_status": str(augmented.get("status") or "").strip(),
+        "nightly_config": nightly,
+        "dry_run": dry_run,
+    }
 
 
 def _build_parser() -> argparse.ArgumentParser:

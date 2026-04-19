@@ -11,12 +11,15 @@ from typing import Any
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 DEVTEAM_TEMPLATES = WORKSPACE_ROOT / "incubator" / "devteam" / "templates"
 REPO_WORKSPACE_TEMPLATES = WORKSPACE_ROOT / "skills" / "pm" / "templates" / "workspace"
+REPO_AGENTS_TEMPLATE_NAME = "AGENTS.managed.md.tpl"
 WORKSPACE_ROOT_ENV_VARS = ("PM_WORKSPACE_ROOT", "OPENCLAW_WORKSPACE_ROOT")
 WORKSPACE_TEMPLATE_ENV_VARS = ("PM_WORKSPACE_TEMPLATE_ROOT", "OPENCLAW_PM_TEMPLATE_ROOT")
 TOKEN_RE = re.compile(r"\{\{\s*([a-zA-Z0-9_]+)\s*\}\}")
 SLUG_RE = re.compile(r"[^a-z0-9]+")
-DEFAULT_SKILLS = ("pm", "coder", "code-review")
+DEFAULT_SKILLS = ("pm", "coder")
 DEFAULT_ALLOW_AGENTS = ("codex", "gemini", "writer")
+REPO_AGENTS_MANAGED_START = "<!-- PM_SHARED_CONTRACT:START -->"
+REPO_AGENTS_MANAGED_END = "<!-- PM_SHARED_CONTRACT:END -->"
 
 
 def _first_env_path(env_vars: tuple[str, ...]) -> Path | None:
@@ -34,6 +37,10 @@ def workspace_template_root() -> Path:
     if REPO_WORKSPACE_TEMPLATES.exists():
         return REPO_WORKSPACE_TEMPLATES
     return DEVTEAM_TEMPLATES
+
+
+def repo_template_root() -> Path:
+    return workspace_template_root().parent / "repo"
 
 
 def _is_ascii(text: str) -> bool:
@@ -123,6 +130,7 @@ def build_workspace_profile(
     task_prefix: str,
     default_worker: str,
     reviewer_worker: str,
+    preferred_ui_worker: str = "gemini",
     task_backend_type: str = "feishu-task",
 ) -> dict[str, Any]:
     source_name = _normalize_spaces(project_name)
@@ -144,6 +152,7 @@ def build_workspace_profile(
         "workers": {
             "default": default_worker,
             "reviewer": reviewer_worker,
+            "ui": preferred_ui_worker,
         },
         "taskPrefix": task_prefix,
     }
@@ -179,6 +188,70 @@ def _write_text(path: Path, content: str) -> None:
 
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+
+def _shared_repo_agents_contract(
+    *,
+    pm_config_path: str,
+    repo_root: Path,
+    tasklist_name: str,
+    doc_folder_name: str,
+    default_worker: str,
+    preferred_ui_worker: str,
+) -> str:
+    template_path = repo_template_root() / REPO_AGENTS_TEMPLATE_NAME
+    if not template_path.exists():
+        raise SystemExit(f"repo AGENTS template not found: {template_path}")
+    return render_template(
+        template_path.read_text(encoding="utf-8"),
+        {
+            "pm_config_path": pm_config_path,
+            "repo_root": str(repo_root),
+            "tasklist_name": tasklist_name,
+            "doc_folder_name": doc_folder_name,
+            "default_worker": default_worker,
+            "preferred_ui_worker": preferred_ui_worker,
+        },
+    ).strip()
+
+
+def _merge_repo_agents(existing: str, managed_block: str) -> str:
+    text = existing.strip()
+    if not text:
+        return "# AGENTS.md\n\n" + managed_block + "\n"
+    pattern = re.compile(
+        rf"{re.escape(REPO_AGENTS_MANAGED_START)}.*?{re.escape(REPO_AGENTS_MANAGED_END)}",
+        re.DOTALL,
+    )
+    if pattern.search(text):
+        merged = pattern.sub(managed_block, text)
+    else:
+        merged = text + "\n\n" + managed_block
+    return merged.rstrip() + "\n"
+
+
+def sync_repo_agents_contract(
+    *,
+    repo_root: Path,
+    pm_config_path: str,
+    tasklist_name: str,
+    doc_folder_name: str,
+    default_worker: str,
+    preferred_ui_worker: str,
+) -> Path:
+    target = repo_root / "AGENTS.md"
+    existing = target.read_text(encoding="utf-8") if target.exists() else ""
+    managed_block = _shared_repo_agents_contract(
+        pm_config_path=pm_config_path,
+        repo_root=repo_root,
+        tasklist_name=tasklist_name,
+        doc_folder_name=doc_folder_name,
+        default_worker=default_worker,
+        preferred_ui_worker=preferred_ui_worker,
+    )
+    merged = _merge_repo_agents(existing, managed_block)
+    _write_text(target, merged)
+    return target
 
 
 def _memory_markdown(
@@ -226,13 +299,13 @@ def _bootstrap_markdown(*, english_name: str, repo_root: Path) -> str:
             f"1. Read `AGENTS.md` for the `{english_name}` front-agent contract.",
             f"2. Read `{repo_root / 'pm.json'}` to confirm repo root, tasklist, and doc folder.",
             "3. Read `memory.md` for persisted project identity.",
-            "4. If the project is new, run `pm init` from the real repo after verifying Feishu access.",
+            "4. If PM resources look missing, stop and wait for an explicit bootstrap instruction before running any binding command.",
             "",
         ]
     )
 
 
-def _workspace_openclaw_config(*, english_name: str, repo_root: Path) -> dict[str, Any]:
+def _workspace_heartbeat_config(*, english_name: str, repo_root: Path) -> dict[str, Any]:
     return {
         "heartbeat": {
             "prompt": f"Return to {english_name}: read {repo_root / 'pm.json'} first, then confirm repo path, tasklist, and current task context."
@@ -282,6 +355,7 @@ def scaffold_workspace(
         "doc_folder_name": doc_folder_name,
         "default_worker": str(workers.get("default") or "codex"),
         "reviewer_worker": str(workers.get("reviewer") or "reviewer"),
+        "preferred_ui_worker": str(workers.get("ui") or "gemini"),
     }
 
     template_map = {
@@ -291,17 +365,19 @@ def scaffold_workspace(
         "WORKFLOW_AUTO.md.tpl": output / "WORKFLOW_AUTO.md",
     }
     template_root = workspace_template_root()
+    repo_template = repo_template_root() / REPO_AGENTS_TEMPLATE_NAME
 
     generated_files: list[str] = []
     if dry_run:
         preview_files = list(template_map.values()) + [
+            repo_root / "AGENTS.md",
             output / "config/project-profile.json",
             output / "subagents" / values["reviewer_worker"] / "AGENTS.md",
             output / "subagents" / values["reviewer_worker"] / "IDENTITY.md",
             output / "memory.md",
             output / "HEARTBEAT.md",
             output / "BOOTSTRAP.md",
-            output / "openclaw.json",
+            output / ".openclaw" / "heartbeat.json",
         ]
         return {
             "workspace_root": str(output),
@@ -310,10 +386,14 @@ def scaffold_workspace(
             "would_replace_existing": bool(force and workspace_exists),
             "template_root": str(template_root),
             "template_root_exists": template_root.exists(),
+            "repo_template": str(repo_template),
+            "repo_template_exists": repo_template.exists(),
             "generated_files": sorted(str(path) for path in preview_files),
         }
 
     missing_templates = [name for name in template_map if not (template_root / name).exists()]
+    if not repo_template.exists():
+        missing_templates.append(str(repo_template))
     if missing_templates:
         raise SystemExit(
             "workspace templates not found; set PM_WORKSPACE_TEMPLATE_ROOT, restore repo-local skills/pm/templates/workspace, "
@@ -326,6 +406,16 @@ def scaffold_workspace(
         content = render_template(source.read_text(encoding="utf-8"), values)
         _write_text(target, content)
         generated_files.append(str(target))
+
+    repo_agents = sync_repo_agents_contract(
+        repo_root=repo_root,
+        pm_config_path=values["pm_config_path"],
+        tasklist_name=tasklist_name,
+        doc_folder_name=doc_folder_name,
+        default_worker=values["default_worker"],
+        preferred_ui_worker=values["preferred_ui_worker"],
+    )
+    generated_files.append(str(repo_agents))
 
     _write_text(output / "config/project-profile.json", json.dumps(profile, ensure_ascii=False, indent=2) + "\n")
     generated_files.append(str(output / "config/project-profile.json"))
@@ -364,13 +454,13 @@ def scaffold_workspace(
     )
     _write_text(output / "HEARTBEAT.md", _heartbeat_markdown(english_name=english_name, group_id=group_id, repo_root=repo_root))
     _write_text(output / "BOOTSTRAP.md", _bootstrap_markdown(english_name=english_name, repo_root=repo_root))
-    write_json_file(output / "openclaw.json", _workspace_openclaw_config(english_name=english_name, repo_root=repo_root))
+    write_json_file(output / ".openclaw" / "heartbeat.json", _workspace_heartbeat_config(english_name=english_name, repo_root=repo_root))
     generated_files.extend(
         [
             str(output / "memory.md"),
             str(output / "HEARTBEAT.md"),
             str(output / "BOOTSTRAP.md"),
-            str(output / "openclaw.json"),
+            str(output / ".openclaw" / "heartbeat.json"),
         ]
     )
 

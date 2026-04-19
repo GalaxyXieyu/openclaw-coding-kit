@@ -632,275 +632,6 @@ def build_gsd_progress_snapshot(root: Path, *, phase: str = "") -> dict[str, Any
     }
 
 
-def _attach_runtime(runtime: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
-    payload["runtime"] = runtime
-    return payload
-
-
-def _build_bootstrap_route(*, project_mode: str) -> dict[str, Any]:
-    if project_mode == "brownfield":
-        return {
-            "route": "bootstrap",
-            "reason": "仓库尚未初始化 .planning，brownfield 项目应先理解现有代码。",
-            "project_mode": project_mode,
-            "phase": "",
-            "recommended_gsd_skill": "gsd-map-codebase",
-            "recommended_gsd_command": "$gsd-map-codebase",
-            "recommended_pm_command": "pm init --repo-root <repo>",
-            "recommended_mode": "bootstrap",
-        }
-    return {
-        "route": "bootstrap",
-        "reason": "仓库尚未初始化 .planning，greenfield 项目应先创建项目规划骨架。",
-        "project_mode": project_mode,
-        "phase": "",
-        "recommended_gsd_skill": "gsd-new-project",
-        "recommended_gsd_command": "$gsd-new-project",
-        "recommended_pm_command": "pm init --repo-root <repo>",
-        "recommended_mode": "bootstrap",
-    }
-
-
-def _build_phase_route_payload(
-    *,
-    route: str,
-    reason: str,
-    project_mode: str,
-    phase: str,
-    phase_name: str,
-    phase_dir: str,
-    context_path: str,
-    recommended_gsd_skill: str,
-    recommended_gsd_command: str,
-    recommended_pm_command: str,
-    recommended_mode: str,
-) -> dict[str, Any]:
-    return {
-        "route": route,
-        "reason": reason,
-        "project_mode": project_mode,
-        "phase": phase,
-        "phase_name": phase_name,
-        "phase_dir": phase_dir,
-        "context_path": context_path,
-        "recommended_gsd_skill": recommended_gsd_skill,
-        "recommended_gsd_command": recommended_gsd_command,
-        "recommended_pm_command": recommended_pm_command,
-        "recommended_mode": recommended_mode,
-    }
-
-
-def _build_phase_route_context(
-    root: Path,
-    *,
-    snapshot: dict[str, Any],
-    phase: str,
-) -> dict[str, Any]:
-    roadmap_analysis = snapshot.get("roadmap_analysis") if isinstance(snapshot.get("roadmap_analysis"), dict) else {}
-    phase_info = snapshot.get("phase_info") if isinstance(snapshot.get("phase_info"), dict) else {}
-    selected_phase = str(
-        snapshot.get("phase")
-        or phase
-        or roadmap_analysis.get("current_phase")
-        or roadmap_analysis.get("next_phase")
-        or ""
-    ).strip()
-    phase_payload = list_gsd_phase_plans(root, phase=selected_phase) if selected_phase else {}
-    plans = [item for item in (phase_payload.get("plans") or []) if isinstance(item, dict)]
-    plan_count = len(plans) if plans else int(phase_info.get("plan_count") or 0)
-    summary_count = (
-        sum(1 for item in plans if bool(item.get("has_summary")))
-        if plans
-        else int(phase_info.get("summary_count") or 0)
-    )
-    phase_dir = str(phase_payload.get("phase_dir") or "")
-    phase_name = str(phase_payload.get("phase_name") or phase_info.get("name") or "")
-    context_path = gsd_phase_context_path(phase_dir, str(phase_payload.get("phase") or selected_phase))
-    has_context = bool(context_path and (root / context_path).exists()) or bool(phase_info.get("has_context"))
-    return {
-        "roadmap_analysis": roadmap_analysis,
-        "selected_phase": selected_phase,
-        "phase_info": phase_info,
-        "phase_payload": phase_payload,
-        "plan_count": plan_count,
-        "summary_count": summary_count,
-        "phase_dir": phase_dir,
-        "phase_name": phase_name,
-        "context_path": context_path,
-        "has_context": has_context,
-    }
-
-
-def _build_inspect_route(*, project_mode: str, root: Path) -> dict[str, Any]:
-    return {
-        "route": "inspect",
-        "reason": "已存在 .planning，但没有检测到当前 phase，需要人工确认当前项目状态。",
-        "project_mode": project_mode,
-        "phase": "",
-        "recommended_gsd_skill": "gsd-progress",
-        "recommended_gsd_command": "$gsd-progress",
-        "recommended_pm_command": f"pm sync-gsd-progress --repo-root {root}",
-        "recommended_mode": "inspect",
-    }
-
-
-def _build_unplanned_phase_route(
-    *,
-    root: Path,
-    project_mode: str,
-    selected_phase: str,
-    phase_name: str,
-    phase_dir: str,
-    context_path: str,
-    has_context: bool,
-) -> dict[str, Any]:
-    if has_context:
-        return _build_phase_route_payload(
-            route="plan-phase",
-            reason=f"Phase {selected_phase} 已有 CONTEXT，但还没有 PLAN，适合直接进入 phase planning。",
-            project_mode=project_mode,
-            phase=selected_phase,
-            phase_name=phase_name,
-            phase_dir=phase_dir,
-            context_path=context_path,
-            recommended_gsd_skill="gsd-plan-phase",
-            recommended_gsd_command=f"$gsd-plan-phase {selected_phase} --text",
-            recommended_pm_command=f"pm plan-phase --repo-root {root} --phase {selected_phase}",
-            recommended_mode="planning",
-        )
-    return _build_phase_route_payload(
-        route="discuss-phase",
-        reason=f"Phase {selected_phase} 还没有 CONTEXT 和 PLAN，应先做需求澄清/上下文收口。",
-        project_mode=project_mode,
-        phase=selected_phase,
-        phase_name=phase_name,
-        phase_dir=phase_dir,
-        context_path=context_path,
-        recommended_gsd_skill="gsd-discuss-phase",
-        recommended_gsd_command=f"$gsd-discuss-phase {selected_phase}",
-        recommended_pm_command="",
-        recommended_mode="context-gathering",
-    )
-
-
-def _build_execution_route(
-    *,
-    project_mode: str,
-    selected_phase: str,
-    phase_name: str,
-    phase_dir: str,
-    context_path: str,
-    plan_count: int,
-    summary_count: int,
-    prefer_pm_tasks: bool,
-    root: Path,
-) -> dict[str, Any]:
-    route = "materialize-tasks" if prefer_pm_tasks else "execute-phase"
-    return _build_phase_route_payload(
-        route=route,
-        reason=f"Phase {selected_phase} 已有 {plan_count} 份 PLAN、{summary_count} 份 SUMMARY，说明计划已就绪但尚未全部执行完成。",
-        project_mode=project_mode,
-        phase=selected_phase,
-        phase_name=phase_name,
-        phase_dir=phase_dir,
-        context_path=context_path,
-        recommended_gsd_skill="none" if prefer_pm_tasks else "gsd-execute-phase",
-        recommended_gsd_command="" if prefer_pm_tasks else f"$gsd-execute-phase {selected_phase}",
-        recommended_pm_command=f"pm materialize-gsd-tasks --repo-root {root} --phase {selected_phase}",
-        recommended_mode="task-execution-via-feishu" if prefer_pm_tasks else "phase-execution",
-    )
-
-
-def _build_completed_phase_route(
-    *,
-    project_mode: str,
-    selected_phase: str,
-    phase_name: str,
-    phase_dir: str,
-    context_path: str,
-    next_phase: str,
-    root: Path,
-) -> dict[str, Any]:
-    if next_phase:
-        return _build_phase_route_payload(
-            route="verify-phase",
-            reason=f"Phase {selected_phase} 的 PLAN 已全部落地为 SUMMARY，适合做验证或准备进入下一 phase。",
-            project_mode=project_mode,
-            phase=selected_phase,
-            phase_name=phase_name,
-            phase_dir=phase_dir,
-            context_path=context_path,
-            recommended_gsd_skill="gsd-verify-work",
-            recommended_gsd_command=f"$gsd-verify-work {selected_phase}",
-            recommended_pm_command=f"pm route-gsd --repo-root {root} --phase {next_phase}",
-            recommended_mode="verification",
-        )
-    return _build_phase_route_payload(
-        route="new-milestone",
-        reason="当前 milestone 看起来已经收口，下一步更像是开启新 milestone。",
-        project_mode=project_mode,
-        phase=selected_phase,
-        phase_name=phase_name,
-        phase_dir=phase_dir,
-        context_path=context_path,
-        recommended_gsd_skill="gsd-new-milestone",
-        recommended_gsd_command="$gsd-new-milestone",
-        recommended_pm_command="",
-        recommended_mode="milestone-transition",
-    )
-
-
-def _select_phase_route(
-    *,
-    root: Path,
-    route_context: dict[str, Any],
-    project_mode: str,
-    prefer_pm_tasks: bool,
-) -> dict[str, Any]:
-    roadmap_analysis = route_context["roadmap_analysis"]
-    selected_phase = str(route_context["selected_phase"] or "").strip()
-    plan_count = int(route_context["plan_count"] or 0)
-    summary_count = int(route_context["summary_count"] or 0)
-    phase_dir = str(route_context["phase_dir"] or "")
-    phase_name = str(route_context["phase_name"] or "")
-    context_path = str(route_context["context_path"] or "")
-    has_context = bool(route_context["has_context"])
-
-    if not selected_phase:
-        return _build_inspect_route(project_mode=project_mode, root=root)
-    if plan_count == 0:
-        return _build_unplanned_phase_route(
-            root=root,
-            project_mode=project_mode,
-            selected_phase=selected_phase,
-            phase_name=phase_name,
-            phase_dir=phase_dir,
-            context_path=context_path,
-            has_context=has_context,
-        )
-    if summary_count < plan_count:
-        return _build_execution_route(
-            project_mode=project_mode,
-            selected_phase=selected_phase,
-            phase_name=phase_name,
-            phase_dir=phase_dir,
-            context_path=context_path,
-            plan_count=plan_count,
-            summary_count=summary_count,
-            prefer_pm_tasks=prefer_pm_tasks,
-            root=root,
-        )
-    return _build_completed_phase_route(
-        project_mode=project_mode,
-        selected_phase=selected_phase,
-        phase_name=phase_name,
-        phase_dir=phase_dir,
-        context_path=context_path,
-        next_phase=str(roadmap_analysis.get("next_phase") or "").strip(),
-        root=root,
-    )
-
-
 def build_gsd_route(
     root: Path,
     *,
@@ -912,18 +643,129 @@ def build_gsd_route(
     normalized_project_mode = str(project_mode or "").strip()
     runtime = gsd_runtime_status()
 
+    def with_runtime(payload: dict[str, Any]) -> dict[str, Any]:
+        payload["runtime"] = runtime
+        return payload
+
     if not assets.get("enabled"):
-        return _attach_runtime(
-            runtime,
-            _build_bootstrap_route(project_mode=normalized_project_mode),
-        )
+        if normalized_project_mode == "brownfield":
+            return with_runtime({
+                "route": "bootstrap",
+                "reason": "仓库尚未初始化 .planning，brownfield 项目应先理解现有代码。",
+                "project_mode": normalized_project_mode,
+                "phase": "",
+                "recommended_gsd_skill": "gsd-map-codebase",
+                "recommended_gsd_command": "$gsd-map-codebase",
+                "recommended_pm_command": "",
+                "recommended_mode": "bootstrap",
+            })
+        return with_runtime({
+            "route": "bootstrap",
+            "reason": "仓库尚未初始化 .planning，greenfield 项目应先创建项目规划骨架。",
+            "project_mode": normalized_project_mode,
+            "phase": "",
+            "recommended_gsd_skill": "gsd-new-project",
+            "recommended_gsd_command": "$gsd-new-project",
+            "recommended_pm_command": "",
+            "recommended_mode": "bootstrap",
+        })
 
     snapshot = build_gsd_progress_snapshot(root, phase=phase)
-    route_context = _build_phase_route_context(root, snapshot=snapshot, phase=phase)
-    payload = _select_phase_route(
-        root=root,
-        route_context=route_context,
-        project_mode=normalized_project_mode,
-        prefer_pm_tasks=prefer_pm_tasks,
-    )
-    return _attach_runtime(runtime, payload)
+    roadmap_analysis = snapshot.get("roadmap_analysis") if isinstance(snapshot.get("roadmap_analysis"), dict) else {}
+    selected_phase = str(snapshot.get("phase") or phase or roadmap_analysis.get("current_phase") or roadmap_analysis.get("next_phase") or "").strip()
+    phase_info = snapshot.get("phase_info") if isinstance(snapshot.get("phase_info"), dict) else {}
+    phase_payload = list_gsd_phase_plans(root, phase=selected_phase) if selected_phase else {}
+    plans = [item for item in (phase_payload.get("plans") or []) if isinstance(item, dict)]
+    plan_count = len(plans) if plans else int(phase_info.get("plan_count") or 0)
+    summary_count = sum(1 for item in plans if bool(item.get("has_summary"))) if plans else int(phase_info.get("summary_count") or 0)
+    phase_dir = str(phase_payload.get("phase_dir") or "")
+    phase_name = str(phase_payload.get("phase_name") or phase_info.get("name") or "")
+    context_path = gsd_phase_context_path(phase_dir, str(phase_payload.get("phase") or selected_phase))
+    has_context = bool(context_path and (root / context_path).exists()) or bool(phase_info.get("has_context"))
+
+    if not selected_phase:
+        return with_runtime({
+            "route": "inspect",
+            "reason": "已存在 .planning，但没有检测到当前 phase，需要人工确认当前项目状态。",
+            "project_mode": normalized_project_mode,
+            "phase": "",
+            "recommended_gsd_skill": "gsd-progress",
+            "recommended_gsd_command": "$gsd-progress",
+            "recommended_pm_command": f"pm sync-gsd-progress --repo-root {root}",
+            "recommended_mode": "inspect",
+        })
+
+    if plan_count == 0:
+        if has_context:
+            return with_runtime({
+                "route": "plan-phase",
+                "reason": f"Phase {selected_phase} 已有 CONTEXT，但还没有 PLAN，适合直接进入 phase planning。",
+                "project_mode": normalized_project_mode,
+                "phase": selected_phase,
+                "phase_name": phase_name,
+                "phase_dir": phase_dir,
+                "context_path": context_path,
+                "recommended_gsd_skill": "gsd-plan-phase",
+                "recommended_gsd_command": f"$gsd-plan-phase {selected_phase} --text",
+                "recommended_pm_command": f"pm plan-phase --repo-root {root} --phase {selected_phase}",
+                "recommended_mode": "planning",
+            })
+        return with_runtime({
+            "route": "discuss-phase",
+            "reason": f"Phase {selected_phase} 还没有 CONTEXT 和 PLAN，应先做需求澄清/上下文收口。",
+            "project_mode": normalized_project_mode,
+            "phase": selected_phase,
+            "phase_name": phase_name,
+            "phase_dir": phase_dir,
+            "context_path": context_path,
+            "recommended_gsd_skill": "gsd-discuss-phase",
+            "recommended_gsd_command": f"$gsd-discuss-phase {selected_phase}",
+            "recommended_pm_command": "",
+            "recommended_mode": "context-gathering",
+        })
+
+    if summary_count < plan_count:
+        route = "materialize-tasks" if prefer_pm_tasks else "execute-phase"
+        return with_runtime({
+            "route": route,
+            "reason": f"Phase {selected_phase} 已有 {plan_count} 份 PLAN、{summary_count} 份 SUMMARY，说明计划已就绪但尚未全部执行完成。",
+            "project_mode": normalized_project_mode,
+            "phase": selected_phase,
+            "phase_name": phase_name,
+            "phase_dir": phase_dir,
+            "context_path": context_path,
+            "recommended_gsd_skill": "none" if prefer_pm_tasks else "gsd-execute-phase",
+            "recommended_gsd_command": "" if prefer_pm_tasks else f"$gsd-execute-phase {selected_phase}",
+            "recommended_pm_command": f"pm materialize-gsd-tasks --repo-root {root} --phase {selected_phase}",
+            "recommended_mode": "task-execution-via-feishu" if prefer_pm_tasks else "phase-execution",
+        })
+
+    next_phase = str(roadmap_analysis.get("next_phase") or "").strip()
+    if next_phase:
+        return with_runtime({
+            "route": "verify-phase",
+            "reason": f"Phase {selected_phase} 的 PLAN 已全部落地为 SUMMARY，适合做验证或准备进入下一 phase。",
+            "project_mode": normalized_project_mode,
+            "phase": selected_phase,
+            "phase_name": phase_name,
+            "phase_dir": phase_dir,
+            "context_path": context_path,
+            "recommended_gsd_skill": "gsd-verify-work",
+            "recommended_gsd_command": f"$gsd-verify-work {selected_phase}",
+            "recommended_pm_command": f"pm route-gsd --repo-root {root} --phase {next_phase}",
+            "recommended_mode": "verification",
+        })
+
+    return with_runtime({
+        "route": "new-milestone",
+        "reason": "当前 milestone 看起来已经收口，下一步更像是开启新 milestone。",
+        "project_mode": normalized_project_mode,
+        "phase": selected_phase,
+        "phase_name": phase_name,
+        "phase_dir": phase_dir,
+        "context_path": context_path,
+        "recommended_gsd_skill": "gsd-new-milestone",
+        "recommended_gsd_command": "$gsd-new-milestone",
+        "recommended_pm_command": "",
+        "recommended_mode": "milestone-transition",
+    })

@@ -11,7 +11,6 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -132,13 +131,6 @@ def _build_send_command(chat_id: str, card: dict[str, Any], *, openclaw_bin: str
     ]
 
 
-def _build_delivery_uuid(review_id: str, *, force_resend: bool) -> str:
-    base = f"project-review-{review_id}"
-    if not force_resend:
-        return base
-    return f"{base}-{uuid.uuid4().hex[:10]}"
-
-
 def _invoke_openclaw_send(
     *,
     chat_id: str,
@@ -173,7 +165,7 @@ def _invoke_lark_bridge_user_send(
     *,
     chat_id: str,
     card: dict[str, Any],
-    delivery_uuid: str,
+    review_id: str,
 ) -> dict[str, Any]:
     bridge_script = _resolve_bridge_script()
     if bridge_script is None:
@@ -184,7 +176,7 @@ def _invoke_lark_bridge_user_send(
         "receive_id": chat_id,
         "msg_type": "interactive",
         "content": json.dumps(card, ensure_ascii=False),
-        "uuid": delivery_uuid,
+        "uuid": f"project-review-{review_id}",
     }
     command = [
         sys.executable,
@@ -221,7 +213,6 @@ def _invoke_lark_bridge_user_send(
         "tool": "openclaw-lark.feishu_im_user_message.send",
         "chat_id": str(details.get("chat_id") or chat_id).strip(),
         "message_id": message_id,
-        "uuid": delivery_uuid,
     }
 
 
@@ -229,7 +220,7 @@ def _invoke_pm_user_token_send(
     *,
     chat_id: str,
     card: dict[str, Any],
-    delivery_uuid: str,
+    review_id: str,
 ) -> dict[str, Any]:
     pm = _load_pm_module()
     token_result = pm.ensure_attachment_token(("im:message", "im:message.send_as_user", "offline_access"))
@@ -253,7 +244,7 @@ def _invoke_pm_user_token_send(
             "receive_id": chat_id,
             "msg_type": "interactive",
             "content": json.dumps(card, ensure_ascii=False),
-            "uuid": delivery_uuid,
+            "uuid": f"project-review-{review_id}",
         },
         ensure_ascii=False,
     ).encode("utf-8")
@@ -293,7 +284,6 @@ def _invoke_pm_user_token_send(
         "tool": "pm.user_token.im.message.create",
         "chat_id": str(data.get("chat_id") or chat_id).strip(),
         "message_id": message_id,
-        "uuid": delivery_uuid,
     }
 
 
@@ -320,12 +310,15 @@ def send_review_card(
     if not chat_id:
         raise ValueError("review record is missing channel_id")
     reviewer_requests = record.get("reviewer_requests") if isinstance(record.get("reviewer_requests"), list) else []
-    if reviewer_requests and str(record.get("model") or "").strip() and not bool(record.get("llm_ready")):
-        raise RuntimeError("review 还没完成，暂不发送卡片")
+    if (
+        str(record.get("card_kind") or "").strip() == "code_health_risk_card_v1"
+        and reviewer_requests
+        and not bool(record.get("llm_ready"))
+    ):
+        raise RuntimeError("code-health review 还没完成，暂不发送卡片")
 
     card = build_feishu_card(record)
     existing_delivery = record.get("delivery") if isinstance(record.get("delivery"), dict) else {}
-    delivery_uuid = _build_delivery_uuid(review_id, force_resend=force)
     if existing_delivery.get("message_id") and not force and not dry_run:
         return {
             "ok": True,
@@ -364,7 +357,7 @@ def send_review_card(
             result = _invoke_lark_bridge_user_send(
                 chat_id=chat_id,
                 card=card,
-                delivery_uuid=delivery_uuid,
+                review_id=review_id,
             )
         except RuntimeError as bridge_error:
             bridge_message = str(bridge_error).strip()
@@ -372,7 +365,7 @@ def send_review_card(
                 result = _invoke_pm_user_token_send(
                     chat_id=chat_id,
                     card=card,
-                    delivery_uuid=delivery_uuid,
+                    review_id=review_id,
                 )
             except RuntimeError as pm_error:
                 raise RuntimeError(
@@ -386,8 +379,6 @@ def send_review_card(
         "message_id": str(result.get("message_id") or "").strip(),
         "sent_at": normalized_now,
     }
-    if str(result.get("uuid") or "").strip():
-        delivery["uuid"] = str(result.get("uuid")).strip()
 
     update_review_status(
         resolved_state_path,

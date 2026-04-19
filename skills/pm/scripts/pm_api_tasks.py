@@ -46,7 +46,6 @@ from pm_tasks import find_task_summary as find_pm_task_summary
 from pm_tasks import get_task_record as get_pm_task_record
 from pm_tasks import get_task_record_by_guid as get_pm_task_record_by_guid
 from pm_tasks import inspect_tasklist as inspect_pm_tasklist
-from pm_tasks import list_tasklists as list_pm_tasklists
 from pm_tasks import list_tasklist_tasks as list_pm_tasklist_tasks
 from pm_tasks import maybe_normalize_task_summary as maybe_normalize_pm_task_summary
 from pm_tasks import next_task_id as next_pm_task_id
@@ -318,13 +317,6 @@ def list_tasklist_tasks(tasklist_guid: str, *, completed: bool) -> list[dict[str
     if task_backend_name() == "local":
         return list_local_tasklist_tasks(tasklist_guid, completed=completed)
     return list_pm_tasklist_tasks(run_bridge, details_of, tasklist_guid, completed=completed)
-
-
-def list_visible_tasklists() -> list[dict[str, Any]]:
-    if task_backend_name() == "local":
-        tasklist = ensure_tasklist()
-        return [tasklist] if isinstance(tasklist, dict) and str(tasklist.get("guid") or "").strip() else []
-    return list_pm_tasklists(run_bridge, details_of)
 
 
 def task_pool(

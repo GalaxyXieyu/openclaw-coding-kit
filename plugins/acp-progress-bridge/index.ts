@@ -7,9 +7,7 @@ import {
   buildCompletionBridgeMessage,
   buildFallbackProgressText,
   buildProgressBridgeMessage,
-  collectChildAgentSelection,
   compactText,
-  DEFAULT_CHILD_AGENT_IDS,
   evaluateReplayDecision,
   evaluateSettleState,
   formatMs,
@@ -54,6 +52,16 @@ type SessionStoreEntry = {
   spawnedBy?: string;
   updatedAt?: number;
   label?: string;
+  acp?: {
+    state?: string;
+    identity?: {
+      state?: string;
+      acpxRecordId?: string;
+      acpxSessionId?: string;
+      source?: string;
+      lastUpdatedAt?: number;
+    };
+  };
 };
 
 type RelaySnapshot = {
@@ -87,6 +95,10 @@ type TrackedRun = {
   runId?: string;
   lastEventAt?: number;
   lastSeenAt?: number;
+  streamExists?: boolean;
+  sessionFileExists?: boolean;
+  acpState?: string;
+  identityState?: string;
   statusHint?: string;
 };
 
@@ -144,13 +156,38 @@ async function loadSessionStore(
   return data as Record<string, SessionStoreEntry>;
 }
 
-async function listKnownChildAgentIds(stateDir: string): Promise<string[]> {
+async function listAgentIdsWithSessionStores(stateDir: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(path.join(stateDir, "agents"), { withFileTypes: true });
-    return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name.trim()).filter(Boolean);
+    const agentIds: string[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const storePath = path.join(stateDir, "agents", entry.name, "sessions", "sessions.json");
+      if (await fileExists(storePath)) agentIds.push(entry.name);
+    }
+    return agentIds.sort();
   } catch {
     return [];
   }
+}
+
+function sessionKeyFallbackSuffix(sessionKey: string) {
+  const parts = sessionKey.split(":");
+  const feishuIndex = parts.indexOf("feishu");
+  if (feishuIndex >= 0) return parts.slice(feishuIndex).join(":");
+  const cronIndex = parts.indexOf("cron");
+  if (cronIndex >= 0) return parts.slice(cronIndex).join(":");
+  const mainIndex = parts.indexOf("main");
+  if (mainIndex >= 0) return parts.slice(mainIndex).join(":");
+  return "";
+}
+
+function pickNewestSessionEntry(
+  entries: Array<{ agentId: string; sessionKey: string; entry: SessionStoreEntry }>,
+) {
+  return entries
+    .filter(({ entry }) => typeof entry.sessionId === "string" && entry.sessionId.trim())
+    .sort((left, right) => (right.entry.updatedAt ?? 0) - (left.entry.updatedAt ?? 0))[0];
 }
 
 function resolveStreamPath(stateDir: string, agentId: string, entry: SessionStoreEntry) {
@@ -223,6 +260,31 @@ async function readRelaySnapshot(
   }
 }
 
+function buildObservabilityStatus(run: TrackedRun) {
+  if (!run.streamExists && !run.sessionFileExists) {
+    return "tracked but both ACP stream and session transcript files are missing";
+  }
+  if (!run.streamExists) {
+    return "tracked but ACP stream file is missing";
+  }
+  if (!run.sessionFileExists) {
+    return "tracked but session transcript file is missing";
+  }
+  if (run.doneAt) {
+    return "completion detected; waiting for settle window";
+  }
+  if (isMeaningfulProgressText(run.lastProgressText)) {
+    return "captured ACP progress update";
+  }
+  if (run.processedLineCount > 0) {
+    return "stream file exists but no meaningful progress events yet";
+  }
+  if (run.identityState === "pending") {
+    return "ACP run identity still pending; waiting for first stream/transcript write";
+  }
+  return "tracked; waiting for ACP stream/transcript activity";
+}
+
 async function runAgentAutomation(params: {
   sessionId: string;
   agentId: string;
@@ -279,7 +341,7 @@ function formatStatusSummary(
       "ACP progress bridge is enabled.",
       `Scope: children=${formatPrefixList(config.childSessionPrefixes)} -> parents=${formatPrefixList(config.parentSessionPrefixes)}`,
       `Discovery: ${discoverySummary}`,
-      "No recent tracked ACP child runs. Default contract watches common ACP providers; add custom child prefixes only for providers that emit compatible ACP progress/done events.",
+      "No recent tracked ACP child runs. Default contract is Codex-first; expand child prefixes only for providers that emit compatible ACP progress/done events.",
     ].join("\n");
   }
 
@@ -364,17 +426,14 @@ export default function register(api: any) {
       parentPrefixMisses: 0,
       missingStreamPath: 0,
     };
-    const selection = collectChildAgentSelection(config.childSessionPrefixes);
-    const discoveredAgentIds = selection.hasWildcard ? await listKnownChildAgentIds(stateDir) : [];
-    const agentIds = Array.from(
+    const childAgentIds = Array.from(
       new Set(
-        [
-          ...selection.agentIds,
-          ...discoveredAgentIds,
-          ...(selection.agentIds.length === 0 && discoveredAgentIds.length === 0 ? DEFAULT_CHILD_AGENT_IDS : []),
-        ].filter(Boolean),
+        config.childSessionPrefixes
+          .map((prefix) => parseSessionKey(prefix.replace(/\*.*$/, "") + "dummy").agentId)
+          .filter(Boolean),
       ),
     );
+    const agentIds = childAgentIds.length > 0 ? childAgentIds : ["codex"];
 
     for (const agentId of agentIds) {
       const store = await loadSessionStore(stateDir, agentId);
@@ -409,7 +468,7 @@ export default function register(api: any) {
         }
         summary.trackedRuns += 1;
 
-        state.runs[childSessionKey] = {
+        const nextRun: TrackedRun = {
           childSessionKey,
           childAgentId,
           childSessionId:
@@ -433,8 +492,17 @@ export default function register(api: any) {
           runId: existing?.runId,
           lastEventAt: existing?.lastEventAt,
           lastSeenAt: nowMs(),
+          streamExists: existing?.streamExists ?? false,
+          sessionFileExists: existing?.sessionFileExists ?? false,
+          acpState: typeof entry.acp?.state === "string" ? entry.acp.state : existing?.acpState,
+          identityState:
+            typeof entry.acp?.identity?.state === "string"
+              ? entry.acp.identity.state
+              : existing?.identityState,
           statusHint: existing?.statusHint ?? "discovered; awaiting ACP stream activity",
         };
+        nextRun.statusHint = buildObservabilityStatus(nextRun);
+        state.runs[childSessionKey] = nextRun;
       }
     }
 
@@ -455,7 +523,10 @@ export default function register(api: any) {
 
   async function updateRunSnapshot(run: TrackedRun) {
     let sawAnySnapshot = false;
-    if (await fileExists(run.streamPath)) {
+    run.streamExists = await fileExists(run.streamPath);
+    run.sessionFileExists = run.sessionFile ? await fileExists(run.sessionFile) : false;
+
+    if (run.streamExists) {
       const snapshot = await readRelaySnapshot(run.streamPath, config.finalAssistantTailChars);
       if (snapshot) {
         sawAnySnapshot = true;
@@ -466,12 +537,10 @@ export default function register(api: any) {
         if (snapshot.latestProgressText) run.lastProgressText = snapshot.latestProgressText;
         if (snapshot.assistantTail) run.assistantTail = snapshot.assistantTail;
         if (snapshot.doneAt) run.doneAt = snapshot.doneAt;
-        if (snapshot.latestProgressText) run.statusHint = "captured ACP progress update";
-        if (snapshot.doneAt) run.statusHint = "completion detected; waiting for settle window";
       }
     }
 
-    if (run.sessionFile && (await fileExists(run.sessionFile))) {
+    if (run.sessionFile && run.sessionFileExists) {
       const transcript = await readTranscriptSnapshot(run.sessionFile, config.finalAssistantTailChars);
       const transcriptDoneAt = transcript?.assistantTimestampMs;
       if (transcript) sawAnySnapshot = true;
@@ -501,8 +570,11 @@ export default function register(api: any) {
       run.statusHint = replayDecision.statusHint;
     }
 
-    if (!sawAnySnapshot) {
-      run.statusHint = "waiting for stream/transcript files to update";
+    if (!replayDecision.markHandled) {
+      run.statusHint = buildObservabilityStatus(run);
+      if (!sawAnySnapshot && run.processedLineCount === 0) {
+        run.statusHint = buildObservabilityStatus(run);
+      }
     }
 
     return sawAnySnapshot;
@@ -537,7 +609,7 @@ export default function register(api: any) {
         ? buildFallbackProgressText()
         : undefined;
     if (!progressText) {
-      run.statusHint = "no meaningful progress text yet";
+      run.statusHint = buildObservabilityStatus(run);
       return;
     }
     if (progressText === run.lastProgressSentText) {
@@ -563,20 +635,29 @@ export default function register(api: any) {
     }
 
     const message = buildProgressBridgeMessage(run, progressText);
-    await runAgentAutomation({
+    run.lastProgressSentAt = nowMs();
+    run.lastProgressSentText = progressText;
+    run.progressCount += 1;
+    run.statusHint = "progress delivery queued";
+
+    void runAgentAutomation({
       sessionId,
       agentId: run.parentAgentId,
       message,
       deliver: true,
       thinking: "minimal",
       timeoutSeconds: 90,
-    });
-
-    run.lastProgressSentAt = nowMs();
-    run.lastProgressSentText = progressText;
-    run.progressCount += 1;
-    run.statusHint = "progress delivered";
-    logInfo(`progress delivered for ${run.childSessionKey}`);
+    })
+      .then(async () => {
+        run.statusHint = "progress delivered";
+        await persistState();
+        logInfo(`progress delivered for ${run.childSessionKey}`);
+      })
+      .catch(async (error) => {
+        run.statusHint = `progress delivery failed: ${error instanceof Error ? error.message : String(error)}`;
+        await persistState();
+        logError(run.statusHint);
+      });
   }
 
   async function maybeSendCompletion(run: TrackedRun) {
@@ -603,23 +684,32 @@ export default function register(api: any) {
     }
 
     const message = buildCompletionBridgeMessage(run);
-    await runAgentAutomation({
+    run.completionHandled = true;
+    run.completionHandledAt = nowMs();
+    run.statusHint = config.deliverCompletion ? "completion delivery queued" : "completion processed without parent deliver";
+
+    void runAgentAutomation({
       sessionId,
       agentId: run.parentAgentId,
       message,
       deliver: config.deliverCompletion,
       thinking: "medium",
       timeoutSeconds: 180,
-    });
-
-    run.completionHandled = true;
-    run.completionHandledAt = nowMs();
-    run.statusHint = config.deliverCompletion ? "completion delivered" : "completion processed without parent deliver";
-    logInfo(
-      config.deliverCompletion
-        ? `completion delivered for ${run.childSessionKey}`
-        : `completion processed without deliver for ${run.childSessionKey}`,
-    );
+    })
+      .then(async () => {
+        run.statusHint = config.deliverCompletion ? "completion delivered" : "completion processed without parent deliver";
+        await persistState();
+        logInfo(
+          config.deliverCompletion
+            ? `completion delivered for ${run.childSessionKey}`
+            : `completion processed without deliver for ${run.childSessionKey}`,
+        );
+      })
+      .catch(async (error) => {
+        run.statusHint = `completion delivery failed: ${error instanceof Error ? error.message : String(error)}`;
+        await persistState();
+        logError(run.statusHint);
+      });
   }
 
   function pruneRuns() {

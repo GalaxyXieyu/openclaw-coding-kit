@@ -31,21 +31,6 @@ CHECK_STATUS_PREFIX = {
     "risk": "异常",
     "unknown": "待补检查",
 }
-MAX_FILE_REFS = 6
-GENERIC_FILE_NAMES = {
-    "readme.md",
-    "agents.md",
-    "skill.md",
-    "index.ts",
-    "index.tsx",
-    "index.js",
-    "index.jsx",
-    "main.py",
-    "__init__.py",
-}
-CODE_SUFFIXES = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".java", ".rb", ".rs", ".kt")
-TEST_MARKERS = ("test_", "_test.", ".spec.", ".test.", "tests/", "__tests__/")
-ASSET_SUFFIXES = (".png", ".jpg", ".jpeg", ".svg", ".gif", ".webp")
 
 
 def _normalize_preview(record: dict[str, Any]) -> dict[str, Any]:
@@ -93,98 +78,6 @@ def _humanize_docs_flag(flag: str) -> str:
     if not text:
         return ""
     return DOC_FLAG_LABELS.get(text, text)
-
-
-def _short_file_name(path: str) -> str:
-    text = _text(path)
-    if not text:
-        return ""
-    parts = [item for item in text.split("/") if item]
-    if not parts:
-        return text
-    if text.endswith("/"):
-        return f"{parts[-1]}/"
-    if len(parts) >= 2 and parts[-1].lower() in GENERIC_FILE_NAMES:
-        return "/".join(parts[-2:])
-    return parts[-1]
-
-
-def _register_file_ref(path: str, refs: dict[str, str], ordered: list[str]) -> str:
-    text = _text(path)
-    if not text:
-        return ""
-    if text in refs:
-        return refs[text]
-    if len(ordered) >= MAX_FILE_REFS:
-        return ""
-    marker = f"F{len(ordered) + 1}"
-    refs[text] = marker
-    ordered.append(text)
-    return marker
-
-
-def _file_tag(path: str, refs: dict[str, str], ordered: list[str]) -> str:
-    marker = _register_file_ref(path, refs, ordered)
-    label = _short_file_name(path)
-    if marker and label:
-        return f"[{marker}] `{label}`"
-    if marker:
-        return f"[{marker}]"
-    return f"`{label}`" if label else ""
-
-
-def _file_ref_suffix(path: str, refs: dict[str, str], ordered: list[str]) -> str:
-    marker = _register_file_ref(path, refs, ordered)
-    return f" [{marker}]" if marker else ""
-
-
-def _path_category(path: str) -> str:
-    text = _text(path).lower()
-    if not text:
-        return "其他"
-    if text.startswith("docs/") or text.endswith(".md"):
-        return "文档"
-    if any(marker in text for marker in TEST_MARKERS):
-        return "测试"
-    if text.endswith(CODE_SUFFIXES):
-        return "代码"
-    if text.endswith((".json", ".yaml", ".yml", ".toml", ".ini", ".lock")):
-        return "配置"
-    if text.endswith(ASSET_SUFFIXES):
-        return "资源"
-    return "其他"
-
-
-def _file_scope_summary(paths: list[str]) -> str:
-    rows = [_text(item) for item in paths if _text(item)]
-    if not rows:
-        return ""
-    counts: dict[str, int] = {}
-    for path in rows:
-        label = _path_category(path)
-        counts[label] = counts.get(label, 0) + 1
-    ordered_labels = ["文档", "代码", "测试", "配置", "资源", "其他"]
-    parts = [f"{label} {counts[label]} 个" for label in ordered_labels if counts.get(label)]
-    return f"共 {len(rows)} 个文件，" + "、".join(parts[:4]) + "。"
-
-
-def _render_file_index_lines(ordered: list[str], refs: dict[str, str]) -> list[str]:
-    if not ordered:
-        return []
-    entries: list[str] = []
-    for path in ordered:
-        marker = refs.get(path)
-        if not marker:
-            continue
-        label = _short_file_name(path)
-        entries.append(f"[{marker}] `{label}`" if label else f"[{marker}]")
-    if not entries:
-        return []
-    lines = ["**文件索引**"]
-    chunk_size = 3
-    for index in range(0, len(entries), chunk_size):
-        lines.append(f"<font color='grey'>{' · '.join(entries[index:index + chunk_size])}</font>")
-    return lines
 
 
 def _risk_display_title(item: dict[str, Any]) -> str:
@@ -354,8 +247,6 @@ def _render_code_health_body(record: dict[str, Any]) -> str:
     top_risks = _normalize_items(preview.get("top_risks"))
     docs_flags = [_humanize_docs_flag(str(item)) for item in preview.get("docs_flags") or [] if _humanize_docs_flag(str(item))]
     doc_updates = _normalize_items(preview.get("doc_updates"))
-    file_refs: dict[str, str] = {}
-    file_ref_order: list[str] = []
 
     lines: list[str] = []
     project_name = _text(project.get("name"))
@@ -376,10 +267,11 @@ def _render_code_health_body(record: dict[str, Any]) -> str:
             title = _risk_display_title(item)
             summary = _risk_display_summary(item)
             file_path = _text(item.get("file"))
-            ref_tag = _file_ref_suffix(file_path, file_refs, file_ref_order)
-            lines.append(f"- [{severity}] {title}{ref_tag}")
+            lines.append(f"- [{severity}] {title}")
             if summary:
                 lines.append(f"  {summary}")
+            if file_path:
+                lines.append(f"  <font color='grey'>{file_path}</font>")
 
     if docs_flags:
         lines.extend(["", "**还要补的说明**"])
@@ -393,9 +285,8 @@ def _render_code_health_body(record: dict[str, Any]) -> str:
             path = _text(item.get("path"))
             if summary:
                 line = f"- {summary}"
-                tag = _file_tag(path, file_refs, file_ref_order)
-                if tag:
-                    line += f" {tag}"
+                if path:
+                    line += f" <font color='grey'>({path})</font>"
                 lines.append(line)
 
     how_to_fix = _how_to_fix_lines(record)
@@ -406,10 +297,6 @@ def _render_code_health_body(record: dict[str, Any]) -> str:
 
     if bool(changed_scope.get("requires_uiux")):
         lines.extend(["", "这次改动碰到页面，修完后最好补一轮页面冒烟检查。"])
-
-    file_index_lines = _render_file_index_lines(file_ref_order, file_refs)
-    if file_index_lines:
-        lines.extend(["", *file_index_lines])
 
     review_id = _text(record.get("review_id"))
     updated_at = _fmt_timestamp(record.get("updated_at"))
@@ -424,52 +311,89 @@ def _render_daily_review_body(record: dict[str, Any]) -> str:
     preview = _normalize_preview(record)
     bundle = _normalize_bundle(record)
     project = bundle.get("project") if isinstance(bundle.get("project"), dict) else {}
-    docs_sync = preview.get("docs_sync") if isinstance(preview.get("docs_sync"), dict) else {}
-    risk_items = _normalize_items(preview.get("risk_items"))
-    done_items = [_text(item) for item in (preview.get("done_items") or []) if _text(item)]
+    changed_scope = preview.get("changed_scope") if isinstance(preview.get("changed_scope"), dict) else {}
+    commit_window = preview.get("commit_window") if isinstance(preview.get("commit_window"), dict) else {}
+    top_risks = _normalize_items(preview.get("focus_findings") or preview.get("top_risks"))
+    docs_flags = [_humanize_docs_flag(str(item)) for item in preview.get("docs_flags") or [] if _humanize_docs_flag(str(item))]
+    doc_updates = _normalize_items(preview.get("doc_updates"))
+    audit_checks = _normalize_items(preview.get("audit_checks"))
+    today_updates = [_text(item) for item in (preview.get("today_updates") or []) if _text(item)]
+    file_highlights = [_text(item) for item in (preview.get("file_highlights") or []) if _text(item)]
     review_summary = _text(preview.get("review_summary"))
-    next_action = _text(preview.get("next_action"))
-    should_run = bool(preview.get("should_run", True))
-    skip_reason = _text(preview.get("skip_reason"))
+    automation_updates = [_text(item) for item in (preview.get("automation_updates") or []) if _text(item)]
 
     lines: list[str] = []
     project_name = _text(project.get("name"))
     if project_name:
         lines.append(f"**项目** {project_name}")
 
-    if not should_run:
-        lines.extend(["", skip_reason or "今天没有新的变更需要回顾。"])
+    if review_summary:
+        lines.extend(["", review_summary])
+
+    if today_updates:
+        lines.extend(["", "**今天具体推进**"])
+        for index, item in enumerate(today_updates[:3], start=1):
+            lines.append(f"{index}. {item}")
     else:
-        if review_summary:
-            lines.extend(["", review_summary])
+        lines.extend(["", f"**今天主要看了什么**：{_topic_summary(record)}"])
 
-        if done_items:
-            lines.extend(["", "**今天完成**"])
-            for index, item in enumerate(done_items[:3], start=1):
-                lines.append(f"{index}. {item}")
+    if file_highlights:
+        lines.extend(["", "**今天实际改到的文件**"])
+        for item in file_highlights[:6]:
+            lines.append(f"- `{item}`")
 
-        docs_summary = _text(docs_sync.get("summary"))
-        docs_items = [_text(item) for item in (docs_sync.get("items") or []) if _text(item)]
-        lines.extend(["", "**文档同步**"])
-        if docs_summary:
-            lines.append(docs_summary)
-        for item in docs_items[:2]:
+    if audit_checks:
+        lines.extend(["", "**审核结果**"])
+        for item in audit_checks[:4]:
+            label = _text(item.get("label")) or "检查项"
+            detail = _text(item.get("detail"))
+            status = CHECK_STATUS_PREFIX.get(_text(item.get("status")).lower(), "检查")
+            lines.append(f"- {label}：{status}。{detail}")
+
+    if doc_updates:
+        lines.extend(["", "**今天文档主要更新了什么**"])
+        for item in doc_updates[:3]:
+            summary = _text(item.get("summary"))
+            path = _text(item.get("path"))
+            if summary:
+                line = f"- {summary}"
+                if path:
+                    line += f" <font color='grey'>({path})</font>"
+                lines.append(line)
+
+    if top_risks:
+        lines.extend(["", "**最值得看的问题**"])
+        for index, item in enumerate(top_risks[:3], start=1):
+            title = _risk_display_title(item)
+            summary = _risk_display_summary(item)
+            file_path = _text(item.get("file"))
+            lines.append(f"{index}. {title}")
+            if summary:
+                lines.append(f"   {summary}")
+            if file_path:
+                lines.append(f"   <font color='grey'>{file_path}</font>")
+    elif docs_flags:
+        lines.extend(["", "**文档/规则待同步**"])
+        for item in docs_flags[:3]:
             lines.append(f"- {item}")
 
-        lines.extend(["", "**风险**"])
-        if risk_items:
-            for index, item in enumerate(risk_items[:2], start=1):
-                severity = _text(item.get("severity")) or "P1"
-                title = _text(item.get("title")) or "需要继续确认"
-                summary = _text(item.get("summary"))
-                lines.append(f"{index}. [{severity}] {title}")
-                if summary:
-                    lines.append(f"   {summary}")
-        else:
-            lines.append("暂无明显的交付风险。")
-
+    how_to_fix = _how_to_fix_lines(record)
+    if how_to_fix:
         lines.extend(["", "**下一步**"])
-        lines.append(next_action or "继续推进下一步验收。")
+        for index, item in enumerate(how_to_fix, start=1):
+            lines.append(f"{index}. {item}")
+
+    if automation_updates:
+        lines.extend(["", "**自动处理**"])
+        for item in automation_updates[:4]:
+            lines.append(f"- {item}")
+
+    latest_subject = _text(commit_window.get("latest_subject"))
+    if latest_subject and not today_updates:
+        lines.append(f"<font color='grey'>最新提交：{latest_subject}</font>")
+
+    if bool(changed_scope.get("requires_uiux")):
+        lines.extend(["", "这次改动碰到页面，修完后最好补一轮页面冒烟检查。"])
 
     review_id = _text(record.get("review_id"))
     updated_at = _fmt_timestamp(record.get("updated_at"))
@@ -492,7 +416,7 @@ def build_feishu_card(record: dict[str, Any]) -> dict[str, Any]:
         template = _code_health_template(preview)
         body = _render_code_health_body(record)
     elif card_kind == "daily_review_card_v1":
-        template = _review_template(card_kind)
+        template = _code_health_template(preview)
         body = _render_daily_review_body(record)
     else:
         template = _review_template(card_kind)

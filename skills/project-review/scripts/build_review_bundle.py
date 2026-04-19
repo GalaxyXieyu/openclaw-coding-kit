@@ -123,20 +123,6 @@ def _merge_text_flags(*groups: list[str]) -> list[str]:
 def _llm_lane_result(llm_reviews: dict[str, Any], lane: str) -> dict[str, Any]:
     review = llm_reviews.get(lane)
     if not isinstance(review, dict):
-        if lane == "daily-review":
-            return {
-                "lane": lane,
-                "summary": "",
-                "done_items": [],
-                "docs_sync": {
-                    "status": "partial",
-                    "summary": "",
-                    "items": [],
-                },
-                "risk_items": [],
-                "next_action": "",
-                "source": "",
-            }
         return {"lane": lane, "findings": [], "docs_flags": [], "summary": "", "source": ""}
     return review
 
@@ -166,7 +152,6 @@ def build_review_bundle(payload: dict[str, Any]) -> dict[str, Any]:
     llm_reviews = payload.get("llm_reviews") if isinstance(payload.get("llm_reviews"), dict) else {}
     llm_code_review = _llm_lane_result(llm_reviews, "code-review")
     llm_docs_review = _llm_lane_result(llm_reviews, "docs-review")
-    llm_daily_review = _llm_lane_result(llm_reviews, "daily-review")
     if route.trigger_kind in {"daily", "code-health"} and route.should_run:
         code_lane = run_code_review_lane(payload)
         docs_lane = run_docs_review_lane(payload)
@@ -223,10 +208,8 @@ def build_review_bundle(payload: dict[str, Any]) -> dict[str, Any]:
         "lane_results": {
             "code_review": code_lane,
             "docs_review": docs_lane,
-            "daily_review": {"lane": "daily-review"},
             "llm_code_review": llm_code_review,
             "llm_docs_review": llm_docs_review,
-            "llm_daily_review": llm_daily_review,
         },
     }
     return bundle

@@ -29,38 +29,7 @@ def _normalize_texts(items: list[Any] | None) -> list[str]:
     return result
 
 
-def _commit_subjects(commits: list[dict[str, Any]] | None, *, limit: int = 3) -> list[str]:
-    result: list[str] = []
-    for item in _normalize_items(commits):
-        subject = str(item.get("subject") or "").strip()
-        if not subject or subject in result:
-            continue
-        result.append(subject)
-        if len(result) >= limit:
-            break
-    return result
-
-
 def _schema_for_lane(lane: str) -> dict[str, Any]:
-    if lane == "daily-review":
-        return {
-            "lane": lane,
-            "summary": "string",
-            "done_items": ["string"],
-            "docs_sync": {
-                "status": "synced|partial|missing",
-                "summary": "string",
-                "items": ["string"],
-            },
-            "risk_items": [
-                {
-                    "severity": "P0|P1|P2",
-                    "title": "string",
-                    "summary": "string",
-                }
-            ],
-            "next_action": "string",
-        }
     return {
         "lane": lane,
         "summary": "string",
@@ -83,46 +52,13 @@ def _schema_for_lane(lane: str) -> dict[str, Any]:
 
 def build_llm_review_request(bundle: dict[str, Any], lane: str) -> dict[str, Any]:
     lane_name = str(lane or "").strip()
-    if lane_name not in {"code-review", "docs-review", "daily-review"}:
+    if lane_name not in {"code-review", "docs-review"}:
         raise ValueError(f"Unsupported lane: {lane}")
 
     lane_results = bundle.get("lane_results") if isinstance(bundle.get("lane_results"), dict) else {}
-    lane_payload = lane_results.get(
-        "code_review"
-        if lane_name == "code-review"
-        else "docs_review"
-        if lane_name == "docs-review"
-        else "daily_review"
-    )
+    lane_payload = lane_results.get("code_review" if lane_name == "code-review" else "docs_review")
     if not isinstance(lane_payload, dict):
         lane_payload = {}
-
-    if lane_name == "daily-review":
-        return {
-            "lane": lane_name,
-            "task": "Review today's repo changes and return a compact daily summary JSON only.",
-            "project": bundle.get("project") if isinstance(bundle.get("project"), dict) else {},
-            "trigger": bundle.get("trigger") if isinstance(bundle.get("trigger"), dict) else {},
-            "changed_scope": bundle.get("changed_scope") if isinstance(bundle.get("changed_scope"), dict) else {},
-            "commits": _normalize_items(bundle.get("commits")),
-            "doc_updates": _normalize_items(bundle.get("doc_updates")),
-            "candidate_done_items": _commit_subjects(bundle.get("commits")),
-            "candidate_findings": _normalize_items(bundle.get("findings")),
-            "candidate_docs_flags": _normalize_texts(bundle.get("docs_flags")),
-            "expected_schema": _schema_for_lane(lane_name),
-            "instructions": [
-                "Return JSON only, no markdown.",
-                "Summarize which business area, workflow, or feature was optimized today instead of listing code files.",
-                "done_items should only describe business-facing progress or delivered functionality in plain Chinese.",
-                "Do not output file paths, function names, class names, test names, or line numbers unless absolutely unavoidable.",
-                "docs_sync is mandatory and must answer whether today's feature docs were updated.",
-                "If docs were updated, docs_sync.items should use wording like `业务文档已补充 xxx 功能`.",
-                "If docs were not updated, docs_sync.summary should directly say which feature description is still missing.",
-                "risk_items can be empty, but if present keep at most 2 and focus on user-visible, delivery, or acceptance risks.",
-                "next_action must be exactly 1 plain Chinese imperative sentence.",
-                "Prefer business-facing phrasing over engineering jargon.",
-            ],
-        }
 
     request = {
         "lane": lane_name,
@@ -162,40 +98,6 @@ def normalize_llm_review_response(raw: dict[str, Any] | str, expected_lane: str)
     lane = str(payload.get("lane") or expected_lane).strip()
     if lane != expected_lane:
         raise ValueError(f"Lane mismatch: expected {expected_lane}, got {lane}")
-
-    if lane == "daily-review":
-        docs_sync = payload.get("docs_sync") if isinstance(payload.get("docs_sync"), dict) else {}
-        status = str(docs_sync.get("status") or "").strip().lower()
-        if status not in {"synced", "partial", "missing"}:
-            status = "partial"
-        risk_items: list[dict[str, str]] = []
-        for item in payload.get("risk_items") or []:
-            if not isinstance(item, dict):
-                continue
-            title = str(item.get("title") or "").strip()
-            summary = str(item.get("summary") or "").strip()
-            if not title and not summary:
-                continue
-            risk_items.append(
-                {
-                    "severity": str(item.get("severity") or "P1").upper(),
-                    "title": title,
-                    "summary": summary,
-                }
-            )
-        return {
-            "lane": lane,
-            "summary": str(payload.get("summary") or "").strip(),
-            "done_items": _normalize_texts(payload.get("done_items"))[:2],
-            "docs_sync": {
-                "status": status,
-                "summary": str(docs_sync.get("summary") or "").strip(),
-                "items": _normalize_texts(docs_sync.get("items"))[:2],
-            },
-            "risk_items": risk_items[:2],
-            "next_action": str(payload.get("next_action") or "").strip(),
-            "source": "llm-review",
-        }
 
     findings: list[dict[str, Any]] = []
     for item in payload.get("findings") or []:
@@ -241,7 +143,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     request_parser = subparsers.add_parser("request", help="Build one LLM review request from a bundle.")
     request_parser.add_argument("--payload", required=True, help="Bundle JSON or @path")
-    request_parser.add_argument("--lane", required=True, help="code-review, docs-review, or daily-review")
+    request_parser.add_argument("--lane", required=True, help="code-review or docs-review")
 
     parse_parser = subparsers.add_parser("parse", help="Normalize one LLM review response.")
     parse_parser.add_argument("--payload", required=True, help="Response JSON or @path")

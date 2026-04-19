@@ -8,6 +8,14 @@
 4. Let `{{default_worker}}` handle implementation work.
 5. Let `{{reviewer_worker}}` handle review-only follow-up when needed.
 
+## Dispatch Contract
+
+- Default tracked execution path: `pm run --task-id <T123>`
+- If `{{default_worker}}` is dispatched through ACP one-shot execution, the run should be observable:
+  - use `runtime="acp"` + `mode="run"` + `streamTo:"parent"`
+  - prefer parent-relayed progress over state-only polling
+- If progress checks show `running` but no stream/transcript evidence, treat the run as low-confidence / weakly observable rather than assuming healthy execution
+
 ## Collaboration Surface
 
 - tasklist: `{{tasklist_name}}`

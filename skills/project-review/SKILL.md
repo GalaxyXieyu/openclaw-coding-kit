@@ -33,8 +33,6 @@ When this skill is installed under the OpenClaw runtime root, treat the OpenClaw
 `project-review` does not replace `pm`.
 `pm` remains the task/doc source of truth.
 
-Daily/nightly project retros default to Feishu interactive cards, not cron text announcements. Schedule them through the card-sending entrypoint (`scripts/nightly_review_card.py`, or the compatible `scripts/nightly_auto_review.py`) and set the outer cron delivery to `none`; otherwise OpenClaw cron will announce the agent's final text instead of the card UX.
-
 ## Role Boundary
 
 Use this contract consistently:
@@ -102,19 +100,6 @@ python3 skills/project-review/scripts/review_orchestrator.py prepare \
   --payload @/tmp/project-review/weekly_payload.json \
   --state-path .pm/project-review-state.json
 ```
-
-Run one nightly card review for a project:
-
-```bash
-python3 skills/project-review/scripts/nightly_review_card.py \
-  --repo-root /path/to/repo \
-  --pm-config /path/to/repo/pm.json \
-  --channel-id oc_xxx \
-  --reviewer-model codex \
-  --json
-```
-
-Compatibility note: `nightly_auto_review.py` stays supported, but `nightly_review_card.py` is the clearer default name when the expected outcome is a Feishu card.
 
 Render the stored record into a Feishu card preview:
 

@@ -5,7 +5,6 @@ import {
   buildCompletionBridgeMessage,
   buildProgressBridgeMessage,
   buildFallbackProgressText,
-  collectChildAgentSelection,
   evaluateReplayDecision,
   evaluateSettleState,
   matchesAnyPrefix,
@@ -14,32 +13,14 @@ import {
   pruneTrackedRuns,
   readRelaySnapshotFromText,
   readTranscriptSnapshotFromText,
-  stripBridgeNoise,
   summarizeDiscovery,
 } from "./core.mjs";
 
-test("normalizeConfig keeps multi-provider defaults", () => {
+test("normalizeConfig keeps ACP defaults for codex and gemini", () => {
   const config = normalizeConfig({});
-  assert.deepEqual(config.childSessionPrefixes, [
-    "agent:codex:acp:",
-    "agent:claude:acp:",
-    "agent:claudecode:acp:",
-    "agent:gemini:acp:",
-    "agent:opencode:acp:",
-    "agent:pi:acp:",
-  ]);
+  assert.deepEqual(config.childSessionPrefixes, ["agent:codex:acp:", "agent:gemini:acp:"]);
   assert.equal(config.deliverProgress, true);
   assert.equal(config.deliverCompletion, true);
-});
-
-test("collectChildAgentSelection parses explicit agent ids and wildcard markers", () => {
-  assert.deepEqual(
-    collectChildAgentSelection(["agent:codex:acp:", "agent:claude:acp:", "agent:*:acp:"]),
-    {
-      agentIds: ["codex", "claude"],
-      hasWildcard: true,
-    },
-  );
 });
 
 test("matchesAnyPrefix supports wildcard parent session prefixes", () => {
@@ -67,21 +48,12 @@ test("summarizeDiscovery explains why a child session is or is not tracked", () 
     }),
     "child-prefix-miss",
   );
-  assert.equal(
-    summarizeDiscovery({
-      childSessionKey: "agent:claudecode:acp:child-1",
-      parentSessionKey: "agent:pm:main",
-      childSessionPrefixes: normalizeConfig({}).childSessionPrefixes,
-      parentSessionPrefixes: ["agent:*:main"],
-    }),
-    "tracked",
-  );
 });
 
 test("readRelaySnapshotFromText captures progress, done, and assistant tail", () => {
   const snapshot = readRelaySnapshotFromText(
     [
-      JSON.stringify({ kind: "system_event", contextKey: "run:progress", text: "gemini: 正在整理改动", epochMs: 1000, runId: "run-1" }),
+      JSON.stringify({ kind: "system_event", contextKey: "run:progress", text: "codex: 正在整理改动", epochMs: 1000, runId: "run-1" }),
       JSON.stringify({ kind: "assistant_delta", delta: "前半段分析" }),
       JSON.stringify({ kind: "assistant_message", text: "**已改动**\n- 完成 bridge 回归测试" }),
       JSON.stringify({ kind: "system_event", contextKey: "run:done", epochMs: 2000 }),
@@ -92,12 +64,6 @@ test("readRelaySnapshotFromText captures progress, done, and assistant tail", ()
   assert.equal(snapshot.latestProgressText, "正在整理改动");
   assert.equal(snapshot.doneAt, 2000);
   assert.match(snapshot.assistantTail, /已改动/);
-});
-
-test("stripBridgeNoise removes supported provider labels", () => {
-  assert.equal(stripBridgeNoise("claude: 正在分析"), "正在分析");
-  assert.equal(stripBridgeNoise("claudecode: 正在改 UI"), "正在改 UI");
-  assert.equal(stripBridgeNoise("gemini: 输出页面草图"), "输出页面草图");
 });
 
 test("readTranscriptSnapshotFromText prefers the final assistant message", () => {
@@ -166,11 +132,11 @@ test("evaluateSettleState waits until settle window expires", () => {
   assert.equal(ready.remainingMs, 0);
 });
 
-test("pruneTrackedRuns removes only stale runs", () => {
+test("pruneTrackedRuns removes stale runs based on task activity, not poll heartbeat", () => {
   const result = pruneTrackedRuns({
     runs: {
-      keep: { discoveredAt: 1000, lastSeenAt: 99_000 },
-      drop: { discoveredAt: 1000, completionHandledAt: 2_000 },
+      keep: { discoveredAt: 1_000, lastEventAt: 99_000 },
+      drop: { discoveredAt: 1_000, lastSeenAt: 99_000, completionHandledAt: 2_000 },
     },
     nowMsValue: 100_000,
     maxAgeMs: 10_000,

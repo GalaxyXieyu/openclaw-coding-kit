@@ -86,22 +86,46 @@ For tracked work, follow this order:
 5. Execute through `pm run` or a downstream workflow.
 6. Write progress, evidence, and completion back through `pm`.
 
-For repo-local bootstrap or install verification, use this lighter sequence first:
+For repo-local PM read-model verification, use this lighter sequence first:
 
-1. `pm init --project-name "<项目名>" --dry-run`
-2. `pm context --refresh`
-3. `pm route-gsd --repo-root .`
+1. `pm context --refresh`
+2. `pm route-gsd --repo-root .`
 
-This verifies local PM/GSD state before you depend on real Feishu bindings.
+This verifies local PM/GSD state before you depend on real Feishu bindings without assuming bootstrap.
+
+## ACP Dispatch Observability Policy
+
+When PM dispatches ACP coding work, observability is part of the managed workflow.
+
+- `pm run` with ACP one-shot execution (`runtime="acp"` + `mode="run"`) should default to `streamTo:"parent"`.
+- The purpose is not cosmetic. It gives the parent session a relay stream, enables bridge progress delivery, and makes lightweight observer output materially more trustworthy.
+- If `streamTo:"parent"` is omitted, PM may still get `accepted`, but progress checks often degrade to "state only" and can show `running` while no transcript or stream evidence exists yet.
+- Treat that state as low-confidence / weakly observable, not as proof that useful work is actively happening.
+
+Exceptions:
+
+- thread-bound persistent ACP sessions (`mode="session"`)
+- explicitly silent/background runs where reduced observability is acceptable
+- workflows where parent relay would be wrong for the channel or delivery surface
 
 ## Command Workflow
 
 ### 1. Initialize or Refresh Context
 
-If the repo is not initialized yet or `.pm/current-context.json` is missing:
+Default start:
+
+```bash
+python3 skills/pm/scripts/pm.py context --refresh
+```
+
+Only use `init` when the user explicitly asks for PM bootstrap/binding, or you have already confirmed that this repo truly lacks PM resources and bootstrap is the intended next step.
+
+Explicit bootstrap examples:
 
 ```bash
 python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --write-config
+python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --dry-run
+python3 skills/pm/scripts/pm.py init --project-name "测试项目" --english-name demo --dry-run
 ```
 
 默认会尝试把当前 repo 自动登记到 OpenClaw 根级 `project-review/main_review_sources.json`，供后续 `main` 周报/月报汇总使用。
@@ -111,21 +135,11 @@ python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --write-config
 python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --no-main-review-source
 ```
 
-如果要先确认会绑定/创建哪些清单、文档和 workspace，先用：
-
-```bash
-python3 skills/pm/scripts/pm.py init --project-name "<项目名>" --dry-run
-```
-
-如果项目名包含中文或其他非 ASCII 字符，补 `--english-name`：
-
-```bash
-python3 skills/pm/scripts/pm.py init --project-name "测试项目" --english-name demo --dry-run
-```
-
 `workspace-init` 只保留为兼容别名；后续统一使用 `init`。
 默认只需要传 `project-name`；tasklist 和 doc folder 默认都直接使用这个项目名。若遇到同名歧义，命令会直接失败，此时改用 `--tasklist-guid` / `--doc-folder-token` 明确绑定。
 如果没有传 `--group-id`，`dry-run` 里的 `workspace_bootstrap` 为 `null` 是预期行为，不代表失败。
+
+`init` 生成的合同现在分两层：OpenClaw workspace 只负责 `pm` + `coder` 的前台 intake/dispatch；真实 repo `AGENTS.md` 会从 `skills/pm/templates/repo/AGENTS.managed.md.tpl` 同步一段执行层合同，说明 `product-canvas`、`pm`、`coder`、`project-review` 的职责，以及工程默认走 `codex`、UI/视觉优先走 `gemini` 的路由口径。
 
 Otherwise start from:
 
@@ -139,17 +153,6 @@ For quick routing:
 python3 skills/pm/scripts/pm.py next --refresh
 python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 ```
-
-For board-style read models:
-
-```bash
-python3 skills/pm/scripts/pm.py board --include-completed
-python3 skills/pm/scripts/pm.py board-task --task-id T123 --include-completed
-```
-
-`board` returns a project/task/review aggregate for frontend or adapter debugging.
-`board-task` returns one task with parsed progress timeline and related review summaries.
-If task comments contain a `[[pm_event]] ... [[/pm_event]]` block, PM will parse it as structured progress metadata while preserving the human-readable comment body.
 
 ### 2. Create or Resolve a Task
 
@@ -197,6 +200,8 @@ python3 skills/pm/scripts/pm.py run --task-id T123
 
 This should be the default when the task should stay inside PM-managed automation.
 
+For ACP-backed `pm run`, the managed default should be an observable one-shot run with parent relay. In practice that means `sessions_spawn` should carry `streamTo:"parent"` unless one of the documented exceptions applies.
+
 ### 5. Write Back Collaboration State
 
 Progress update:
@@ -229,12 +234,10 @@ Completion due sync config:
 ## Mandatory Behavioral Rules
 
 - For managed project work, do not skip PM and jump straight to coding.
-- Treat every user requirement that changes project behavior, docs, workflow, or code as managed work unless the user explicitly says it is a throwaway local edit.
 - Prefer `pm context --refresh` before making task-routing decisions.
 - If the user request clearly maps to tracked work, either bind to an existing task or create one first.
 - Treat task state as the execution source of truth.
 - Treat PROJECT / ROADMAP / STATE as long-form narrative truth.
-- If a requirement changes the PM/coder/review/front-agent workflow, update the relevant `skills/*/SKILL.md` and both copies of `AGENTS.md` as part of the same task.
 - When execution happens outside `pm run`, still write the result back via `pm comment`, `pm update-description`, or `pm complete`.
 - Use `pm search` / `pm get` before creating a duplicate task when the request may already be tracked.
 

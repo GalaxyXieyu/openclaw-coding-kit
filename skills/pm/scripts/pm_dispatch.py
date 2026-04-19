@@ -23,6 +23,7 @@ def spawn_acp_session(
     thinking: str = "high",
     label: str = "",
     session_key: str = "main",
+    stream_to_parent: bool = True,
 ) -> dict[str, Any]:
     args: dict[str, Any] = {
         "task": message,
@@ -34,6 +35,8 @@ def spawn_acp_session(
         "mode": "run",
         "cleanup": "keep",
     }
+    if stream_to_parent:
+        args["streamTo"] = "parent"
     if label:
         args["label"] = label
     return run_bridge("sessions_spawn", "", args, session_key=session_key)

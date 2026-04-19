@@ -31,7 +31,6 @@ def _openclaw_config_candidates() -> tuple[Path, ...]:
     explicit_config = str(os.environ.get("OPENCLAW_CONFIG") or "").strip()
     if explicit_config:
         candidates.append(Path(explicit_config).expanduser())
-    candidates.append(Path.cwd() / "openclaw.json")
     openclaw_home = str(os.environ.get("OPENCLAW_HOME") or "").strip()
     if openclaw_home:
         candidates.append(Path(openclaw_home).expanduser() / "openclaw.json")
@@ -60,6 +59,10 @@ def _openclaw_config_candidates() -> tuple[Path, ...]:
             home / ".openclaw" / "openclaw.json",
         ]
     )
+    workspace_config = Path.cwd() / "openclaw.json"
+    allow_workspace_config = str(os.environ.get("PM_ALLOW_WORKSPACE_OPENCLAW_CONFIG") or "").strip().lower()
+    if explicit_config or allow_workspace_config in {"1", "true", "yes"}:
+        candidates.append(workspace_config)
     return tuple(_dedupe_paths(candidates))
 
 

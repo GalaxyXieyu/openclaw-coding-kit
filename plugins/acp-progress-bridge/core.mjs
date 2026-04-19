@@ -1,6 +1,5 @@
 export const DEFAULT_PARENT_SESSION_PREFIXES = ["agent:*:feishu:group:", "agent:*:main"];
-export const DEFAULT_CHILD_AGENT_IDS = ["codex", "claude", "claudecode", "gemini", "opencode", "pi"];
-export const DEFAULT_CHILD_SESSION_PREFIXES = DEFAULT_CHILD_AGENT_IDS.map((agentId) => `agent:${agentId}:acp:`);
+export const DEFAULT_CHILD_SESSION_PREFIXES = ["agent:codex:acp:", "agent:gemini:acp:"];
 
 export function nowMs() {
   return Date.now();
@@ -35,8 +34,7 @@ export function compactText(text) {
 }
 
 export function stripBridgeNoise(text) {
-  const prefixes = [...new Set([...DEFAULT_CHILD_AGENT_IDS, "openclaw"])].map((item) => escapeRegex(item)).join("|");
-  return compactText(String(text || "").replace(new RegExp(`^(?:${prefixes}):\\s*`, "i"), ""));
+  return compactText(String(text || "").replace(/^[a-z0-9_-]{2,32}:\s*/i, ""));
 }
 
 export function isMeaningfulProgressText(text) {
@@ -57,26 +55,6 @@ export function formatMs(ms) {
 
 export function formatPrefixList(prefixes) {
   return (prefixes || []).join(", ");
-}
-
-export function collectChildAgentSelection(prefixes) {
-  const seen = new Set();
-  const agentIds = [];
-  let hasWildcard = false;
-
-  for (const prefix of prefixes || []) {
-    const parts = String(prefix || "").split(":");
-    const agentId = parts[1]?.trim() || "";
-    if (!agentId || agentId === "*") {
-      hasWildcard = true;
-      continue;
-    }
-    if (seen.has(agentId)) continue;
-    seen.add(agentId);
-    agentIds.push(agentId);
-  }
-
-  return { agentIds, hasWildcard };
 }
 
 export function pickAssistantTail(text, maxChars) {
@@ -313,7 +291,13 @@ export function pruneTrackedRuns({ runs, nowMsValue, maxAgeMs }) {
   const nextRuns = {};
   const removedKeys = [];
   for (const [childSessionKey, run] of Object.entries(runs || {})) {
-    const referenceTs = run.lastSeenAt ?? run.completionHandledAt ?? run.discoveredAt;
+    const referenceTs = Math.max(
+      Number(run.lastEventAt ?? 0),
+      Number(run.doneAt ?? 0),
+      Number(run.lastProgressSentAt ?? 0),
+      Number(run.completionHandledAt ?? 0),
+      Number(run.discoveredAt ?? 0),
+    );
     if (Number(referenceTs || 0) < cutoff) {
       removedKeys.push(childSessionKey);
       continue;
