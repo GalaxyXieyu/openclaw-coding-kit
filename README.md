@@ -11,6 +11,8 @@
 > A local-first coordination kit for multi-agent coding.
 > Keep task context, execution, and progress relay separate.
 
+[Case study](https://aigalaxy.top/blog/local-first-multi-agent-loop) · [AgentsGalaxy](https://aigalaxy.top/) · [OpenClaw repo](https://github.com/GalaxyXieyu/openclaw-coding-kit)
+
 `OpenClaw Coding Kit` helps you stop turning one long AI coding session into a polluted mix of planning, implementation, and status tracking.
 
 It is built for people looking for a repeatable `OpenClaw` workflow, `Codex` workflow, multi-agent coding setup, AI coding task orchestration loop, or a local-first path to Feishu-ready collaboration.
@@ -54,7 +56,7 @@ What success looks like:
 
 Next:
 
-- want OpenClaw integration? Go to [`INSTALL.md`](/Volumes/DATABASE/code/learn/openclaw-pm-coder-kit/INSTALL.md)
+- want OpenClaw integration? Go to [`INSTALL.md`](./INSTALL.md)
 - want Feishu integration? Skip the README path and follow the integrated install track
 - want the internal role model? Continue reading below
 
