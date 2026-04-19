@@ -123,6 +123,18 @@ def _topic_summary(record: dict[str, Any]) -> str:
     return f"最近 {commit_count} 次改动，主要碰了{label}。".strip()
 
 
+def _review_window_text(commit_window: dict[str, Any]) -> str:
+    since = _text(commit_window.get("since"))
+    until = _text(commit_window.get("until"))
+    if not since and not until:
+        return ""
+    if since == "yesterday 00:00" and until == "today 00:00":
+        return "前一天自然日（昨天 00:00 到今天 00:00）"
+    if since and until:
+        return f"{since} -> {until}"
+    return since or until
+
+
 def _how_to_fix_lines(record: dict[str, Any]) -> list[str]:
     preview = _normalize_preview(record)
     next_actions = [_text(item) for item in (preview.get("next_actions") or []) if _text(item)]
@@ -317,10 +329,15 @@ def _render_daily_review_body(record: dict[str, Any]) -> str:
     docs_flags = [_humanize_docs_flag(str(item)) for item in preview.get("docs_flags") or [] if _humanize_docs_flag(str(item))]
     doc_updates = _normalize_items(preview.get("doc_updates"))
     audit_checks = _normalize_items(preview.get("audit_checks"))
-    today_updates = [_text(item) for item in (preview.get("today_updates") or []) if _text(item)]
+    previous_day_updates = [
+        _text(item).replace("今天", "前一天").replace("今日", "前一天")
+        for item in (preview.get("previous_day_updates") or preview.get("today_updates") or [])
+        if _text(item)
+    ]
     file_highlights = [_text(item) for item in (preview.get("file_highlights") or []) if _text(item)]
     review_summary = _text(preview.get("review_summary"))
     automation_updates = [_text(item) for item in (preview.get("automation_updates") or []) if _text(item)]
+    review_window_text = _review_window_text(commit_window)
 
     lines: list[str] = []
     project_name = _text(project.get("name"))
@@ -330,15 +347,19 @@ def _render_daily_review_body(record: dict[str, Any]) -> str:
     if review_summary:
         lines.extend(["", review_summary])
 
-    if today_updates:
-        lines.extend(["", "**今天具体推进**"])
-        for index, item in enumerate(today_updates[:3], start=1):
+    if review_window_text:
+        lines.extend(["", f"<font color='grey'>统计窗口：{review_window_text}</font>"])
+
+    if previous_day_updates:
+        lines.extend(["", "**前一天具体推进**"])
+        for index, item in enumerate(previous_day_updates[:3], start=1):
             lines.append(f"{index}. {item}")
     else:
-        lines.extend(["", f"**今天主要看了什么**：{_topic_summary(record)}"])
+        topic = _topic_summary(record).replace("今天", "前一天").replace("今日", "前一天")
+        lines.extend(["", f"**前一天主要看了什么**：{topic}"])
 
     if file_highlights:
-        lines.extend(["", "**今天实际改到的文件**"])
+        lines.extend(["", "**前一天实际改到的文件**"])
         for item in file_highlights[:6]:
             lines.append(f"- `{item}`")
 
@@ -351,7 +372,7 @@ def _render_daily_review_body(record: dict[str, Any]) -> str:
             lines.append(f"- {label}：{status}。{detail}")
 
     if doc_updates:
-        lines.extend(["", "**今天文档主要更新了什么**"])
+        lines.extend(["", "**前一天文档主要更新了什么**"])
         for item in doc_updates[:3]:
             summary = _text(item.get("summary"))
             path = _text(item.get("path"))
@@ -389,7 +410,7 @@ def _render_daily_review_body(record: dict[str, Any]) -> str:
             lines.append(f"- {item}")
 
     latest_subject = _text(commit_window.get("latest_subject"))
-    if latest_subject and not today_updates:
+    if latest_subject and not previous_day_updates:
         lines.append(f"<font color='grey'>最新提交：{latest_subject}</font>")
 
     if bool(changed_scope.get("requires_uiux")):

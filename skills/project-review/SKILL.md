@@ -220,9 +220,16 @@ Check whether the repo had commits in the review window:
 ```bash
 python3 skills/project-review/scripts/commit_window.py \
   --repo-root . \
-  --since "24 hours ago" \
+  --since "yesterday 00:00" \
+  --until "today 00:00" \
   --json
 ```
+
+Daily review defaults should stay aligned with the PM nightly registration contract:
+
+- run at `06:00` in `Asia/Shanghai`
+- summarize the previous calendar day, not a rolling `24 hours ago` window
+- focus on the previous day's commits, changed files, doc updates, and delivery risks
 
 ## References
 

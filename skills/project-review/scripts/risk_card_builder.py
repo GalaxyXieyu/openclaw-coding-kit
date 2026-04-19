@@ -334,10 +334,10 @@ def _review_summary(bundle: dict[str, Any]) -> str:
     for candidate in (llm_code_review.get("summary"), llm_docs_review.get("summary")):
         text = _text(candidate)
         if text:
-            return text
+            return text.replace("今天", "前一天").replace("今日", "前一天")
     commits = _normalize_items(bundle.get("commits"))
     if commits:
-        return f"今天有 {len(commits)} 次提交，先按代码和文档两条线做回顾。"
+        return f"前一天有 {len(commits)} 次提交，先按代码和文档两条线做回顾。"
     return ""
 
 
@@ -359,17 +359,17 @@ def _daily_next_actions(next_actions: list[str], audit_checks: list[dict[str, st
         label = _text(item.get("label"))
         status = _text(item.get("status"))
         if label == "单文件 > 1000 行" and status == "risk":
-            derived.append("先拆今天命中的超长文件")
+            derived.append("先拆前一天命中的超长文件")
         elif label == "导入/引用异常" and status == "risk":
             derived.append("先修导入和引用报错")
         elif label == "测试覆盖" and status == "risk":
-            derived.append("补今天改动的回归测试")
+            derived.append("补前一天改动的回归测试")
         elif label == "功能文档同步" and status in {"risk", "warn"}:
             derived.append("把新增功能说明补到 docs")
     if docs_flags and "把新增功能说明补到 docs" not in derived:
         derived.append("把新增功能说明补到 docs")
     if not derived:
-        derived.append("继续盯今天改动的核心模块")
+        derived.append("继续盯前一天改动的核心模块")
     return _normalize_texts(derived)[:3]
 
 
@@ -416,6 +416,7 @@ def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
     docs_flags = [str(item).strip() for item in bundle.get("docs_flags") or [] if str(item).strip()]
     doc_updates = _doc_update_rows(bundle.get("doc_updates"))
     changed_scope = bundle.get("changed_scope") if isinstance(bundle.get("changed_scope"), dict) else {}
+    review_window = bundle.get("review_window") if isinstance(bundle.get("review_window"), dict) else {}
     commits = _normalize_items(bundle.get("commits"))
     trigger = bundle.get("trigger") if isinstance(bundle.get("trigger"), dict) else {}
     lane_results = bundle.get("lane_results") if isinstance(bundle.get("lane_results"), dict) else {}
@@ -430,15 +431,17 @@ def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
     audit_checks = _daily_audit_checks(bundle, docs_flags, card_findings)
     focus_findings = _daily_focus_findings(card_findings)
     daily_next_actions = _daily_next_actions(next_actions, audit_checks, docs_flag_texts)
+    previous_day_updates = _today_updates(commits, changed_files)
 
     return {
         "card_kind": "daily_review_card_v1",
-        "title": "每日项目回顾",
+        "title": "昨日开发回顾",
         "should_run": bool(trigger.get("should_run")),
         "skip_reason": str(trigger.get("skip_reason") or "").strip(),
         "severity_counts": _severity_counts(card_findings),
         "review_summary": _review_summary(bundle),
-        "today_updates": _today_updates(commits, changed_files),
+        "previous_day_updates": previous_day_updates,
+        "today_updates": previous_day_updates,
         "file_highlights": _highlight_files(changed_files),
         "audit_checks": audit_checks,
         "top_risks": focus_findings,
@@ -453,6 +456,8 @@ def build_daily_review_card(bundle: dict[str, Any]) -> dict[str, Any]:
         "commit_window": {
             "count": len(commits),
             "latest_subject": str(commits[0].get("subject") or "").strip() if commits else "",
+            "since": str(review_window.get("since") or "").strip(),
+            "until": str(review_window.get("until") or "").strip(),
         },
         "next_actions": daily_next_actions,
         "actions": [],

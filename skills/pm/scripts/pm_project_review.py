@@ -7,8 +7,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-DEFAULT_NIGHTLY_CRON = "30 0 * * *"
+DEFAULT_NIGHTLY_CRON = "0 6 * * *"
 DEFAULT_NIGHTLY_TIMEZONE = "Asia/Shanghai"
+DEFAULT_NIGHTLY_SINCE = "yesterday 00:00"
+DEFAULT_NIGHTLY_UNTIL = "today 00:00"
 
 
 def _default_main_digest_config() -> dict[str, Any]:
@@ -79,6 +81,7 @@ def _nightly_review_message(
     repo_root: Path,
     pm_config_path: Path,
     since: str,
+    until: str,
     reviewer_model: str,
     auto_fix_mode: str,
     send_if_possible: bool,
@@ -93,10 +96,14 @@ def _nightly_review_message(
         str(pm_config_path),
         "--since",
         since,
+    ]
+    if str(until or "").strip():
+        command.extend(["--until", until])
+    command.extend([
         "--auto-fix-mode",
         auto_fix_mode,
         "--json",
-    ]
+    ])
     if reviewer_model:
         command.extend(["--reviewer-model", reviewer_model])
     if not send_if_possible:
@@ -106,13 +113,16 @@ def _nightly_review_message(
     joined_command = " ".join(json.dumps(part, ensure_ascii=False) for part in command)
     return "\n".join(
         [
-            f"Nightly review for repo {repo_root}.",
+            f"Daily review for repo {repo_root}.",
+            "",
+            f"Review window: previous calendar day (`{since}` → `{until}`).",
             "",
             "Run this exact command from the repo root:",
             joined_command,
             "",
             "Rules:",
             "- Keep the run scoped to this repo only.",
+            "- Summarize the previous day's commits, changed files, docs updates, and delivery risks; do not summarize today's partial work.",
             "- If the project chat is not configured, still complete the local review and report `send_status=skipped`.",
             "- Reply with review_id, auto-fix result, and what docs descriptions were updated.",
         ]
@@ -237,7 +247,8 @@ def register_nightly_review_job(
     dry_run: bool = False,
     cron_expr: str = DEFAULT_NIGHTLY_CRON,
     timezone_name: str = DEFAULT_NIGHTLY_TIMEZONE,
-    since: str = "24 hours ago",
+    since: str = DEFAULT_NIGHTLY_SINCE,
+    until: str = DEFAULT_NIGHTLY_UNTIL,
     reviewer_model: str = "",
     auto_fix_mode: str = "long-file-and-docs",
     send_if_possible: bool = True,
@@ -261,6 +272,7 @@ def register_nightly_review_job(
         repo_root=Path(normalized_repo_root),
         pm_config_path=Path(normalized_pm_config),
         since=since,
+        until=until,
         reviewer_model=reviewer_model,
         auto_fix_mode=auto_fix_mode,
         send_if_possible=send_if_possible,

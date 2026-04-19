@@ -25,7 +25,9 @@ TEST_MARKERS = ("test_", "_test.", ".spec.", ".test.", "tests/", "__tests__/")
 LONG_FILE_TITLES = {"单文件超过 1000 行", "文件接近 1000 行"}
 DEFAULT_AUTO_FIX_MODE = "long-file-and-docs"
 DEFAULT_TIMEZONE = "Asia/Shanghai"
-DEFAULT_CRON = "30 0 * * *"
+DEFAULT_CRON = "0 6 * * *"
+DEFAULT_SINCE = "yesterday 00:00"
+DEFAULT_UNTIL = "today 00:00"
 
 
 def _now_iso() -> str:
@@ -485,8 +487,8 @@ def run_nightly_review(
     *,
     repo_root: str,
     pm_config: str = "",
-    since: str = "24 hours ago",
-    until: str | None = None,
+    since: str = DEFAULT_SINCE,
+    until: str | None = DEFAULT_UNTIL,
     state_path: str = "",
     channel_id: str = "",
     reviewer_model: str = "",
@@ -608,8 +610,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run one nightly project-review flow for a repo.")
     parser.add_argument("--repo-root", default=".", help="Repo root to review.")
     parser.add_argument("--pm-config", default="", help="Optional pm.json path.")
-    parser.add_argument("--since", default="24 hours ago", help="Git review window start.")
-    parser.add_argument("--until", default=None, help="Optional Git review window end.")
+    parser.add_argument("--since", default=DEFAULT_SINCE, help="Git review window start.")
+    parser.add_argument("--until", default=DEFAULT_UNTIL, help="Optional Git review window end.")
     parser.add_argument("--state-path", default="", help="Optional review state path.")
     parser.add_argument("--channel-id", default="", help="Optional explicit chat id override.")
     parser.add_argument("--reviewer-model", default="", help="Optional reviewer model. Empty means deterministic-only.")

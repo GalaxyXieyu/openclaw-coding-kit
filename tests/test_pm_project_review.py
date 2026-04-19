@@ -117,8 +117,11 @@ class PmProjectReviewRegistryTest(unittest.TestCase):
             job = payload["jobs"][0]
             self.assertEqual("main", job["agentId"])
             self.assertEqual("agent:main:main", job["sessionKey"])
+            self.assertEqual("0 6 * * *", job["schedule"]["expr"])
             self.assertIn("nightly_auto_review.py", job["payload"]["message"])
             self.assertIn(str(repo_root), job["payload"]["message"])
+            self.assertIn('"--since" "yesterday 00:00"', job["payload"]["message"])
+            self.assertIn('"--until" "today 00:00"', job["payload"]["message"])
 
 
 if __name__ == "__main__":

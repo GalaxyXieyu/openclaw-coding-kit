@@ -9,6 +9,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+DEFAULT_SINCE = "yesterday 00:00"
+DEFAULT_UNTIL = "today 00:00"
+
 
 def build_git_log_command(repo_root: str, since: str, until: str | None = None) -> list[str]:
     command = [
@@ -73,8 +76,8 @@ def _json_output(repo_root: str, since: str, until: str | None, commits: list[di
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Inspect whether a repo has recent commits.")
     parser.add_argument("--repo-root", default=".", help="Git repository root.")
-    parser.add_argument("--since", default="24 hours ago", help="Git --since value.")
-    parser.add_argument("--until", default=None, help="Optional Git --until value.")
+    parser.add_argument("--since", default=DEFAULT_SINCE, help="Git --since value.")
+    parser.add_argument("--until", default=DEFAULT_UNTIL, help="Optional Git --until value.")
     parser.add_argument("--json", action="store_true", help="Print JSON output.")
     return parser
 
