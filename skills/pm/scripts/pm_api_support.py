@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -54,6 +55,91 @@ DEFAULT_ATTACHMENT_SCOPES = (
     "task:attachment:write",
     "offline_access",
 )
+OPENCLAW_AGENT_SESSION_RE = re.compile(r"^agent:([^:]+):")
+ACP_LABEL_STALE_GRACE_SECONDS_ENV_VARS = (
+    "PM_ACP_LABEL_STALE_GRACE_SECONDS",
+    "OPENCLAW_PM_ACP_LABEL_STALE_GRACE_SECONDS",
+)
+ACP_LABEL_STALE_GRACE_SECONDS_DEFAULT = 120
+
+
+def _trim_env(name: str) -> str:
+    return str(os.environ.get(name) or "").strip()
+
+
+def _agent_id_from_session_key(session_key: str) -> str:
+    match = OPENCLAW_AGENT_SESSION_RE.match(str(session_key or "").strip())
+    return str(match.group(1) or "").strip() if match else ""
+
+
+def resolve_current_openclaw_context() -> dict[str, str]:
+    session_key = _trim_env("OPENCLAW_SESSION_KEY")
+    if not session_key:
+        return {}
+
+    agent_id = _trim_env("OPENCLAW_AGENT_ID") or _agent_id_from_session_key(session_key)
+    context = {
+        "session_key": session_key,
+        "agent_id": agent_id,
+        "message_channel": _trim_env("OPENCLAW_MESSAGE_CHANNEL"),
+        "account_id": _trim_env("OPENCLAW_ACCOUNT_ID"),
+        "message_to": _trim_env("OPENCLAW_MESSAGE_TO"),
+        "thread_id": _trim_env("OPENCLAW_THREAD_ID"),
+    }
+
+    route_fields = ("message_channel", "account_id", "message_to", "thread_id")
+    needs_lookup = any(not str(context.get(field) or "").strip() for field in route_fields)
+    if needs_lookup and agent_id:
+        state_dir_raw = _trim_env("OPENCLAW_STATE_DIR")
+        state_dir = Path(state_dir_raw).expanduser().resolve() if state_dir_raw else STATE_DIR
+        sessions_path = state_dir / "agents" / agent_id / "sessions" / "sessions.json"
+        payload = load_json_file(sessions_path)
+        session_entry = payload.get(session_key) if isinstance(payload, dict) else None
+        if isinstance(session_entry, dict):
+            delivery_context = session_entry.get("deliveryContext") if isinstance(session_entry.get("deliveryContext"), dict) else {}
+            origin = session_entry.get("origin") if isinstance(session_entry.get("origin"), dict) else {}
+            context["message_channel"] = str(
+                context["message_channel"]
+                or delivery_context.get("channel")
+                or session_entry.get("channel")
+                or origin.get("provider")
+                or ""
+            ).strip()
+            context["account_id"] = str(
+                context["account_id"]
+                or delivery_context.get("accountId")
+                or session_entry.get("lastAccountId")
+                or origin.get("accountId")
+                or ""
+            ).strip()
+            context["message_to"] = str(
+                context["message_to"]
+                or delivery_context.get("to")
+                or session_entry.get("lastTo")
+                or origin.get("to")
+                or ""
+            ).strip()
+            context["thread_id"] = str(
+                context["thread_id"]
+                or delivery_context.get("threadId")
+                or session_entry.get("threadId")
+                or origin.get("threadId")
+                or ""
+            ).strip()
+
+    return {key: value for key, value in context.items() if str(value or "").strip()}
+
+
+def resolve_dispatch_session_key(explicit_session_key: str = "", *, fallback: str = "") -> str:
+    explicit = str(explicit_session_key or "").strip()
+    if explicit:
+        return explicit
+    current = resolve_current_openclaw_context()
+    current_session_key = str(current.get("session_key") or "").strip()
+    if current_session_key:
+        return current_session_key
+    resolved_fallback = str(fallback or "").strip()
+    return resolved_fallback or "main"
 
 
 def _bridge_script_candidates() -> tuple[Path, ...]:
@@ -271,6 +357,162 @@ def build_run_label(root: Path, agent_id: str, task_id: str) -> str:
     from pm_dispatch import build_run_label as format_run_label
 
     return format_run_label(root, agent_id, task_id)
+
+
+def _openclaw_state_dir() -> Path:
+    state_dir_raw = _trim_env("OPENCLAW_STATE_DIR")
+    return Path(state_dir_raw).expanduser().resolve() if state_dir_raw else STATE_DIR
+
+
+def _stale_grace_ms() -> int:
+    for env_name in ACP_LABEL_STALE_GRACE_SECONDS_ENV_VARS:
+        raw = _trim_env(env_name)
+        if not raw:
+            continue
+        try:
+            seconds = max(0, int(raw))
+        except ValueError:
+            continue
+        return seconds * 1000
+    return ACP_LABEL_STALE_GRACE_SECONDS_DEFAULT * 1000
+
+
+def _entry_session_file_exists(entry: dict[str, Any]) -> bool:
+    session_file_raw = str(entry.get("sessionFile") or "").strip()
+    if not session_file_raw:
+        return False
+    return Path(session_file_raw).expanduser().exists()
+
+
+def _bridge_activity_anchor_ms(bridge_run: dict[str, Any], entry: dict[str, Any]) -> int:
+    candidates = (
+        bridge_run.get("lastEventAt"),
+        bridge_run.get("discoveredAt"),
+        entry.get("updatedAt"),
+    )
+    values: list[int] = []
+    for candidate in candidates:
+        try:
+            value = int(candidate or 0)
+        except (TypeError, ValueError):
+            value = 0
+        if value > 0:
+            values.append(value)
+    return max(values) if values else 0
+
+
+def best_effort_release_stale_acp_label(agent_id: str, label: str) -> dict[str, Any]:
+    resolved_agent_id = str(agent_id or "").strip()
+    resolved_label = str(label or "").strip()
+    if not resolved_agent_id or not resolved_label:
+        return {"status": "invalid", "agent_id": resolved_agent_id, "label": resolved_label}
+
+    state_dir = _openclaw_state_dir()
+    sessions_path = state_dir / "agents" / resolved_agent_id / "sessions" / "sessions.json"
+    sessions_payload = load_json_file(sessions_path)
+    if not isinstance(sessions_payload, dict):
+        return {
+            "status": "missing_session_store",
+            "agent_id": resolved_agent_id,
+            "label": resolved_label,
+            "sessions_path": str(sessions_path),
+        }
+
+    matches: list[tuple[str, dict[str, Any]]] = []
+    for session_key, entry in sessions_payload.items():
+        if not isinstance(entry, dict):
+            continue
+        entry_label = str(entry.get("label") or "").strip()
+        if entry_label == resolved_label:
+            matches.append((str(session_key).strip(), entry))
+    if not matches:
+        return {"status": "not_found", "agent_id": resolved_agent_id, "label": resolved_label}
+
+    child_session_key, entry = sorted(matches, key=lambda item: int((item[1].get("updatedAt") or 0)), reverse=True)[0]
+    acp_payload = entry.get("acp") if isinstance(entry.get("acp"), dict) else {}
+    acp_state = str(acp_payload.get("state") or "").strip().lower()
+    bridge_state_path = state_dir / "plugins" / "acp-progress-bridge" / "state.json"
+    bridge_payload = load_json_file(bridge_state_path)
+    bridge_runs = bridge_payload.get("runs") if isinstance(bridge_payload, dict) else {}
+    bridge_run = bridge_runs.get(child_session_key) if isinstance(bridge_runs, dict) else {}
+    if not isinstance(bridge_run, dict):
+        bridge_run = {}
+
+    bridge_done_at = int(bridge_run.get("doneAt") or 0)
+    terminal_kind = str(bridge_run.get("terminalKind") or "").strip().lower()
+    completion_handled = bool(bridge_run.get("completionHandled"))
+    status_hint = str(bridge_run.get("statusHint") or "").strip()
+    bridge_acp_state = str(bridge_run.get("acpState") or "").strip().lower()
+    stream_exists = bool(bridge_run.get("streamExists"))
+    session_file_exists = bool(bridge_run.get("sessionFileExists")) if bridge_run else _entry_session_file_exists(entry)
+    activity_anchor_ms = _bridge_activity_anchor_ms(bridge_run, entry)
+    stale_grace_ms = _stale_grace_ms()
+    stale_for_ms = max(0, unix_ts() * 1000 - activity_anchor_ms) if activity_anchor_ms else 0
+    missing_observability = (not stream_exists) or (not session_file_exists)
+
+    stale_reason = ""
+    replacement_state = ""
+    if acp_state in {"idle", "error"}:
+        stale_reason = f"session store already marked terminal: {acp_state}"
+        replacement_state = acp_state
+    elif bridge_acp_state in {"idle", "error"}:
+        stale_reason = f"ACP bridge observed terminal session state: {bridge_acp_state}"
+        replacement_state = bridge_acp_state
+    elif bridge_done_at and completion_handled:
+        stale_reason = "ACP bridge already marked the run complete"
+        replacement_state = "error" if terminal_kind == "error" else "idle"
+    elif bridge_done_at and "completion already detected" in status_hint:
+        stale_reason = "ACP bridge observed terminal completion"
+        replacement_state = "error" if terminal_kind == "error" else "idle"
+    elif (
+        acp_state in {"", "pending", "running"}
+        and missing_observability
+        and stale_for_ms >= stale_grace_ms
+    ):
+        stale_reason = (
+            "ACP bridge lost transcript/stream observability "
+            f"for {stale_for_ms // 1000}s: {status_hint or 'missing session transcript or stream'}"
+        )
+        replacement_state = "error"
+
+    if not stale_reason:
+        return {
+            "status": "in_use",
+            "agent_id": resolved_agent_id,
+            "label": resolved_label,
+            "child_session_key": child_session_key,
+            "acp_state": acp_state,
+            "bridge_done_at": bridge_done_at,
+            "completion_handled": completion_handled,
+            "status_hint": status_hint,
+            "bridge_acp_state": bridge_acp_state,
+            "stream_exists": stream_exists,
+            "session_file_exists": session_file_exists,
+            "stale_for_ms": stale_for_ms,
+            "stale_grace_ms": stale_grace_ms,
+        }
+
+    next_entry = dict(entry)
+    next_entry.pop("label", None)
+    next_acp_payload = dict(acp_payload)
+    if replacement_state:
+        next_acp_payload["state"] = replacement_state
+    if next_acp_payload:
+        next_entry["acp"] = next_acp_payload
+    next_entry["updatedAt"] = unix_ts() * 1000
+    sessions_payload[child_session_key] = next_entry
+    sessions_path.write_text(json.dumps(sessions_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "status": "released",
+        "agent_id": resolved_agent_id,
+        "label": resolved_label,
+        "child_session_key": child_session_key,
+        "previous_acp_state": acp_state,
+        "replacement_state": replacement_state,
+        "reason": stale_reason,
+        "sessions_path": str(sessions_path),
+    }
 
 
 def spawn_acp_session(

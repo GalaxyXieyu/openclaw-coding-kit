@@ -1,0 +1,70 @@
+{
+  "id": "skill-router",
+  "name": "Skill Router",
+  "version": "0.1.0",
+  "description": "Prepend a compact skill selection block before each agent run to improve skill/tool invocation.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": { "type": "boolean", "default": true },
+      "maxSkills": { "type": "number", "default": 12 },
+      "includeGlobalSkills": { "type": "boolean", "default": true },
+      "includeWorkspaceSkills": { "type": "boolean", "default": true },
+      "respectAgentSkillsFilter": { "type": "boolean", "default": true },
+      "mode": {
+        "type": "string",
+        "enum": ["force", "suggest"],
+        "default": "force",
+        "description": "force: require the model to consider skills before answering; suggest: only provide a hint block"
+      },
+      "skipShortPromptsMinChars": {
+        "type": "number",
+        "default": 12,
+        "description": "Do not inject router block when prompt is shorter than this many chars (after trimming/stripping)."
+      },
+      "includeSubagents": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include available subagents (sessions_spawn targets) in the router block to reduce forgetting."
+      },
+      "maxSubagents": {
+        "type": "number",
+        "default": 8,
+        "description": "Max subagents to include in the router block."
+      },
+      "llmRouting": {
+        "type": "object",
+        "properties": {
+          "enabled": { "type": "boolean", "default": false },
+          "model": {
+            "type": "string",
+            "description": "Model id or provider/model (e.g. packyapi/gpt-5.2). If provider omitted, uses current agent provider."
+          },
+          "thinking": {
+            "type": "string",
+            "enum": ["off", "minimal", "low", "medium", "high", "xhigh"],
+            "default": "low"
+          },
+          "topK": { "type": "number", "default": 4 },
+          "maxOutputTokens": { "type": "number", "default": 256 },
+          "timeoutMs": { "type": "number", "default": 12000 },
+          "logSelected": { "type": "boolean", "default": true, "description": "Write routing decisions to plugins/skill-router/router.log as JSONL (prompt is not logged; only a hash)." }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  },
+  "uiHints": {
+    "enabled": { "label": "Enabled" },
+    "maxSkills": { "label": "Max Skills In Router Block" },
+    "includeGlobalSkills": { "label": "Include ~/.openclaw/skills" },
+    "includeWorkspaceSkills": { "label": "Include <workspace>/skills" },
+    "respectAgentSkillsFilter": { "label": "Respect agents.list[].skills Filter" },
+    "mode": { "label": "Router Mode" },
+    "skipShortPromptsMinChars": { "label": "Skip Short Prompts (min chars)" },
+    "includeSubagents": { "label": "Include Subagents" },
+    "maxSubagents": { "label": "Max Subagents" },
+    "llmRouting": { "label": "LLM Routing (Top-K)" }
+  }
+}

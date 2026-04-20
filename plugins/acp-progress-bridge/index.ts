@@ -15,6 +15,8 @@ import {
   isMeaningfulProgressText,
   matchesAnyPrefix,
   matchesPrefixPattern,
+  mentionsExternalPermissionWait,
+  neutralizeExternalPermissionWait,
   normalizeConfig,
   nowMs,
   parseSessionKey,
@@ -30,6 +32,7 @@ const PLUGIN_ID = "acp-progress-bridge";
 const CHILD_ENV_FLAG = "OPENCLAW_ACP_PROGRESS_BRIDGE_CHILD";
 const STATE_VERSION = 1;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const CHOICE_REQUEST_DIR = "choice-requests";
 
 type BridgeConfig = {
   enabled?: boolean;
@@ -69,6 +72,8 @@ type RelaySnapshot = {
   lineCount: number;
   latestProgressText?: string;
   doneAt?: number;
+  terminalKind?: "done" | "error";
+  terminalError?: string;
   lastEventAt?: number;
   assistantTail?: string;
 };
@@ -89,6 +94,8 @@ type TrackedRun = {
   lastProgressSentAt?: number;
   progressCount: number;
   doneAt?: number;
+  terminalKind?: "done" | "error";
+  terminalError?: string;
   completionHandled?: boolean;
   completionHandledAt?: number;
   assistantTail?: string;
@@ -105,6 +112,11 @@ type TrackedRun = {
 type BridgeState = {
   version: number;
   runs: Record<string, TrackedRun>;
+};
+
+type ChoiceRecord = {
+  sessionKey?: string;
+  state?: string;
 };
 
 function sha1(text: string) {
@@ -130,6 +142,23 @@ async function fileExists(filePath: string) {
 
 async function ensureDir(dirPath: string) {
   await fs.mkdir(dirPath, { recursive: true });
+}
+
+async function childHasChoiceEvidence(stateDir: string, childSessionKey: string): Promise<boolean> {
+  try {
+    const dirPath = path.join(stateDir, CHOICE_REQUEST_DIR);
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+      const record = (await readJson(path.join(dirPath, entry.name))) as ChoiceRecord | null;
+      if (record?.sessionKey === childSessionKey) {
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 async function loadState(stateFile: string): Promise<BridgeState> {
@@ -271,6 +300,9 @@ function buildObservabilityStatus(run: TrackedRun) {
     return "tracked but session transcript file is missing";
   }
   if (run.doneAt) {
+    if (run.terminalKind === "error") {
+      return "error terminal detected; waiting for settle window";
+    }
     return "completion detected; waiting for settle window";
   }
   if (isMeaningfulProgressText(run.lastProgressText)) {
@@ -351,7 +383,13 @@ function formatStatusSummary(
     `- discovery: ${discoverySummary}`,
   ];
   for (const run of runs.slice(0, 8)) {
-    const status = run.completionHandled ? "done" : run.doneAt ? "awaiting-finalization" : "running";
+    const status = run.completionHandled
+      ? run.terminalKind === "error"
+        ? "error"
+        : "done"
+      : run.doneAt
+        ? "awaiting-finalization"
+        : "running";
     const progress = run.lastProgressText ? ` · progress=${run.lastProgressText}` : "";
     const hint = run.statusHint ? ` · hint=${run.statusHint}` : "";
     lines.push(`- ${status} · child=${run.childSessionKey}${progress}${hint}`);
@@ -486,6 +524,8 @@ export default function register(api: any) {
           lastProgressSentAt: existing?.lastProgressSentAt,
           progressCount: existing?.progressCount ?? 0,
           doneAt: existing?.doneAt,
+          terminalKind: existing?.terminalKind,
+          terminalError: existing?.terminalError,
           completionHandled: existing?.completionHandled,
           completionHandledAt: existing?.completionHandledAt,
           assistantTail: existing?.assistantTail,
@@ -537,6 +577,8 @@ export default function register(api: any) {
         if (snapshot.latestProgressText) run.lastProgressText = snapshot.latestProgressText;
         if (snapshot.assistantTail) run.assistantTail = snapshot.assistantTail;
         if (snapshot.doneAt) run.doneAt = snapshot.doneAt;
+        if (snapshot.terminalKind) run.terminalKind = snapshot.terminalKind;
+        if (snapshot.terminalError) run.terminalError = snapshot.terminalError;
       }
     }
 
@@ -555,6 +597,7 @@ export default function register(api: any) {
         run.lastSeenAt = nowMs();
         run.completionHandled = false;
         run.completionHandledAt = undefined;
+        if (!run.terminalKind) run.terminalKind = "done";
         run.statusHint = "transcript tail updated after completion";
       }
     }
@@ -589,6 +632,13 @@ export default function register(api: any) {
     return run.parentSessionId;
   }
 
+  async function sanitizeBridgeTextIfNeeded(run: TrackedRun, text?: string) {
+    if (!text || !mentionsExternalPermissionWait(text)) return text;
+    if (await childHasChoiceEvidence(stateDir, run.childSessionKey)) return text;
+    run.statusHint = "sanitized unsupported external-choice wording; no choice record found";
+    return neutralizeExternalPermissionWait(text);
+  }
+
   async function maybeSendProgress(run: TrackedRun) {
     if (!config.deliverProgress) {
       run.statusHint = "progress delivery disabled by config";
@@ -603,11 +653,12 @@ export default function register(api: any) {
       return;
     }
 
-    const progressText = isMeaningfulProgressText(run.lastProgressText)
+    const rawProgressText = isMeaningfulProgressText(run.lastProgressText)
       ? run.lastProgressText
       : run.progressCount === 0 && (run.lastEventAt || run.processedLineCount > 0)
         ? buildFallbackProgressText()
         : undefined;
+    const progressText = await sanitizeBridgeTextIfNeeded(run, rawProgressText);
     if (!progressText) {
       run.statusHint = buildObservabilityStatus(run);
       return;
@@ -683,7 +734,11 @@ export default function register(api: any) {
       return;
     }
 
-    const message = buildCompletionBridgeMessage(run);
+    const message = buildCompletionBridgeMessage({
+      ...run,
+      lastProgressText: await sanitizeBridgeTextIfNeeded(run, run.lastProgressText),
+      assistantTail: await sanitizeBridgeTextIfNeeded(run, run.assistantTail),
+    });
     run.completionHandled = true;
     run.completionHandledAt = nowMs();
     run.statusHint = config.deliverCompletion ? "completion delivery queued" : "completion processed without parent deliver";

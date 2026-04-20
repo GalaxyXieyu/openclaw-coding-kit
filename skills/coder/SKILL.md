@@ -20,6 +20,23 @@ Use `coder` only after PM has already done intake and context preparation.
 
 If planning is still unclear, bounce back to PM or GSD instead of letting coder become an ad-hoc planner.
 
+## ACP Observability Contract
+
+For ACP coding runs, treat observability as part of the execution contract, not as an optional extra.
+
+- For `runtime="acp"` plus one-shot execution (`mode="run"` / ACP `oneshot`), default to `streamTo:"parent"` when spawning from PM or another parent session.
+- This parent stream relay is the only reliable source of mid-run progress for lightweight status checks and bridge delivery.
+- Without `streamTo:"parent"`, the lightweight observer usually only sees local `sessions.json`, a final transcript if one is eventually written, and an ACP stream file only if the runtime created one on its own.
+- In that degraded mode, `running` does not mean "healthy and producing output"; it can also mean "accepted but not yet observable".
+
+Only skip `streamTo:"parent"` when one of these is explicitly true:
+
+- the ACP session is thread-bound / persistent (`mode="session"`)
+- the caller intentionally wants a quiet background run and accepts reduced progress visibility
+- parent-session relay would be incorrect for that channel or workflow
+
+When users ask for progress, prefer telling them whether the run is observable, not just whether the ACP state says `running`.
+
 ## Required intake sequence
 
 Before coding:

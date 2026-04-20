@@ -346,6 +346,12 @@ def build_init_command_handlers(api: Any) -> dict[str, CommandHandler]:
         auto_run_reason = "disabled_by_flag" if args.skip_auto_run else "not_requested"
         if not args.skip_auto_run:
             if isinstance(bootstrap_task, dict) and bootstrap_task.get("created"):
+                fallback_session_key = str((config_payload.get("coder") or {}).get("session_key") or "main").strip() or "main"
+                resolve_dispatch_session_key = getattr(api, "resolve_dispatch_session_key", None)
+                if callable(resolve_dispatch_session_key):
+                    resolved_session_key = resolve_dispatch_session_key(args.session_key, fallback=fallback_session_key)
+                else:
+                    resolved_session_key = str(args.session_key or fallback_session_key or "main").strip() or "main"
                 run_args = argparse.Namespace(
                     task_id=selected_task_id,
                     task_guid=selected_task_guid,
@@ -353,7 +359,7 @@ def build_init_command_handlers(api: Any) -> dict[str, CommandHandler]:
                     agent=args.agent or str((config_payload.get("coder") or {}).get("agent_id") or "codex"),
                     timeout=int(args.timeout or (config_payload.get("coder") or {}).get("timeout") or 900),
                     thinking=args.thinking or str((config_payload.get("coder") or {}).get("thinking") or "high"),
-                    session_key=args.session_key or str((config_payload.get("coder") or {}).get("session_key") or "main"),
+                    session_key=resolved_session_key,
                 )
                 auto_run_reason = "bootstrap_task_created"
                 bundle, coder_context_path = api.build_coder_context(task_id=selected_task_id, task_guid=selected_task_guid)

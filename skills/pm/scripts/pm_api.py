@@ -57,6 +57,7 @@ from pm_api_gsd import sync_gsd_progress
 from pm_api_gsd import update_doc
 from pm_api_support import build_auth_bundle
 from pm_api_support import build_auth_link
+from pm_api_support import best_effort_release_stale_acp_label
 from pm_api_support import build_permission_bundle
 from pm_api_support import build_run_label
 from pm_api_support import build_workspace_profile
@@ -80,6 +81,8 @@ from pm_api_support import register_nightly_review_job
 from pm_api_support import register_workspace
 from pm_api_support import request_json
 from pm_api_support import request_user_oauth_link
+from pm_api_support import resolve_current_openclaw_context
+from pm_api_support import resolve_dispatch_session_key
 from pm_api_support import resolve_openclaw_config_path
 from pm_api_support import resolve_workspace_root
 from pm_api_support import run_bridge
@@ -135,6 +138,7 @@ def build_cli_api() -> SimpleNamespace:
         attachment_auth_result=attachment_auth_result,
         build_auth_bundle=build_auth_bundle,
         build_auth_link=build_auth_link,
+        best_effort_release_stale_acp_label=best_effort_release_stale_acp_label,
         build_completion_changes=build_completion_changes,
         build_completion_comment=build_completion_comment,
         build_context_payload=build_context_payload,
@@ -192,6 +196,8 @@ def build_cli_api() -> SimpleNamespace:
         register_workspace=register_workspace,
         request_json=request_json,
         request_user_oauth_link=request_user_oauth_link,
+        resolve_current_openclaw_context=resolve_current_openclaw_context,
+        resolve_dispatch_session_key=resolve_dispatch_session_key,
         resolve_config_path=resolve_config_path,
         resolve_effective_task=resolve_effective_task,
         resolve_openclaw_config_path=resolve_openclaw_config_path,

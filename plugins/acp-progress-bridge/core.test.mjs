@@ -8,6 +8,8 @@ import {
   evaluateReplayDecision,
   evaluateSettleState,
   matchesAnyPrefix,
+  mentionsExternalPermissionWait,
+  neutralizeExternalPermissionWait,
   normalizeConfig,
   pickAssistantTail,
   pruneTrackedRuns,
@@ -66,6 +68,22 @@ test("readRelaySnapshotFromText captures progress, done, and assistant tail", ()
   assert.match(snapshot.assistantTail, /已改动/);
 });
 
+test("readRelaySnapshotFromText captures error terminals from lifecycle and system events", () => {
+  const snapshot = readRelaySnapshotFromText(
+    [
+      JSON.stringify({ kind: "system_event", contextKey: "run:progress", text: "codex: 正在定位失败", epochMs: 1000, runId: "run-2" }),
+      JSON.stringify({ kind: "assistant_delta", delta: "最后一段输出" }),
+      JSON.stringify({ kind: "lifecycle", phase: "error", epochMs: 2000, data: { error: "acpx exited with code 3" } }),
+      JSON.stringify({ kind: "system_event", contextKey: "run:error", text: "codex run failed: acpx exited with code 3", epochMs: 2001 }),
+    ].join("\n"),
+    5000,
+  );
+  assert.equal(snapshot.runId, "run-2");
+  assert.equal(snapshot.doneAt, 2001);
+  assert.equal(snapshot.terminalKind, "error");
+  assert.match(snapshot.terminalError, /code 3/);
+});
+
 test("readTranscriptSnapshotFromText prefers the final assistant message", () => {
   const snapshot = readTranscriptSnapshotFromText(
     [
@@ -100,11 +118,38 @@ test("bridge messages preserve internal markers and grounded payloads", () => {
   assert.match(completionMessage, /kind: done/);
   assert.match(completionMessage, /assistant_tail/);
   assert.match(completionMessage, /最终总结/);
+
+  const errorMessage = buildCompletionBridgeMessage({
+    childSessionKey: "agent:codex:acp:child-2",
+    runId: "run-2",
+    lastProgressText: "正在定位失败",
+    doneAt: 5678,
+    assistantTail: "最后一段输出",
+    terminalKind: "error",
+    terminalError: "acpx exited with code 3",
+  });
+  assert.match(errorMessage, /kind: error/);
+  assert.match(errorMessage, /terminal_error: acpx exited with code 3/);
 });
 
 test("pickAssistantTail prefers meaningful completion markers", () => {
   const tail = pickAssistantTail("前文\nSummary\n结果\n**已完成**\n- ok", 100);
   assert.match(tail, /已完成/);
+});
+
+test("permission wait helpers detect and neutralize unsupported external-choice wording", () => {
+  assert.equal(mentionsExternalPermissionWait("写入仍处于等待态，继续等待外部选择完成。"), true);
+  assert.equal(mentionsExternalPermissionWait("still waiting for external choice"), true);
+  assert.equal(mentionsExternalPermissionWait("命令仍未返回输出"), false);
+
+  assert.equal(
+    neutralizeExternalPermissionWait("写入仍处于等待态，继续等待外部选择完成。"),
+    "写入仍处于等待态，继续等待命令返回。",
+  );
+  assert.equal(
+    neutralizeExternalPermissionWait("still waiting for external choice"),
+    "still waiting for command completion",
+  );
 });
 
 test("evaluateReplayDecision skips stale completions discovered late", () => {

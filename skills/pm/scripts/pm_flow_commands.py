@@ -43,12 +43,21 @@ def build_flow_command_handlers(api: Any) -> dict[str, CommandHandler]:
         agent_id = str(args.agent or coder.get("agent_id") or "codex").strip() or "codex"
         timeout_seconds = int(args.timeout or coder.get("timeout") or 900)
         thinking = str(args.thinking or coder.get("thinking") or "high").strip()
-        session_key = str(args.session_key or coder.get("session_key") or "main").strip() or "main"
+        fallback_session_key = str(coder.get("session_key") or "main").strip() or "main"
+        resolve_dispatch_session_key = getattr(api, "resolve_dispatch_session_key", None)
+        if callable(resolve_dispatch_session_key):
+            session_key = resolve_dispatch_session_key(args.session_key, fallback=fallback_session_key)
+        else:
+            session_key = str(args.session_key or fallback_session_key or "main").strip() or "main"
         message = api.build_run_message(bundle)
         task = api.resolve_effective_task(bundle)
         task_id = str(task.get("task_id") or "").strip()
         label = api.build_run_label(api.project_root_path(), agent_id, task_id)
+        label_recovery: dict[str, Any] = {}
         if backend == "acp":
+            release_stale_label = getattr(api, "best_effort_release_stale_acp_label", None)
+            if callable(release_stale_label) and label:
+                label_recovery = release_stale_label(agent_id=agent_id, label=label)
             result = api.spawn_acp_session(
                 agent_id=agent_id,
                 message=message,
@@ -88,6 +97,8 @@ def build_flow_command_handlers(api: Any) -> dict[str, CommandHandler]:
             "result": result,
             "side_effects": side_effects,
         }
+        if label_recovery:
+            payload["label_recovery"] = label_recovery
         api.write_pm_bundle("last-run.json", payload)
         return emit(payload)
 

@@ -32,6 +32,19 @@ def extract_text_payloads(agent_result: dict[str, Any]) -> list[str]:
     return texts
 
 
+def extract_dispatch_status(dispatch_result: dict[str, Any], *, session_key: str = "", run_id: str = "") -> tuple[str, str]:
+    result = dispatch_result.get("result") if isinstance(dispatch_result.get("result"), dict) else {}
+    result_details = result.get("details") if isinstance(result.get("details"), dict) else {}
+    details = dispatch_result.get("details") if isinstance(dispatch_result.get("details"), dict) else {}
+    status = str(result_details.get("status") or details.get("status") or dispatch_result.get("status") or "").strip().lower()
+    error = str(result_details.get("error") or details.get("error") or dispatch_result.get("error") or "").strip()
+    if not status and (session_key or run_id):
+        status = "accepted"
+    if error and status in {"", "ok"} and not (session_key or run_id):
+        status = "error"
+    return status, error
+
+
 def extract_description_field(description: str, label: str) -> str:
     prefix = f"{label}:"
     for line in str(description or "").splitlines():
@@ -165,9 +178,13 @@ def persist_dispatch_side_effects(
     task_guid = str(task.get("guid") or "").strip()
     task_id = str(task.get("task_id") or "").strip()
     session_key, run_id = extract_dispatch_ids(dispatch_result)
-    lines = [f"已派发 {runtime} {agent_id} 异步执行。"]
+    status, error = extract_dispatch_status(dispatch_result, session_key=session_key, run_id=run_id)
+    failed = status in {"error", "failed"} or bool(error)
+    lines = [f"{runtime} {agent_id} 派发失败。"] if failed else [f"已派发 {runtime} {agent_id} 异步执行。"]
     if task_id:
         lines.append(f"任务：{task_id}")
+    if error:
+        lines.append(f"error: {error}")
     if session_key:
         lines.append(f"session_key: {session_key}")
     if run_id:
@@ -178,9 +195,11 @@ def persist_dispatch_side_effects(
         "",
         "## PM Dispatch Update",
         f"- 时间：{now_text()}",
+        f"- 状态：{'失败' if failed else '已派发'}",
         f"- runtime：{runtime}",
         f"- agent：{agent_id}",
         *([f"- 任务：{task_id}"] if task_id else []),
+        *([f"- error：{error}"] if error else []),
         *([f"- session_key：{session_key}"] if session_key else []),
         *([f"- run_id：{run_id}"] if run_id else []),
     ])
@@ -190,6 +209,8 @@ def persist_dispatch_side_effects(
     return {
         "comment_result": comment_result,
         "state_doc_result": state_result,
+        "status": status or ("error" if failed else "accepted"),
+        "error": error,
         "session_key": session_key,
         "run_id": run_id,
     }

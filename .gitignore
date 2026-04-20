@@ -16,6 +16,8 @@ USER.md
 # Runtime and local state
 skills/pm/state/
 plugins/acp-progress-bridge/state.json
+plugins/skill-router/router.log
+plugins/skill-router/routes.jsonl
 *.token.json
 *.session.json
 *.cache
