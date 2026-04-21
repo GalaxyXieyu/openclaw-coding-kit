@@ -42,7 +42,7 @@
 
 1. 先装基础运行时：`python3 >= 3.9`、`node >= 22`、`openclaw = 2026.3.22`、`codex`、`gsd-tools`；如果要 ACP / bridge，再装 `acpx`
 2. 如果目标包含 Feishu，这一步就并行准备：安装 `@larksuite/openclaw-lark`、写 `channels.feishu`、准备飞书 app / bot / 群 / 权限、让用户完成 `/auth`；如果要附件上传，再补 attachment OAuth
-3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/openclaw-lark-bridge` 放到 Codex；`plugins/acp-progress-bridge` 放到 OpenClaw；兼容窗口内如仍依赖旧 board 命令，再额外同步 `skills/interaction-board`
+3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/interaction-board`、`skills/openclaw-lark-bridge` 放到 Codex；`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/interaction-board` 放到 OpenClaw workspace skills；`plugins/acp-progress-bridge`、`plugins/skill-router` 放到 OpenClaw plugins
 4. 写配置：先把 `openclaw.json` 和 `pm.json` 配好
 5. 再跑 smoke / runtime 验证：这时再跑 `py_compile`、`context --refresh`、`route-gsd`、`openclaw agents list --bindings`、`openclaw plugins list`
 6. 最后才做真实 backend 的 `init` 和 E2E；如果是 Feishu backend，必须等 bot / 群 / 权限都 ready 之后再跑真实 `pm init`
@@ -352,13 +352,14 @@ skills/openclaw-lark-bridge  -> ~/.codex/skills/openclaw-lark-bridge
 
 OpenClaw workspace
 plugins/acp-progress-bridge  -> $OPENCLAW_WORKSPACE/plugins/acp-progress-bridge
+plugins/skill-router         -> $OPENCLAW_WORKSPACE/plugins/skill-router
 ```
 
 默认推荐：
 
-- `pm`、`coder`、`openclaw-lark-bridge` 先放到 Codex skills 目录
-- OpenClaw 侧默认同步 `pm`、`coder` 到 workspace skills
-- `acp-progress-bridge` 同步到 OpenClaw plugins 目录
+- `pm`、`coder`、`product-canvas`、`interaction-board`、`openclaw-lark-bridge` 先放到 Codex skills 目录
+- OpenClaw 侧默认同步 `pm`、`coder`、`product-canvas`、`interaction-board` 到 workspace skills
+- `acp-progress-bridge`、`skill-router` 同步到 OpenClaw plugins 目录
 - `skills/openclaw-lark-bridge` 仍然不作为默认 OpenClaw workspace 资产
 
 推荐直接使用仓库自带同步脚本：
@@ -369,9 +370,9 @@ python3 scripts/sync_local_skills.py --target both
 
 脚本行为：
 
-- `codex`：默认同步 `pm`、`coder`、`openclaw-lark-bridge`、`project-review`
-- `openclaw`：默认同步 `pm`、`coder`
-- `openclaw plugins`：默认同步 `acp-progress-bridge`
+- `codex`：默认同步 `pm`、`coder`、`product-canvas`、`interaction-board`、`openclaw-lark-bridge`、`project-review`
+- `openclaw`：默认同步 `pm`、`coder`、`product-canvas`、`interaction-board`
+- `openclaw plugins`：默认同步 `acp-progress-bridge`、`skill-router`
 - 对未变化目录直接跳过，不再每次整目录备份重装
 - 会忽略 `__pycache__`、`.DS_Store`、`*.pyc`
 
@@ -394,6 +395,7 @@ python3 scripts/sync_local_skills.py --target openclaw --skill pm --skill coder 
 - `~/.codex/skills/coder/SKILL.md` 是否存在
 - `~/.codex/skills/openclaw-lark-bridge/SKILL.md` 是否存在
 - `plugins/acp-progress-bridge` 主文件是否存在
+- `plugins/skill-router` 主文件是否存在
 
 这里仍然不建议默认复制：
 
@@ -753,6 +755,38 @@ python3 skills/pm/scripts/pm.py permission-bundle \
 4. `bridge-status` 是否已显示 `progress delivered` 或 `completion delivered`
 
 如果 plugin 内部已经 delivered，但外部仍看不到结果，再去查父会话策略、bindings 或消息投递链路。
+
+### 6.8 默认启用 skill router
+
+`skill-router` 属于推荐默认插件，不是只在少数兼容场景才开。
+
+它会在 agent 运行前注入一段紧凑的 skill / subagent 提示，减少模型忘记可用能力、忘记当前 agent 的 skill filter，或者在长对话里把可用工具“跑丢”。
+
+最小启用形状可以是：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "skill-router": {
+        "enabled": true,
+        "config": {
+          "enabled": true,
+          "mode": "force",
+          "maxSkills": 12,
+          "includeSubagents": true
+        }
+      }
+    }
+  }
+}
+```
+
+常见排查点：
+
+1. `openclaw plugins list` 里是否能看到 `skill-router`
+2. `plugins/skill-router/openclaw.plugin.json` 是否已同步到 workspace
+3. 如果怀疑路由结果异常，再看 `plugins/skill-router/router.log`
 
 ## 7. 验收建议
 

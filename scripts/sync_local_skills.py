@@ -30,6 +30,7 @@ DEFAULT_OPENCLAW_SKILLS = (
 
 DEFAULT_OPENCLAW_PLUGINS = (
     "acp-progress-bridge",
+    "skill-router",
 )
 
 AUTO_MODES = {

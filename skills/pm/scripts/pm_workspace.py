@@ -313,13 +313,7 @@ def _workspace_heartbeat_config(*, english_name: str, repo_root: Path) -> dict[s
     }
 
 
-def scaffold_workspace(
-    *,
-    output: Path,
-    profile: dict[str, Any],
-    force: bool = False,
-    dry_run: bool = False,
-) -> dict[str, Any]:
+def _workspace_existing_state(output: Path) -> tuple[bool, bool]:
     workspace_exists = output.exists()
     workspace_non_empty = False
     if workspace_exists:
@@ -327,26 +321,31 @@ def scaffold_workspace(
             workspace_non_empty = any(output.iterdir())
         except OSError:
             workspace_non_empty = False
+    return workspace_exists, workspace_non_empty
+
+
+def _prepare_workspace_output(output: Path, *, force: bool, dry_run: bool) -> tuple[bool, bool]:
+    workspace_exists, workspace_non_empty = _workspace_existing_state(output)
     if output.exists() and force:
         if not dry_run:
             shutil.rmtree(output)
     elif workspace_exists and workspace_non_empty and not dry_run:
         raise SystemExit(f"workspace already exists and is not empty: {output}")
+    return workspace_exists, workspace_non_empty
 
+
+def _workspace_scaffold_values(profile: dict[str, Any]) -> dict[str, str]:
     task_backend = profile["taskBackend"]
     workers = profile["workers"]
     english_name = str(profile["projectName"])
-    source_name = str(profile.get("sourceProjectName") or "")
-    group_id = str(profile["groupId"])
     repo_root = Path(str(profile["repoRoot"])).expanduser().resolve()
     tasklist_name = str(task_backend.get("tasklistName") or english_name)
     doc_folder_name = str(profile.get("docFolderName") or english_name)
-
-    values = {
+    return {
         "project_id": str(profile["projectId"]),
         "project_name": english_name,
         "channel": str(profile["channel"]),
-        "group_id": group_id,
+        "group_id": str(profile["groupId"]),
         "front_agent_id": str(profile["frontAgentId"]),
         "repo_root": str(repo_root),
         "task_backend_type": str(task_backend["type"]),
@@ -358,39 +357,31 @@ def scaffold_workspace(
         "preferred_ui_worker": str(workers.get("ui") or "gemini"),
     }
 
-    template_map = {
+
+def _workspace_template_targets(output: Path) -> dict[str, Path]:
+    return {
         "AGENTS.md.tpl": output / "AGENTS.md",
         "IDENTITY.md.tpl": output / "IDENTITY.md",
         "TOOLS.md.tpl": output / "TOOLS.md",
         "WORKFLOW_AUTO.md.tpl": output / "WORKFLOW_AUTO.md",
     }
-    template_root = workspace_template_root()
-    repo_template = repo_template_root() / REPO_AGENTS_TEMPLATE_NAME
 
-    generated_files: list[str] = []
-    if dry_run:
-        preview_files = list(template_map.values()) + [
-            repo_root / "AGENTS.md",
-            output / "config/project-profile.json",
-            output / "subagents" / values["reviewer_worker"] / "AGENTS.md",
-            output / "subagents" / values["reviewer_worker"] / "IDENTITY.md",
-            output / "memory.md",
-            output / "HEARTBEAT.md",
-            output / "BOOTSTRAP.md",
-            output / ".openclaw" / "heartbeat.json",
-        ]
-        return {
-            "workspace_root": str(output),
-            "workspace_exists": workspace_exists,
-            "workspace_non_empty": workspace_non_empty,
-            "would_replace_existing": bool(force and workspace_exists),
-            "template_root": str(template_root),
-            "template_root_exists": template_root.exists(),
-            "repo_template": str(repo_template),
-            "repo_template_exists": repo_template.exists(),
-            "generated_files": sorted(str(path) for path in preview_files),
-        }
 
+def _preview_workspace_files(output: Path, repo_root: Path, reviewer_worker: str, template_map: dict[str, Path]) -> list[str]:
+    preview_files = list(template_map.values()) + [
+        repo_root / "AGENTS.md",
+        output / "config/project-profile.json",
+        output / "subagents" / reviewer_worker / "AGENTS.md",
+        output / "subagents" / reviewer_worker / "IDENTITY.md",
+        output / "memory.md",
+        output / "HEARTBEAT.md",
+        output / "BOOTSTRAP.md",
+        output / ".openclaw" / "heartbeat.json",
+    ]
+    return sorted(str(path) for path in preview_files)
+
+
+def _validate_workspace_templates(template_root: Path, repo_template: Path, template_map: dict[str, Path]) -> None:
     missing_templates = [name for name in template_map if not (template_root / name).exists()]
     if not repo_template.exists():
         missing_templates.append(str(repo_template))
@@ -401,26 +392,18 @@ def scaffold_workspace(
             f"template_root={template_root}; missing={', '.join(missing_templates)}"
         )
 
+
+def _render_workspace_templates(template_root: Path, template_map: dict[str, Path], values: dict[str, str]) -> list[str]:
+    generated_files: list[str] = []
     for template_name, target in template_map.items():
         source = template_root / template_name
         content = render_template(source.read_text(encoding="utf-8"), values)
         _write_text(target, content)
         generated_files.append(str(target))
+    return generated_files
 
-    repo_agents = sync_repo_agents_contract(
-        repo_root=repo_root,
-        pm_config_path=values["pm_config_path"],
-        tasklist_name=tasklist_name,
-        doc_folder_name=doc_folder_name,
-        default_worker=values["default_worker"],
-        preferred_ui_worker=values["preferred_ui_worker"],
-    )
-    generated_files.append(str(repo_agents))
 
-    _write_text(output / "config/project-profile.json", json.dumps(profile, ensure_ascii=False, indent=2) + "\n")
-    generated_files.append(str(output / "config/project-profile.json"))
-
-    reviewer_worker = values["reviewer_worker"]
+def _write_reviewer_worker_files(output: Path, reviewer_worker: str, english_name: str, repo_root: Path) -> list[str]:
     reviewer_dir = output / "subagents" / reviewer_worker
     _write_text(
         reviewer_dir / "AGENTS.md",
@@ -434,13 +417,22 @@ def scaffold_workspace(
         f"Reviewer worker for `{english_name}`.\n"
         f"Default repo root: `{repo_root}`.\n",
     )
-    generated_files.extend(
-        [
-            str(reviewer_dir / "AGENTS.md"),
-            str(reviewer_dir / "IDENTITY.md"),
-        ]
-    )
+    return [
+        str(reviewer_dir / "AGENTS.md"),
+        str(reviewer_dir / "IDENTITY.md"),
+    ]
 
+
+def _write_workspace_support_files(
+    *,
+    output: Path,
+    english_name: str,
+    source_name: str,
+    group_id: str,
+    repo_root: Path,
+    tasklist_name: str,
+    doc_folder_name: str,
+) -> list[str]:
     _write_text(
         output / "memory.md",
         _memory_markdown(
@@ -455,17 +447,87 @@ def scaffold_workspace(
     _write_text(output / "HEARTBEAT.md", _heartbeat_markdown(english_name=english_name, group_id=group_id, repo_root=repo_root))
     _write_text(output / "BOOTSTRAP.md", _bootstrap_markdown(english_name=english_name, repo_root=repo_root))
     write_json_file(output / ".openclaw" / "heartbeat.json", _workspace_heartbeat_config(english_name=english_name, repo_root=repo_root))
-    generated_files.extend(
-        [
-            str(output / "memory.md"),
-            str(output / "HEARTBEAT.md"),
-            str(output / "BOOTSTRAP.md"),
-            str(output / ".openclaw" / "heartbeat.json"),
-        ]
-    )
+    return [
+        str(output / "memory.md"),
+        str(output / "HEARTBEAT.md"),
+        str(output / "BOOTSTRAP.md"),
+        str(output / ".openclaw" / "heartbeat.json"),
+    ]
 
+
+def _ensure_workspace_support_dirs(output: Path) -> None:
     for path in [output / "memory", output / "skills", output / "outbound", output / ".openclaw"]:
         _ensure_dir(path)
+
+
+def scaffold_workspace(
+    *,
+    output: Path,
+    profile: dict[str, Any],
+    force: bool = False,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    workspace_exists, workspace_non_empty = _prepare_workspace_output(output, force=force, dry_run=dry_run)
+    values = _workspace_scaffold_values(profile)
+    english_name = values["project_name"]
+    source_name = str(profile.get("sourceProjectName") or "")
+    group_id = values["group_id"]
+    repo_root = Path(values["repo_root"])
+    tasklist_name = values["tasklist_name"]
+    doc_folder_name = values["doc_folder_name"]
+    template_map = _workspace_template_targets(output)
+    template_root = workspace_template_root()
+    repo_template = repo_template_root() / REPO_AGENTS_TEMPLATE_NAME
+
+    if dry_run:
+        return {
+            "workspace_root": str(output),
+            "workspace_exists": workspace_exists,
+            "workspace_non_empty": workspace_non_empty,
+            "would_replace_existing": bool(force and workspace_exists),
+            "template_root": str(template_root),
+            "template_root_exists": template_root.exists(),
+            "repo_template": str(repo_template),
+            "repo_template_exists": repo_template.exists(),
+            "generated_files": _preview_workspace_files(output, repo_root, values["reviewer_worker"], template_map),
+        }
+
+    _validate_workspace_templates(template_root, repo_template, template_map)
+    generated_files = _render_workspace_templates(template_root, template_map, values)
+
+    repo_agents = sync_repo_agents_contract(
+        repo_root=repo_root,
+        pm_config_path=values["pm_config_path"],
+        tasklist_name=tasklist_name,
+        doc_folder_name=doc_folder_name,
+        default_worker=values["default_worker"],
+        preferred_ui_worker=values["preferred_ui_worker"],
+    )
+    generated_files.append(str(repo_agents))
+
+    _write_text(output / "config/project-profile.json", json.dumps(profile, ensure_ascii=False, indent=2) + "\n")
+    generated_files.append(str(output / "config/project-profile.json"))
+
+    generated_files.extend(
+        _write_reviewer_worker_files(
+            output=output,
+            reviewer_worker=values["reviewer_worker"],
+            english_name=english_name,
+            repo_root=repo_root,
+        )
+    )
+    generated_files.extend(
+        _write_workspace_support_files(
+            output=output,
+            english_name=english_name,
+            source_name=source_name,
+            group_id=group_id,
+            repo_root=repo_root,
+            tasklist_name=tasklist_name,
+            doc_folder_name=doc_folder_name,
+        )
+    )
+    _ensure_workspace_support_dirs(output)
 
     return {
         "workspace_root": str(output),

@@ -5,8 +5,9 @@
 不要把所有片段一次性照抄进真实配置。推荐顺序是：
 
 1. 先使用最小 OpenClaw 片段
-2. 本地验证通过后，再按需追加 progress bridge
-3. 最后再追加 Feishu `bindings/channels`
+2. 默认追加 `skill-router`
+3. 本地验证通过后，再按需追加 progress bridge
+4. 最后再追加 Feishu `bindings/channels`
 
 路径相关说明：
 
@@ -47,7 +48,32 @@
 - `your-agent-id`
 - `REPLACE_WITH_ABSOLUTE_WORKSPACE_PATH`
 
-## 片段 B：可选启用 `acp-progress-bridge`
+## 片段 B：默认启用 `skill-router`
+
+推荐默认带上这段，让 front agent 在每轮运行前都能拿到更稳定的 skill / subagent 提示。
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "skill-router": {
+        "enabled": true,
+        "config": {
+          "enabled": true,
+          "mode": "force",
+          "maxSkills": 12,
+          "includeGlobalSkills": true,
+          "includeWorkspaceSkills": true,
+          "respectAgentSkillsFilter": true,
+          "includeSubagents": true
+        }
+      }
+    }
+  }
+}
+```
+
+## 片段 C：可选启用 `acp-progress-bridge`
 
 只有在你需要自动进度回推和完成汇报时，才追加这段：
 
