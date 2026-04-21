@@ -18,11 +18,20 @@
 - `skills/interaction-board/scripts/interaction_board_render.py`
   - HTML/draw.io/inventory 渲染拼装
 - `skills/interaction-board/assets/board_template.html`
-- `skills/interaction-board/assets/board.css`
+- `skills/interaction-board/assets/styles/*.css`
+  - board 展示样式分层（`board.css` 保留为兼容回退）
+- `skills/interaction-board/assets/scripts/*.js`
+  - `00_bootstrap.js`：上下文构建与启动编排
+  - `10_formatters.js`：展示 helper
+  - `20_store.js`：布局状态与可见性
+  - `30_viewport.js`：缩放 / 平移 / 定位
+  - `40_render.js`：lane / node / edge 渲染
+  - `50_modal.js`：详情弹窗
+  - `60_search.js`：搜索面板
+  - `70_interactions.js`：拖拽交互
+  - `80_bindings.js`：DOM 事件绑定
 - `skills/interaction-board/assets/board.js`
-  - board 视图资产
-  - draw.io
-  - inventory markdown
+  - 薄启动器，只负责调用 `InteractionBoard.start()`
 - `skills/interaction-board/scripts/interaction_board_cli.py`
   - 命令入口
   - 文件写回

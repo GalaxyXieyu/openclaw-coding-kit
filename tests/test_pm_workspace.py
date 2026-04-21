@@ -10,7 +10,15 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1] / "skills" / "pm" / "scripts"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from pm_workspace import REPO_WORKSPACE_TEMPLATES, register_workspace, workspace_template_root
+from pm_workspace import (
+    REPO_AGENTS_TEMPLATE_NAME,
+    REPO_WORKSPACE_TEMPLATES,
+    build_workspace_profile,
+    register_workspace,
+    repo_template_root,
+    scaffold_workspace,
+    workspace_template_root,
+)
 
 
 class PmWorkspaceTest(unittest.TestCase):
@@ -18,6 +26,8 @@ class PmWorkspaceTest(unittest.TestCase):
         self.assertTrue(REPO_WORKSPACE_TEMPLATES.exists())
         self.assertEqual(workspace_template_root(), REPO_WORKSPACE_TEMPLATES)
         self.assertTrue((REPO_WORKSPACE_TEMPLATES / "AGENTS.md.tpl").exists())
+        self.assertTrue(repo_template_root().exists())
+        self.assertTrue((repo_template_root() / REPO_AGENTS_TEMPLATE_NAME).exists())
 
     def test_register_workspace_allows_gemini_by_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -51,7 +61,63 @@ class PmWorkspaceTest(unittest.TestCase):
             )
 
             self.assertIn("gemini", payload["agent_entry"]["subagents"]["allowAgents"])
-            self.assertEqual(["pm", "coder", "code-review"], payload["agent_entry"]["skills"])
+            self.assertEqual(["pm", "coder"], payload["agent_entry"]["skills"])
+
+    def test_scaffold_workspace_syncs_shared_contract_into_repo_agents(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            repo_root = root / "repo"
+            repo_root.mkdir()
+            (repo_root / "AGENTS.md").write_text("# Repo Rules\n\nKeep custom guidance.\n", encoding="utf-8")
+
+            profile = build_workspace_profile(
+                project_name="Demo Project",
+                english_name="demo-project",
+                agent_id="demo-project",
+                channel="feishu",
+                group_id="oc_demo",
+                repo_root=repo_root,
+                workspace_root=root / "workspace",
+                tasklist_name="Demo Project",
+                doc_folder_name="Demo Project Docs",
+                task_prefix="T",
+                default_worker="codex",
+                reviewer_worker="reviewer",
+            )
+
+            result = scaffold_workspace(output=root / "workspace", profile=profile)
+
+            repo_agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Keep custom guidance.", repo_agents)
+            self.assertIn("Repo / Coder Execution Contract", repo_agents)
+            self.assertIn("product-canvas", repo_agents)
+            self.assertIn("preferred UI worker: `gemini`", repo_agents)
+            self.assertIn((repo_root / "AGENTS.md").resolve(), [Path(item).resolve() for item in result["generated_files"]])
+
+    def test_scaffold_workspace_dry_run_previews_repo_agents_sync(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            repo_root = root / "repo"
+            repo_root.mkdir()
+
+            profile = build_workspace_profile(
+                project_name="Demo Project",
+                english_name="demo-project",
+                agent_id="demo-project",
+                channel="feishu",
+                group_id="oc_demo",
+                repo_root=repo_root,
+                workspace_root=root / "workspace",
+                tasklist_name="Demo Project",
+                doc_folder_name="Demo Project Docs",
+                task_prefix="T",
+                default_worker="codex",
+                reviewer_worker="reviewer",
+            )
+
+            result = scaffold_workspace(output=root / "workspace", profile=profile, dry_run=True)
+
+            self.assertIn((repo_root / "AGENTS.md").resolve(), [Path(item).resolve() for item in result["generated_files"]])
 
 
 if __name__ == "__main__":

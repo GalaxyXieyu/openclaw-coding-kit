@@ -119,6 +119,7 @@ class PmInitProjectReviewTest(unittest.TestCase):
                             "enabled": True,
                             "cron": "15 0 * * *",
                             "reviewer_model": "codex",
+                            "stagger_minutes": 90,
                         }
                     },
                 },
@@ -139,7 +140,7 @@ class PmInitProjectReviewTest(unittest.TestCase):
                 task_kind=lambda: "task",
                 project_slug=lambda project_name, english_name="", agent_id="": "demo-project",
                 register_main_digest_source=lambda **kwargs: {"status": "dry_run", "action": "bootstrapped", "source": {"key": kwargs["source_key"]}},
-                register_nightly_review_job=lambda **kwargs: {"status": "dry_run", "job": {"name": "Nightly 演示项目 review", "schedule": {"expr": kwargs["cron_expr"]}}},
+                register_nightly_review_job=lambda **kwargs: {"status": "dry_run", "job": {"name": "Project review · 演示项目", "schedule": {"expr": f"{kwargs['cron_expr']}+{kwargs['stagger_minutes']}"}}},
             )
 
             handlers = build_command_handlers(api)
@@ -188,7 +189,8 @@ class PmInitProjectReviewTest(unittest.TestCase):
             payload = json.loads(stdout.getvalue())
             self.assertEqual("dry_run", payload["status"])
             self.assertEqual("dry_run", payload["nightly_review_registration"]["status"])
-            self.assertEqual("15 0 * * *", payload["nightly_review_registration"]["job"]["schedule"]["expr"])
+            self.assertEqual("Project review · 演示项目", payload["nightly_review_registration"]["job"]["name"])
+            self.assertEqual("15 0 * * *+90", payload["nightly_review_registration"]["job"]["schedule"]["expr"])
 
 
 if __name__ == "__main__":

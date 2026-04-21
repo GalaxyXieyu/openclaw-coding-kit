@@ -129,7 +129,7 @@ class TaskReviewRiskCardTest(unittest.TestCase):
         self.assertEqual("daily_review_card_v1", card["card_kind"])
         self.assertEqual("每日项目回顾", card["title"])
         self.assertEqual([], card["actions"])
-        self.assertEqual("今天把首页体验优化和文档同步一起收口了。", card["review_summary"])
+        self.assertEqual("前一天把首页体验优化和文档同步一起收口了。", card["review_summary"])
         self.assertEqual(["优化了首页浏览体验", "补充了首页功能说明"], card["done_items"])
         self.assertEqual("synced", card["docs_sync"]["status"])
         self.assertEqual("业务文档已补充首页优化功能。", card["docs_sync"]["summary"])

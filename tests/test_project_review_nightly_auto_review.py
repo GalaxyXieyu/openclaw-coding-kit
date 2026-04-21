@@ -84,11 +84,14 @@ class ProjectReviewNightlyAutoReviewTest(unittest.TestCase):
             self.assertEqual("any finding/docs drift", result["auto_fix_reason"])
             self.assertTrue(result["doc_updates"])
             summaries = [item["summary"] for item in result["doc_updates"]]
-            self.assertTrue(any("Nightly Review" in summary for summary in summaries))
+            self.assertTrue(any("复盘规则说明" in summary for summary in summaries))
+            self.assertFalse(any("Nightly Review" in summary for summary in summaries))
+            self.assertFalse(any("自动拆长文件" in summary for summary in summaries))
             self.assertIn("docs/review.md", result["changed_files"])
             self.assertIn("module.py", result["changed_files"])
             self.assertNotIn("docs/interaction-board/demo/inventory.md", result["changed_files"])
             self.assertNotIn("docs/interaction-board/demo/board.drawio", result["changed_files"])
+            self.assertNotIn(".pm/", result["changed_files"])
 
             state = load_state(state_path)
             stored = state["reviews"][0]
@@ -172,9 +175,67 @@ class ProjectReviewNightlyAutoReviewTest(unittest.TestCase):
             self.assertTrue(result["ok"])
             self.assertEqual("sent", result["send_result"]["status"])
             self.assertEqual("coder_failed", result["auto_fix_result"]["status"])
+            self.assertEqual("deterministic_fallback", result["reviewer_status"])
             self.assertEqual(result["review_id"], captured["review_id"])
             stored = load_state(state_path)["reviews"][0]
             self.assertIn("docs_sync", stored["card_preview"])
+            self.assertTrue(stored["llm_ready"])
+
+    def test_run_nightly_review_falls_back_when_reviewer_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            repo_root = Path(tmp_dir)
+            subprocess.run(["git", "-C", str(repo_root), "init"], check=True, capture_output=True, text=True)
+            subprocess.run(["git", "-C", str(repo_root), "config", "user.name", "Codex"], check=True, capture_output=True, text=True)
+            subprocess.run(["git", "-C", str(repo_root), "config", "user.email", "codex@example.com"], check=True, capture_output=True, text=True)
+
+            (repo_root / "docs").mkdir()
+            (repo_root / "docs" / "review.md").write_text("# Review\n", encoding="utf-8")
+            (repo_root / "module.py").write_text("def nightly_review():\n    return 'ok'\n", encoding="utf-8")
+            (repo_root / "pm.json").write_text(
+                json.dumps(
+                    {
+                        "project": {"name": "PM工具链", "group_id": "oc_demo"},
+                        "project_review": {
+                            "nightly": {
+                                "enabled": True,
+                                "cron": "0 6 * * *",
+                                "channel_id": "oc_demo",
+                            }
+                        },
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(repo_root), "add", "."], check=True, capture_output=True, text=True)
+            subprocess.run(["git", "-C", str(repo_root), "commit", "-m", "init"], check=True, capture_output=True, text=True)
+
+            state_path = repo_root / ".pm" / "project-review-state.json"
+
+            with patch("nightly_auto_review.execute_review_with_codex", side_effect=SystemExit("codex exec timed out after 1200s")):
+                with patch(
+                    "nightly_auto_review.send_review_card",
+                    return_value={"ok": True, "review_id": "RV-demo", "chat_id": "oc_demo", "delivery": {"message_id": "om_demo"}},
+                ):
+                    result = run_nightly_review(
+                        repo_root=str(repo_root),
+                        pm_config=str(repo_root / "pm.json"),
+                        state_path=str(state_path),
+                        reviewer_model="codex",
+                        auto_fix_mode="off",
+                        send_if_possible=True,
+                        dry_run=False,
+                    )
+
+            self.assertTrue(result["ok"])
+            self.assertEqual("sent", result["send_result"]["status"])
+            self.assertEqual("failed_fallback", result["reviewer_status"])
+            self.assertIn("reviewer 执行失败", result["reviewer_note"])
+            stored = load_state(state_path)["reviews"][0]
+            self.assertTrue(stored["llm_ready"])
+            automation_updates = stored["card_preview"].get("automation_updates") or []
+            self.assertTrue(any("reviewer 执行失败" in item for item in automation_updates))
 
 
 if __name__ == "__main__":

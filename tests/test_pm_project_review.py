@@ -117,11 +117,35 @@ class PmProjectReviewRegistryTest(unittest.TestCase):
             job = payload["jobs"][0]
             self.assertEqual("main", job["agentId"])
             self.assertEqual("agent:main:main", job["sessionKey"])
+            self.assertEqual("Project review · PM工具链", job["name"])
             self.assertEqual("0 6 * * *", job["schedule"]["expr"])
             self.assertIn("nightly_auto_review.py", job["payload"]["message"])
+            self.assertIn("Project review for repo", job["payload"]["message"])
             self.assertIn(str(repo_root), job["payload"]["message"])
             self.assertIn('"--since" "yesterday 00:00"', job["payload"]["message"])
             self.assertIn('"--until" "today 00:00"', job["payload"]["message"])
+            self.assertIn('/skills/project-review/scripts/nightly_auto_review.py', job["payload"]["message"])
+
+    def test_register_nightly_review_job_supports_stagger_minutes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            openclaw_config = root / "openclaw.json"
+            openclaw_config.write_text("{}", encoding="utf-8")
+            repo_root = root / "repo"
+            repo_root.mkdir()
+            pm_config = repo_root / "pm.json"
+            pm_config.write_text("{}", encoding="utf-8")
+
+            result = register_nightly_review_job(
+                openclaw_config_path=openclaw_config,
+                repo_root=repo_root,
+                pm_config_path=pm_config,
+                project_name="PM工具链",
+                stagger_minutes=90,
+            )
+
+            job = result["job"]
+            self.assertEqual("30 7 * * *", job["schedule"]["expr"])
 
 
 if __name__ == "__main__":

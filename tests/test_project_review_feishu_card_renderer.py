@@ -136,14 +136,15 @@ class ProjectReviewFeishuCardRendererTest(unittest.TestCase):
 
         self.assertEqual("每日项目回顾", card["header"]["title"]["content"])
         content = card["elements"][0]["text"]["content"]
-        self.assertIn("今天完成", content)
+        self.assertIn("前一天具体推进", content)
         self.assertIn("文档同步", content)
-        self.assertIn("风险", content)
-        self.assertIn("下一步", content)
         self.assertIn("业务文档已补充退款功能", content)
-        self.assertIn("退款联调还没走完", content)
+        self.assertNotIn("风险", content)
+        self.assertNotIn("下一步", content)
         self.assertNotIn("文件索引", content)
         self.assertNotIn("自动处理", content)
+        self.assertNotIn("项目**", content)
+        self.assertNotIn("review_id", content)
         self.assertEqual(1, len(card["elements"]))
 
 

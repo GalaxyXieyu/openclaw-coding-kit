@@ -13,6 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1] / "skills" / "interaction-board
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from interaction_board_assets import load_board_assets
 from interaction_board import (
     apply_board_overlay,
     attach_scenarios,
@@ -495,6 +496,20 @@ export default function CommunityPage() { return <CommunityEditorPageClient />; 
             self.assertIn('id="nodeModal"', html_output)
             self.assertIn("<mxfile", drawio_output)
             self.assertIn("候选页", drawio_output)
+
+    def test_load_board_assets_prefers_split_script_bundle(self) -> None:
+        _, _, js = load_board_assets()
+
+        bootstrap_index = js.index('window.InteractionBoard = (() => {')
+        render_index = js.index('window.InteractionBoard.register("render"')
+        bindings_index = js.index('window.InteractionBoard.register("bindings"')
+        starter_index = js.index('window.InteractionBoard.start();')
+
+        self.assertLess(bootstrap_index, render_index)
+        self.assertLess(render_index, bindings_index)
+        self.assertLess(bindings_index, starter_index)
+        self.assertEqual(1, js.count('function displayRefs(node)'))
+
 
     def test_attach_screenshots_copies_assets_and_renders_gallery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:

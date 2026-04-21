@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import {
@@ -33,6 +34,7 @@ const CHILD_ENV_FLAG = "OPENCLAW_ACP_PROGRESS_BRIDGE_CHILD";
 const STATE_VERSION = 1;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHOICE_REQUEST_DIR = "choice-requests";
+const NATIVE_STALE_EXIT_GRACE_MS = 30 * 1000;
 
 type BridgeConfig = {
   enabled?: boolean;
@@ -57,6 +59,8 @@ type SessionStoreEntry = {
   label?: string;
   acp?: {
     state?: string;
+    lastActivityAt?: number;
+    lastError?: string;
     identity?: {
       state?: string;
       acpxRecordId?: string;
@@ -78,6 +82,17 @@ type RelaySnapshot = {
   assistantTail?: string;
 };
 
+type NativeAcpxRecord = {
+  acpx_record_id?: string;
+  acp_session_id?: string;
+  closed?: boolean;
+  pid?: number;
+  last_agent_exit_code?: number | null;
+  last_agent_exit_signal?: string | null;
+  last_agent_exit_at?: string;
+  last_agent_disconnect_reason?: string;
+};
+
 type TrackedRun = {
   childSessionKey: string;
   childAgentId: string;
@@ -87,6 +102,8 @@ type TrackedRun = {
   parentAgentId: string;
   parentSessionId?: string;
   streamPath: string;
+  acpxRecordId?: string;
+  acpxSessionId?: string;
   discoveredAt: number;
   processedLineCount: number;
   lastProgressText?: string;
@@ -106,6 +123,15 @@ type TrackedRun = {
   sessionFileExists?: boolean;
   acpState?: string;
   identityState?: string;
+  nativeRecordPath?: string;
+  nativeRecordExists?: boolean;
+  nativeRecordClosed?: boolean;
+  nativePid?: number;
+  nativeAgentAlive?: boolean;
+  nativeLastAgentExitAt?: number;
+  nativeLastAgentDisconnectReason?: string;
+  nativeLastAgentExitCode?: number | null;
+  nativeLastAgentExitSignal?: string | null;
   statusHint?: string;
 };
 
@@ -175,12 +201,15 @@ async function saveState(stateFile: string, state: BridgeState) {
   await fs.writeFile(stateFile, JSON.stringify(state, null, 2) + "\n", "utf8");
 }
 
+function sessionStorePath(stateDir: string, agentId: string) {
+  return path.join(stateDir, "agents", agentId, "sessions", "sessions.json");
+}
+
 async function loadSessionStore(
   stateDir: string,
   agentId: string,
 ): Promise<Record<string, SessionStoreEntry>> {
-  const storePath = path.join(stateDir, "agents", agentId, "sessions", "sessions.json");
-  const data = await readJson(storePath);
+  const data = await readJson(sessionStorePath(stateDir, agentId));
   if (!data || typeof data !== "object") return {};
   return data as Record<string, SessionStoreEntry>;
 }
@@ -191,7 +220,7 @@ async function listAgentIdsWithSessionStores(stateDir: string): Promise<string[]
     const agentIds: string[] = [];
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
-      const storePath = path.join(stateDir, "agents", entry.name, "sessions", "sessions.json");
+      const storePath = sessionStorePath(stateDir, entry.name);
       if (await fileExists(storePath)) agentIds.push(entry.name);
     }
     return agentIds.sort();
@@ -225,6 +254,51 @@ function resolveStreamPath(stateDir: string, agentId: string, entry: SessionStor
   if (sessionFile.endsWith(".jsonl")) return sessionFile.replace(/\.jsonl$/, ".acp-stream.jsonl");
   if (!sessionId) return "";
   return path.join(stateDir, "agents", agentId, "sessions", `${sessionId}.acp-stream.jsonl`);
+}
+
+function resolveNativeAcpxRecordPath(acpxRecordId: string) {
+  return path.join(os.homedir(), ".acpx", "sessions", `${encodeURIComponent(acpxRecordId)}.json`);
+}
+
+function parseIsoMs(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function isPidAlive(pid: number) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException | undefined)?.code === "EPERM") {
+      return true;
+    }
+    return false;
+  }
+}
+
+async function readNativeAcpxRecord(acpxRecordId: string): Promise<NativeAcpxRecord | null> {
+  const recordPath = resolveNativeAcpxRecordPath(acpxRecordId);
+  const data = await readJson(recordPath);
+  if (!data || typeof data !== "object") return null;
+  return data as NativeAcpxRecord;
+}
+
+function buildNativeDisconnectError(run: TrackedRun) {
+  const parts = [
+    `native acpx disconnect: ${run.nativeLastAgentDisconnectReason || "unknown_reason"}`,
+  ];
+  if (typeof run.nativeLastAgentExitCode === "number") {
+    parts.push(`exit=${run.nativeLastAgentExitCode}`);
+  } else if (run.nativeLastAgentExitSignal) {
+    parts.push(`signal=${run.nativeLastAgentExitSignal}`);
+  }
+  if (run.acpxSessionId) {
+    parts.push(`acpxSessionId=${run.acpxSessionId}`);
+  }
+  return parts.join(" · ");
 }
 
 async function resolveParentSessionId(stateDir: string, parentSessionKey: string) {
@@ -304,6 +378,13 @@ function buildObservabilityStatus(run: TrackedRun) {
       return "error terminal detected; waiting for settle window";
     }
     return "completion detected; waiting for settle window";
+  }
+  if (
+    run.nativeRecordClosed === false &&
+    run.nativeLastAgentExitAt &&
+    run.nativeAgentAlive === false
+  ) {
+    return "native acpx record shows a disconnected agent while OpenClaw terminal state is still missing";
   }
   if (isMeaningfulProgressText(run.lastProgressText)) {
     return "captured ACP progress update";
@@ -464,10 +545,10 @@ export default function register(api: any) {
       parentPrefixMisses: 0,
       missingStreamPath: 0,
     };
-    const childAgentIds = Array.from(
+    const childAgentIds: string[] = Array.from(
       new Set(
         config.childSessionPrefixes
-          .map((prefix) => parseSessionKey(prefix.replace(/\*.*$/, "") + "dummy").agentId)
+          .map((prefix: string) => parseSessionKey(prefix.replace(/\*.*$/, "") + "dummy").agentId)
           .filter(Boolean),
       ),
     );
@@ -492,7 +573,7 @@ export default function register(api: any) {
         }
 
         const existing = state.runs[childSessionKey];
-        const childAgentId = parseSessionKey(childSessionKey).agentId || agentId;
+        const childAgentId: string = parseSessionKey(childSessionKey).agentId || agentId;
         const parentAgentId = parseSessionKey(parentSessionKey).agentId;
         const streamPath = resolveStreamPath(stateDir, childAgentId, entry);
         if (!streamPath) {
@@ -517,6 +598,14 @@ export default function register(api: any) {
           parentAgentId,
           parentSessionId: existing?.parentSessionId,
           streamPath,
+          acpxRecordId:
+            typeof entry.acp?.identity?.acpxRecordId === "string"
+              ? entry.acp.identity.acpxRecordId.trim()
+              : existing?.acpxRecordId,
+          acpxSessionId:
+            typeof entry.acp?.identity?.acpxSessionId === "string"
+              ? entry.acp.identity.acpxSessionId.trim()
+              : existing?.acpxSessionId,
           discoveredAt: existing?.discoveredAt ?? nowMs(),
           processedLineCount: existing?.processedLineCount ?? 0,
           lastProgressText: existing?.lastProgressText,
@@ -539,6 +628,15 @@ export default function register(api: any) {
             typeof entry.acp?.identity?.state === "string"
               ? entry.acp.identity.state
               : existing?.identityState,
+          nativeRecordPath: existing?.nativeRecordPath,
+          nativeRecordExists: existing?.nativeRecordExists,
+          nativeRecordClosed: existing?.nativeRecordClosed,
+          nativePid: existing?.nativePid,
+          nativeAgentAlive: existing?.nativeAgentAlive,
+          nativeLastAgentExitAt: existing?.nativeLastAgentExitAt,
+          nativeLastAgentDisconnectReason: existing?.nativeLastAgentDisconnectReason,
+          nativeLastAgentExitCode: existing?.nativeLastAgentExitCode,
+          nativeLastAgentExitSignal: existing?.nativeLastAgentExitSignal,
           statusHint: existing?.statusHint ?? "discovered; awaiting ACP stream activity",
         };
         nextRun.statusHint = buildObservabilityStatus(nextRun);
@@ -602,10 +700,73 @@ export default function register(api: any) {
       }
     }
 
+    if (run.acpxRecordId) {
+      run.nativeRecordPath = resolveNativeAcpxRecordPath(run.acpxRecordId);
+      const nativeRecord = await readNativeAcpxRecord(run.acpxRecordId);
+      run.nativeRecordExists = Boolean(nativeRecord);
+      if (nativeRecord) {
+        const nativeSessionId =
+          typeof nativeRecord.acp_session_id === "string" ? nativeRecord.acp_session_id.trim() : "";
+        if (nativeSessionId) {
+          run.acpxSessionId = nativeSessionId;
+        }
+
+        run.nativeRecordClosed =
+          typeof nativeRecord.closed === "boolean" ? nativeRecord.closed : run.nativeRecordClosed;
+        run.nativePid =
+          typeof nativeRecord.pid === "number" && Number.isFinite(nativeRecord.pid)
+            ? nativeRecord.pid
+            : undefined;
+        run.nativeAgentAlive =
+          typeof run.nativePid === "number" ? isPidAlive(run.nativePid) : undefined;
+        run.nativeLastAgentExitAt =
+          parseIsoMs(nativeRecord.last_agent_exit_at) ?? run.nativeLastAgentExitAt;
+        run.nativeLastAgentDisconnectReason =
+          typeof nativeRecord.last_agent_disconnect_reason === "string" &&
+          nativeRecord.last_agent_disconnect_reason.trim()
+            ? nativeRecord.last_agent_disconnect_reason.trim()
+            : run.nativeLastAgentDisconnectReason;
+        run.nativeLastAgentExitCode =
+          typeof nativeRecord.last_agent_exit_code === "number" &&
+          Number.isFinite(nativeRecord.last_agent_exit_code)
+            ? nativeRecord.last_agent_exit_code
+            : null;
+        run.nativeLastAgentExitSignal =
+          typeof nativeRecord.last_agent_exit_signal === "string" &&
+          nativeRecord.last_agent_exit_signal.trim()
+            ? nativeRecord.last_agent_exit_signal.trim()
+            : null;
+
+        const nativeDisconnectLooksStale =
+          !run.doneAt &&
+          run.nativeRecordClosed === false &&
+          typeof run.nativeLastAgentExitAt === "number" &&
+          run.nativeAgentAlive === false &&
+          nowMs() - run.nativeLastAgentExitAt >= NATIVE_STALE_EXIT_GRACE_MS;
+
+        if (nativeDisconnectLooksStale) {
+          const staleExitAt = run.nativeLastAgentExitAt;
+          if (typeof staleExitAt !== "number") {
+            return sawAnySnapshot;
+          }
+          run.doneAt = staleExitAt;
+          run.lastEventAt = Math.max(run.lastEventAt ?? 0, staleExitAt);
+          run.lastSeenAt = nowMs();
+          run.completionHandled = false;
+          run.completionHandledAt = undefined;
+          run.terminalKind = "error";
+          run.terminalError = buildNativeDisconnectError(run);
+          run.statusHint =
+            "native acpx record reported a stale disconnected agent; synthesized terminal error";
+        }
+      }
+    }
+
     const replayDecision = evaluateReplayDecision({
       run,
       replayCompletedWithinMs: config.replayCompletedWithinMs,
       pollIntervalMs: config.pollIntervalMs,
+      nowMsValue: nowMs(),
     });
     if (replayDecision.markHandled) {
       run.completionHandled = true;
@@ -621,6 +782,73 @@ export default function register(api: any) {
     }
 
     return sawAnySnapshot;
+  }
+
+  async function maybeRepairChildSessionStore(run: TrackedRun) {
+    const store = await loadSessionStore(stateDir, run.childAgentId);
+    const entry = store[run.childSessionKey];
+    if (!entry) return;
+
+    let changed = false;
+    const nextEntry: SessionStoreEntry = { ...entry };
+    const nextAcp = { ...(entry.acp ?? {}) };
+    const nextIdentity = { ...(entry.acp?.identity ?? {}) };
+
+    const normalizedRecordId = typeof run.acpxRecordId === "string" ? run.acpxRecordId.trim() : "";
+    if (normalizedRecordId && nextIdentity.acpxRecordId !== normalizedRecordId) {
+      nextIdentity.acpxRecordId = normalizedRecordId;
+      changed = true;
+    }
+
+    const normalizedSessionId =
+      typeof run.acpxSessionId === "string" ? run.acpxSessionId.trim() : "";
+    if (normalizedSessionId && nextIdentity.acpxSessionId !== normalizedSessionId) {
+      nextIdentity.acpxSessionId = normalizedSessionId;
+      changed = true;
+    }
+
+    if (run.doneAt && run.terminalKind === "error") {
+      if (nextAcp.state !== "error") {
+        nextAcp.state = "error";
+        changed = true;
+      }
+      if (nextIdentity.state !== "error") {
+        nextIdentity.state = "error";
+        changed = true;
+      }
+      if (run.terminalError && nextAcp.lastError !== run.terminalError) {
+        nextAcp.lastError = run.terminalError;
+        changed = true;
+      }
+    }
+
+    if (!changed) return;
+
+    const repairAt = run.doneAt ?? nowMs();
+    const nextActivityAt = Math.max(nextAcp.lastActivityAt ?? 0, repairAt);
+    const nextUpdatedAt = Math.max(nextEntry.updatedAt ?? 0, repairAt);
+    const nextIdentityUpdatedAt = Math.max(nextIdentity.lastUpdatedAt ?? 0, repairAt);
+
+    nextAcp.lastActivityAt = nextActivityAt;
+    nextIdentity.lastUpdatedAt = nextIdentityUpdatedAt;
+    nextAcp.identity = nextIdentity;
+    nextEntry.acp = nextAcp;
+    nextEntry.updatedAt = nextUpdatedAt;
+    store[run.childSessionKey] = nextEntry;
+
+    await fs.writeFile(
+      sessionStorePath(stateDir, run.childAgentId),
+      JSON.stringify(store, null, 2) + "\n",
+      "utf8",
+    );
+
+    run.acpState = nextAcp.state;
+    run.identityState = nextIdentity.state;
+    run.statusHint =
+      run.doneAt && run.terminalKind === "error"
+        ? "repaired child session store from native acpx terminal state"
+        : "reconciled child session identity from native acpx record";
+    logInfo(`repaired child session metadata for ${run.childSessionKey}`);
   }
 
   async function ensureParentSessionId(run: TrackedRun) {
@@ -720,6 +948,7 @@ export default function register(api: any) {
     const settleState = evaluateSettleState({
       doneAt: run.doneAt,
       settleAfterDoneMs: config.settleAfterDoneMs,
+      nowMsValue: nowMs(),
     });
     if (!settleState.ready) {
       const remainingMs = settleState.remainingMs;
@@ -768,7 +997,7 @@ export default function register(api: any) {
   }
 
   function pruneRuns() {
-    const result = pruneTrackedRuns({ runs: state.runs, maxAgeMs: DAY_MS });
+    const result = pruneTrackedRuns({ runs: state.runs, nowMsValue: nowMs(), maxAgeMs: DAY_MS });
     state.runs = result.nextRuns as Record<string, TrackedRun>;
   }
 
@@ -779,6 +1008,7 @@ export default function register(api: any) {
       await discoverRuns();
       for (const run of Object.values(state.runs)) {
         await updateRunSnapshot(run);
+        await maybeRepairChildSessionStore(run);
         await maybeSendProgress(run);
         await maybeSendCompletion(run);
       }
