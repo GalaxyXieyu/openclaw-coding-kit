@@ -606,3 +606,143 @@ def register_workspace(
         "agent_action": "updated" if existing_agent else "created",
         "binding_action": "replaced" if conflicting_binding and replace_binding else ("updated" if existing_binding else "created"),
     }
+
+
+def _resolved_path_text(path: str | Path | None) -> str:
+    raw = str(path or "").strip()
+    if not raw:
+        return ""
+    return str(Path(raw).expanduser().resolve())
+
+
+def inspect_workspace_registration(
+    *,
+    config_path: Path,
+    agent_id: str = "",
+    workspace_root: Path | None = None,
+    group_id: str = "",
+    channel: str = "",
+) -> dict[str, Any]:
+    payload = load_json_file(config_path)
+    agents = payload.get("agents") if isinstance(payload.get("agents"), dict) else {}
+    agent_list = agents.get("list") if isinstance(agents.get("list"), list) else []
+    bindings = payload.get("bindings") if isinstance(payload.get("bindings"), list) else []
+
+    normalized_agent_id = str(agent_id or "").strip()
+    normalized_workspace_root = _resolved_path_text(workspace_root)
+    normalized_group_id = str(group_id or "").strip()
+    normalized_channel = str(channel or "").strip()
+
+    agent_entry: dict[str, Any] | None = None
+    agent_index = -1
+    for index, item in enumerate(agent_list):
+        if not isinstance(item, dict):
+            continue
+        item_id = str(item.get("id") or "").strip()
+        item_workspace = _resolved_path_text(item.get("workspace"))
+        if normalized_agent_id and item_id == normalized_agent_id:
+            agent_entry = item
+            agent_index = index
+            break
+        if normalized_workspace_root and item_workspace == normalized_workspace_root:
+            agent_entry = item
+            agent_index = index
+            break
+
+    resolved_agent_id = str((agent_entry or {}).get("id") or normalized_agent_id).strip()
+    binding_entry: dict[str, Any] | None = None
+    binding_index = -1
+    for index, item in enumerate(bindings):
+        if not isinstance(item, dict):
+            continue
+        item_agent_id = str(item.get("agentId") or "").strip()
+        match = item.get("match") if isinstance(item.get("match"), dict) else {}
+        peer = match.get("peer") if isinstance(match.get("peer"), dict) else {}
+        item_channel = str(match.get("channel") or "").strip()
+        item_group_id = str(peer.get("id") or "").strip() if str(peer.get("kind") or "").strip() == "group" else ""
+        if resolved_agent_id and item_agent_id == resolved_agent_id:
+            binding_entry = item
+            binding_index = index
+            break
+        if normalized_channel and normalized_group_id and item_channel == normalized_channel and item_group_id == normalized_group_id:
+            binding_entry = item
+            binding_index = index
+            break
+
+    resolved_workspace_root = _resolved_path_text((agent_entry or {}).get("workspace")) or normalized_workspace_root
+    resolved_group_id = normalized_group_id
+    resolved_channel = normalized_channel
+    if isinstance(binding_entry, dict):
+        match = binding_entry.get("match") if isinstance(binding_entry.get("match"), dict) else {}
+        peer = match.get("peer") if isinstance(match.get("peer"), dict) else {}
+        resolved_channel = str(match.get("channel") or resolved_channel).strip()
+        if str(peer.get("kind") or "").strip() == "group":
+            resolved_group_id = str(peer.get("id") or resolved_group_id).strip()
+
+    if agent_entry or binding_entry:
+        status = "matched"
+    else:
+        status = "missing"
+
+    return {
+        "status": status,
+        "config_path": str(config_path),
+        "agent_entry": copy.deepcopy(agent_entry) if isinstance(agent_entry, dict) else None,
+        "agent_index": agent_index,
+        "binding_entry": copy.deepcopy(binding_entry) if isinstance(binding_entry, dict) else None,
+        "binding_index": binding_index,
+        "resolved_agent_id": resolved_agent_id,
+        "resolved_workspace_root": resolved_workspace_root,
+        "resolved_group_id": resolved_group_id,
+        "resolved_channel": resolved_channel,
+    }
+
+
+def unregister_workspace(
+    *,
+    config_path: Path,
+    agent_id: str = "",
+    workspace_root: Path | None = None,
+    group_id: str = "",
+    channel: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    inspection = inspect_workspace_registration(
+        config_path=config_path,
+        agent_id=agent_id,
+        workspace_root=workspace_root,
+        group_id=group_id,
+        channel=channel,
+    )
+    payload = load_json_file(config_path)
+    agents = payload.get("agents") if isinstance(payload.get("agents"), dict) else {}
+    agent_list = agents.get("list") if isinstance(agents.get("list"), list) else []
+    bindings = payload.get("bindings") if isinstance(payload.get("bindings"), list) else []
+
+    raw_agent_index = inspection.get("agent_index")
+    raw_binding_index = inspection.get("binding_index")
+    agent_index = int(raw_agent_index) if isinstance(raw_agent_index, int) else -1
+    binding_index = int(raw_binding_index) if isinstance(raw_binding_index, int) else -1
+    removed_agent = inspection.get("agent_entry") if isinstance(inspection.get("agent_entry"), dict) else None
+    removed_binding = inspection.get("binding_entry") if isinstance(inspection.get("binding_entry"), dict) else None
+
+    if not dry_run:
+        if binding_index >= 0 and binding_index < len(bindings):
+            bindings.pop(binding_index)
+        if agent_index >= 0 and agent_index < len(agent_list):
+            agent_list.pop(agent_index)
+        write_json_file(config_path, payload)
+
+    if removed_agent or removed_binding:
+        status = "dry_run" if dry_run else "deleted"
+    else:
+        status = "missing"
+
+    return {
+        **inspection,
+        "status": status,
+        "agent_removed": bool(removed_agent),
+        "binding_removed": bool(removed_binding),
+        "removed_agent": removed_agent,
+        "removed_binding": removed_binding,
+    }

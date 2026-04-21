@@ -17,6 +17,7 @@ from pm_workspace import (
     register_workspace,
     repo_template_root,
     scaffold_workspace,
+    unregister_workspace,
     workspace_template_root,
 )
 
@@ -118,6 +119,65 @@ class PmWorkspaceTest(unittest.TestCase):
             result = scaffold_workspace(output=root / "workspace", profile=profile, dry_run=True)
 
             self.assertIn((repo_root / "AGENTS.md").resolve(), [Path(item).resolve() for item in result["generated_files"]])
+
+    def test_unregister_workspace_removes_agent_and_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            config_path = root / "openclaw.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "agents": {
+                            "list": [
+                                {"id": "demo-agent", "workspace": str(root / "workspace")},
+                                {"id": "other-agent", "workspace": str(root / "other")},
+                            ]
+                        },
+                        "bindings": [
+                            {"agentId": "demo-agent", "match": {"channel": "feishu", "peer": {"kind": "group", "id": "oc_demo"}}},
+                            {"agentId": "other-agent", "match": {"channel": "feishu", "peer": {"kind": "group", "id": "oc_other"}}},
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            payload = unregister_workspace(
+                config_path=config_path,
+                agent_id="demo-agent",
+                group_id="oc_demo",
+                channel="feishu",
+            )
+
+            self.assertEqual("deleted", payload["status"])
+            self.assertTrue(payload["agent_removed"])
+            self.assertTrue(payload["binding_removed"])
+            saved = json.loads(config_path.read_text(encoding="utf-8"))
+            self.assertEqual(["other-agent"], [item["id"] for item in saved["agents"]["list"]])
+            self.assertEqual(["other-agent"], [item["agentId"] for item in saved["bindings"]])
+
+    def test_unregister_workspace_dry_run_keeps_config_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            config_path = root / "openclaw.json"
+            original = {
+                "agents": {"list": [{"id": "demo-agent", "workspace": str(root / "workspace")}]},
+                "bindings": [{"agentId": "demo-agent", "match": {"channel": "feishu", "peer": {"kind": "group", "id": "oc_demo"}}}],
+            }
+            config_path.write_text(json.dumps(original, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            payload = unregister_workspace(
+                config_path=config_path,
+                workspace_root=root / "workspace",
+                group_id="oc_demo",
+                channel="feishu",
+                dry_run=True,
+            )
+
+            self.assertEqual("dry_run", payload["status"])
+            self.assertEqual(original, json.loads(config_path.read_text(encoding="utf-8")))
 
 
 if __name__ == "__main__":

@@ -13,6 +13,25 @@ DEFAULT_NIGHTLY_SINCE = "yesterday 00:00"
 DEFAULT_NIGHTLY_UNTIL = "today 00:00"
 
 
+def _apply_stagger_to_cron(expr: str, stagger_minutes: int) -> str:
+    normalized = str(expr or DEFAULT_NIGHTLY_CRON).strip() or DEFAULT_NIGHTLY_CRON
+    offset = int(stagger_minutes or 0)
+    if offset <= 0:
+        return normalized
+    parts = normalized.split()
+    if len(parts) != 5:
+        return normalized
+    try:
+        minute = int(parts[0])
+        hour = int(parts[1])
+    except ValueError:
+        return normalized
+    total_minutes = (hour * 60) + minute + offset
+    parts[0] = str(total_minutes % 60)
+    parts[1] = str((total_minutes // 60) % 24)
+    return " ".join(parts)
+
+
 def _default_main_digest_config() -> dict[str, Any]:
     return {
         "main_target": {
@@ -87,9 +106,10 @@ def _nightly_review_message(
     send_if_possible: bool,
     include_dirty: bool,
 ) -> str:
+    review_script = repo_root / "skills" / "project-review" / "scripts" / "nightly_auto_review.py"
     command = [
         "python3",
-        "skills/project-review/scripts/nightly_auto_review.py",
+        str(review_script),
         "--repo-root",
         str(repo_root),
         "--pm-config",
@@ -113,7 +133,7 @@ def _nightly_review_message(
     joined_command = " ".join(json.dumps(part, ensure_ascii=False) for part in command)
     return "\n".join(
         [
-            f"Daily review for repo {repo_root}.",
+            f"Project review for repo {repo_root}.",
             "",
             f"Review window: previous calendar day (`{since}` → `{until}`).",
             "",
@@ -246,6 +266,7 @@ def register_nightly_review_job(
     enabled: bool = True,
     dry_run: bool = False,
     cron_expr: str = DEFAULT_NIGHTLY_CRON,
+    stagger_minutes: int = 0,
     timezone_name: str = DEFAULT_NIGHTLY_TIMEZONE,
     since: str = DEFAULT_NIGHTLY_SINCE,
     until: str = DEFAULT_NIGHTLY_UNTIL,
@@ -266,7 +287,7 @@ def register_nightly_review_job(
     normalized_project_name = str(project_name or repo_root.name).strip() or repo_root.name
     normalized_agent_id = str(agent_id or "main").strip() or "main"
     normalized_group_id = str(group_id or "").strip()
-    normalized_name = f"Nightly {normalized_project_name} review"
+    normalized_name = f"Project review · {normalized_project_name}"
     normalized_session_key = _default_session_key(normalized_agent_id, normalized_group_id)
     message = _nightly_review_message(
         repo_root=Path(normalized_repo_root),
@@ -305,7 +326,7 @@ def register_nightly_review_job(
             "updatedAtMs": created_at_ms,
             "schedule": {
                 "kind": "cron",
-                "expr": str(cron_expr or DEFAULT_NIGHTLY_CRON).strip() or DEFAULT_NIGHTLY_CRON,
+                "expr": _apply_stagger_to_cron(cron_expr, stagger_minutes),
                 "tz": str(timezone_name or DEFAULT_NIGHTLY_TIMEZONE).strip() or DEFAULT_NIGHTLY_TIMEZONE,
             },
             "sessionTarget": "isolated",
@@ -332,4 +353,99 @@ def register_nightly_review_job(
         "jobs_path": str(jobs_path),
         "job": entry,
         "job_count": len([item for item in jobs if isinstance(item, dict)]),
+    }
+
+
+def unregister_main_digest_source(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    source_key: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    config_path = resolve_main_review_registry_path(openclaw_config_path)
+    if not config_path.exists():
+        return {
+            "status": "missing",
+            "config_path": str(config_path),
+            "removed": [],
+            "source_count": 0,
+        }
+
+    payload = _load_json(config_path)
+    sources = payload.get("sources") if isinstance(payload.get("sources"), list) else []
+    normalized_repo_root = str(repo_root.expanduser().resolve())
+    normalized_key = str(source_key or "").strip()
+
+    removed: list[dict[str, Any]] = []
+    kept: list[dict[str, Any]] = []
+    for item in sources:
+        if not isinstance(item, dict):
+            kept.append(item)
+            continue
+        item_repo_root = str(item.get("repo_root") or "").strip()
+        item_key = str(item.get("key") or "").strip()
+        if item_repo_root == normalized_repo_root or (normalized_key and item_key == normalized_key):
+            removed.append(copy.deepcopy(item))
+        else:
+            kept.append(item)
+
+    if removed and not dry_run:
+        payload["sources"] = kept
+        config_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "status": ("dry_run" if dry_run else "deleted") if removed else "missing",
+        "config_path": str(config_path),
+        "removed": removed,
+        "source_count": len([item for item in kept if isinstance(item, dict)]),
+    }
+
+
+def unregister_nightly_review_job(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    project_name: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    jobs_path = resolve_cron_jobs_path(openclaw_config_path)
+    if not jobs_path.exists():
+        return {
+            "status": "missing",
+            "jobs_path": str(jobs_path),
+            "removed": [],
+            "job_count": 0,
+        }
+
+    payload = _load_cron_jobs(jobs_path)
+    jobs = payload.get("jobs") if isinstance(payload.get("jobs"), list) else []
+    normalized_repo_root = str(repo_root.expanduser().resolve())
+    project_label = str(project_name or repo_root.name).strip() or repo_root.name
+    normalized_name = f"Project review · {project_label}"
+    legacy_name = f"Nightly {project_label} review"
+
+    removed: list[dict[str, Any]] = []
+    kept: list[dict[str, Any]] = []
+    for item in jobs:
+        if not isinstance(item, dict):
+            kept.append(item)
+            continue
+        payload_item = item.get("payload") if isinstance(item.get("payload"), dict) else {}
+        payload_message = str(payload_item.get("message") or "").strip()
+        item_name = str(item.get("name") or "").strip()
+        if item_name in {normalized_name, legacy_name} or normalized_repo_root in payload_message:
+            removed.append(copy.deepcopy(item))
+        else:
+            kept.append(item)
+
+    if removed and not dry_run:
+        payload["jobs"] = kept
+        jobs_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "status": ("dry_run" if dry_run else "deleted") if removed else "missing",
+        "jobs_path": str(jobs_path),
+        "removed": removed,
+        "job_count": len([item for item in kept if isinstance(item, dict)]),
     }

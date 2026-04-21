@@ -111,6 +111,19 @@ def build_parser(*, handlers: dict[str, Any]) -> argparse.ArgumentParser:
     workspace_init.add_argument("--doc-folder-name", default="", help=argparse.SUPPRESS)
     workspace_init.set_defaults(func=handlers["init"], _deprecated_command="workspace-init")
 
+    workspace_delete = sub.add_parser(
+        "workspace-delete",
+        help="Delete a PM workspace and cleanup bindings/resources",
+    )
+    workspace_delete.add_argument("--repo-root", default="")
+    workspace_delete.add_argument("--workspace-root", default="")
+    workspace_delete.add_argument("--openclaw-config", default="")
+    workspace_delete.add_argument("--agent-id", default="")
+    workspace_delete.add_argument("--group-id", default="")
+    workspace_delete.add_argument("--channel", default="feishu")
+    workspace_delete.add_argument("--dry-run", action="store_true", default=False)
+    workspace_delete.set_defaults(func=handlers["workspace_delete"])
+
     sync_gsd_docs = sub.add_parser("sync-gsd-docs")
     sync_gsd_docs.add_argument("--repo-root", default="")
     sync_gsd_docs.add_argument(

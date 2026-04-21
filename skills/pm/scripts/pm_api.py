@@ -76,10 +76,14 @@ from pm_api_support import load_openclaw_gateway_user_token
 from pm_api_support import openclaw_config
 from pm_api_support import project_display_name
 from pm_api_support import project_slug
+from pm_api_support import inspect_workspace_registration
 from pm_api_support import register_main_digest_source
 from pm_api_support import register_nightly_review_job
 from pm_api_support import register_workspace
 from pm_api_support import request_json
+from pm_api_support import unregister_main_digest_source
+from pm_api_support import unregister_nightly_review_job
+from pm_api_support import unregister_workspace
 from pm_api_support import request_user_oauth_link
 from pm_api_support import resolve_current_openclaw_context
 from pm_api_support import resolve_dispatch_session_key
@@ -160,6 +164,7 @@ def build_cli_api() -> SimpleNamespace:
         english_project_name=english_project_name,
         execute_gsd_plan_phase=execute_gsd_plan_phase,
         ensure_bootstrap_task=ensure_bootstrap_task,
+        extract_drive_node=extract_drive_node,
         ensure_pm_dir=ensure_pm_dir,
         ensure_project_docs=ensure_project_docs,
         ensure_task_started=ensure_task_started,
@@ -167,6 +172,7 @@ def build_cli_api() -> SimpleNamespace:
         extract_task_number=extract_task_number,
         feishu_credentials=feishu_credentials,
         find_existing_task_by_summary=find_existing_task_by_summary,
+        find_root_folder_by_name=find_root_folder_by_name,
         get_task_record=get_task_record,
         get_task_record_by_guid=get_task_record_by_guid,
         inspect_tasklist=inspect_tasklist,
@@ -195,6 +201,10 @@ def build_cli_api() -> SimpleNamespace:
         register_nightly_review_job=register_nightly_review_job,
         register_workspace=register_workspace,
         request_json=request_json,
+        inspect_workspace_registration=inspect_workspace_registration,
+        unregister_main_digest_source=unregister_main_digest_source,
+        unregister_nightly_review_job=unregister_nightly_review_job,
+        unregister_workspace=unregister_workspace,
         request_user_oauth_link=request_user_oauth_link,
         resolve_current_openclaw_context=resolve_current_openclaw_context,
         resolve_dispatch_session_key=resolve_dispatch_session_key,

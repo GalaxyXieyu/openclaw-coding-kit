@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,40 @@ from pm_command_support import (
     resolve_doc_folder_name,
     resolve_tasklist_name,
 )
+
+
+def _clear_nested_keys(payload: dict[str, Any], path: str, cleared: list[str]) -> None:
+    parts = path.split(".")
+    cursor: Any = payload
+    for key in parts[:-1]:
+        if not isinstance(cursor, dict):
+            return
+        cursor = cursor.get(key)
+    if isinstance(cursor, dict) and parts[-1] in cursor:
+        cursor.pop(parts[-1], None)
+        cleared.append(path)
+
+
+def _cleanup_repo_config_for_workspace_delete(config_payload: dict[str, Any]) -> list[str]:
+    cleared: list[str] = []
+    for path in (
+        "project.agent",
+        "task.tasklist_guid",
+        "task.tasklist_url",
+        "task.default_assignee",
+        "doc.folder_token",
+        "doc.folder_url",
+        "doc.project_doc_token",
+        "doc.project_doc_url",
+        "doc.requirements_doc_token",
+        "doc.requirements_doc_url",
+        "doc.roadmap_doc_token",
+        "doc.roadmap_doc_url",
+        "doc.state_doc_token",
+        "doc.state_doc_url",
+    ):
+        _clear_nested_keys(config_payload, path, cleared)
+    return cleared
 
 
 def build_init_command_handlers(api: Any) -> dict[str, CommandHandler]:
@@ -276,6 +311,7 @@ def build_init_command_handlers(api: Any) -> dict[str, CommandHandler]:
                     dry_run=bool(args.dry_run),
                     enabled=bool(nightly_cfg.get("enabled")),
                     cron_expr=str(nightly_cfg.get("cron") or nightly_cfg.get("schedule") or "0 6 * * *").strip() or "0 6 * * *",
+                    stagger_minutes=int(nightly_cfg.get("stagger_minutes") or 0),
                     timezone_name=str(nightly_cfg.get("timezone") or "Asia/Shanghai").strip() or "Asia/Shanghai",
                     since=str(nightly_cfg.get("since") or "yesterday 00:00").strip() or "yesterday 00:00",
                     until=str(nightly_cfg.get("until") or "today 00:00").strip() or "today 00:00",
@@ -416,9 +452,187 @@ def build_init_command_handlers(api: Any) -> dict[str, CommandHandler]:
             }
         )
 
+    def cmd_workspace_delete(args: argparse.Namespace) -> int:
+        repo_root_raw = str(args.repo_root or "").strip()
+        workspace_root_raw = str(args.workspace_root or "").strip()
+        if not repo_root_raw and not workspace_root_raw:
+            raise SystemExit("provide --repo-root or --workspace-root")
+
+        root = api.project_root_path(repo_root_raw) if repo_root_raw else None
+        workspace_root = Path(workspace_root_raw).expanduser().resolve() if workspace_root_raw else None
+        if root is None and isinstance(workspace_root, Path):
+            profile_path = workspace_root / "config" / "project-profile.json"
+            if profile_path.exists():
+                try:
+                    profile_payload = json.loads(profile_path.read_text(encoding="utf-8"))
+                except Exception:
+                    profile_payload = {}
+                repo_root_from_profile = str(profile_payload.get("repoRoot") or "").strip() if isinstance(profile_payload, dict) else ""
+                if repo_root_from_profile:
+                    root = Path(repo_root_from_profile).expanduser().resolve()
+
+        repo_config_path = (root / "pm.json") if isinstance(root, Path) else Path(str(args.config or "")).expanduser().resolve()
+        config_payload = api.load_config(str(repo_config_path)) if repo_config_path.exists() else {}
+        project_cfg = config_payload.get("project") if isinstance(config_payload.get("project"), dict) else {}
+        task_cfg = config_payload.get("task") if isinstance(config_payload.get("task"), dict) else {}
+        doc_cfg = config_payload.get("doc") if isinstance(config_payload.get("doc"), dict) else {}
+
+        openclaw_config_path = api.resolve_openclaw_config_path(args.openclaw_config)
+        project_name = str(project_cfg.get("name") or (root.name if isinstance(root, Path) else "")).strip()
+        agent_id = str(args.agent_id or project_cfg.get("agent") or "").strip()
+        group_id = str(args.group_id or project_cfg.get("group_id") or "").strip()
+        channel = str(args.channel or "feishu").strip() or "feishu"
+
+        registration = api.inspect_workspace_registration(
+            config_path=openclaw_config_path,
+            agent_id=agent_id,
+            workspace_root=workspace_root,
+            group_id=group_id,
+            channel=channel,
+        )
+        resolved_workspace_raw = str(registration.get("resolved_workspace_root") or "").strip()
+        if workspace_root is None and resolved_workspace_raw:
+            workspace_root = Path(resolved_workspace_raw).expanduser().resolve()
+        resolved_agent_id = str(registration.get("resolved_agent_id") or agent_id).strip()
+        resolved_group_id = str(registration.get("resolved_group_id") or group_id).strip()
+        resolved_channel = str(registration.get("resolved_channel") or channel).strip() or channel
+
+        tasklist_name = str(task_cfg.get("tasklist_name") or "").strip()
+        tasklist_guid = str(task_cfg.get("tasklist_guid") or "").strip()
+        tasklist_cleanup: dict[str, Any]
+        if str(task_cfg.get("backend") or "feishu").strip() != "feishu":
+            tasklist_cleanup = {"status": "skipped", "reason": "backend_not_feishu"}
+        else:
+            inspection = api.inspect_tasklist(tasklist_name, configured_guid=tasklist_guid) if (tasklist_name or tasklist_guid) else {}
+            tasklist = inspection.get("tasklist") if isinstance(inspection.get("tasklist"), dict) else {}
+            resolved_tasklist_guid = str(tasklist.get("guid") or tasklist_guid).strip()
+            if not resolved_tasklist_guid:
+                tasklist_cleanup = {"status": "missing", "inspection": inspection}
+            elif args.dry_run:
+                tasklist_cleanup = {
+                    "status": "dry_run",
+                    "tasklist_guid": resolved_tasklist_guid,
+                    "tasklist_name": str(tasklist.get("name") or tasklist_name).strip(),
+                    "inspection": inspection,
+                }
+            else:
+                api.run_bridge("feishu_task_tasklist", "delete", {"tasklist_guid": resolved_tasklist_guid})
+                tasklist_cleanup = {
+                    "status": "deleted",
+                    "tasklist_guid": resolved_tasklist_guid,
+                    "tasklist_name": str(tasklist.get("name") or tasklist_name).strip(),
+                    "inspection": inspection,
+                }
+
+        folder_name = str(doc_cfg.get("folder_name") or "").strip()
+        folder_token = str(doc_cfg.get("folder_token") or "").strip()
+        docs_cleanup: dict[str, Any]
+        if str(doc_cfg.get("backend") or "feishu").strip() != "feishu":
+            docs_cleanup = {"status": "skipped", "reason": "backend_not_feishu"}
+        else:
+            folder_node = api.find_root_folder_by_name(folder_name) if (not folder_token and folder_name) else None
+            resolved_folder_token = folder_token or str((folder_node or {}).get("token") or (folder_node or {}).get("file_token") or "").strip()
+            if not resolved_folder_token:
+                docs_cleanup = {"status": "missing", "folder_name": folder_name}
+            elif args.dry_run:
+                docs_cleanup = {
+                    "status": "dry_run",
+                    "folder_token": resolved_folder_token,
+                    "folder_name": folder_name or str((folder_node or {}).get("name") or "").strip(),
+                }
+            else:
+                api.run_bridge("feishu_drive_file", "delete", {"file_token": resolved_folder_token, "type": "folder"})
+                docs_cleanup = {
+                    "status": "deleted",
+                    "folder_token": resolved_folder_token,
+                    "folder_name": folder_name or str((folder_node or {}).get("name") or "").strip(),
+                }
+
+        source_key = ""
+        try:
+            source_key = str(api.project_slug(project_name, "", resolved_agent_id or agent_id)).strip()
+        except Exception:
+            source_key = ""
+        main_digest_cleanup = api.unregister_main_digest_source(
+            openclaw_config_path=openclaw_config_path,
+            repo_root=root or Path.cwd(),
+            source_key=source_key,
+            dry_run=bool(args.dry_run),
+        )
+        nightly_review_cleanup = api.unregister_nightly_review_job(
+            openclaw_config_path=openclaw_config_path,
+            repo_root=root or Path.cwd(),
+            project_name=project_name,
+            dry_run=bool(args.dry_run),
+        )
+        registration_cleanup = api.unregister_workspace(
+            config_path=openclaw_config_path,
+            agent_id=resolved_agent_id,
+            workspace_root=workspace_root,
+            group_id=resolved_group_id,
+            channel=resolved_channel,
+            dry_run=bool(args.dry_run),
+        )
+
+        if args.dry_run or not repo_config_path.exists():
+            repo_config_cleanup = {
+                "status": "dry_run" if args.dry_run and repo_config_path.exists() else "missing",
+                "config_path": str(repo_config_path),
+                "cleared_fields": _cleanup_repo_config_for_workspace_delete(json.loads(json.dumps(config_payload, ensure_ascii=False))) if repo_config_path.exists() else [],
+            }
+        else:
+            cleared_fields = _cleanup_repo_config_for_workspace_delete(config_payload)
+            repo_config_path.write_text(json.dumps(config_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            repo_config_cleanup = {
+                "status": "updated",
+                "config_path": str(repo_config_path),
+                "cleared_fields": cleared_fields,
+            }
+
+        workspace_cleanup: dict[str, Any]
+        if workspace_root is None:
+            workspace_cleanup = {"status": "missing", "path": ""}
+        elif args.dry_run:
+            workspace_cleanup = {
+                "status": "dry_run",
+                "path": str(workspace_root),
+                "exists": workspace_root.exists(),
+            }
+        else:
+            existed = workspace_root.exists()
+            if existed:
+                shutil.rmtree(workspace_root)
+            workspace_cleanup = {
+                "status": "deleted" if existed else "missing",
+                "path": str(workspace_root),
+                "exists": existed,
+            }
+
+        return emit(
+            {
+                "status": "dry_run" if args.dry_run else "deleted",
+                "repo_root": str(root) if isinstance(root, Path) else "",
+                "config_path": str(repo_config_path),
+                "openclaw_config_path": str(openclaw_config_path),
+                "project_name": project_name,
+                "agent_id": resolved_agent_id,
+                "group_id": resolved_group_id,
+                "channel": resolved_channel,
+                "workspace_root": str(workspace_root) if isinstance(workspace_root, Path) else "",
+                "tasklist_cleanup": tasklist_cleanup,
+                "docs_cleanup": docs_cleanup,
+                "main_digest_cleanup": main_digest_cleanup,
+                "nightly_review_cleanup": nightly_review_cleanup,
+                "registration_cleanup": registration_cleanup,
+                "repo_config_cleanup": repo_config_cleanup,
+                "workspace_cleanup": workspace_cleanup,
+            }
+        )
+
     return {
         "auth": cmd_auth,
         "auth_link": cmd_auth_link,
         "permission_bundle": cmd_permission_bundle,
         "init": cmd_init,
+        "workspace_delete": cmd_workspace_delete,
     }

@@ -30,16 +30,20 @@ from pm_io import load_json_file
 from pm_io import unix_ts
 from pm_project_review import register_main_digest_source as register_pm_main_digest_source
 from pm_project_review import register_nightly_review_job as register_pm_nightly_review_job
+from pm_project_review import unregister_main_digest_source as unregister_pm_main_digest_source
+from pm_project_review import unregister_nightly_review_job as unregister_pm_nightly_review_job
 from pm_runtime import resolve_runtime_path
 from pm_workspace import build_workspace_profile as build_pm_workspace_profile
 from pm_workspace import default_doc_folder_name as build_pm_default_doc_folder_name
 from pm_workspace import default_tasklist_name as build_pm_default_tasklist_name
 from pm_workspace import default_workspace_root as resolve_pm_default_workspace_root
 from pm_workspace import english_project_name as resolve_pm_english_project_name
+from pm_workspace import inspect_workspace_registration as inspect_pm_workspace_registration
 from pm_workspace import project_display_name as resolve_pm_project_display_name
 from pm_workspace import project_slug as build_pm_project_slug
 from pm_workspace import register_workspace as register_pm_workspace
 from pm_workspace import scaffold_workspace as scaffold_pm_workspace
+from pm_workspace import unregister_workspace as unregister_pm_workspace
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 BRIDGE_SCRIPT_CANDIDATES = (
@@ -639,6 +643,42 @@ def register_workspace(
     )
 
 
+def inspect_workspace_registration(
+    *,
+    config_path: Path,
+    agent_id: str = "",
+    workspace_root: Path | None = None,
+    group_id: str = "",
+    channel: str = "",
+) -> dict[str, Any]:
+    return inspect_pm_workspace_registration(
+        config_path=config_path,
+        agent_id=agent_id,
+        workspace_root=workspace_root,
+        group_id=group_id,
+        channel=channel,
+    )
+
+
+def unregister_workspace(
+    *,
+    config_path: Path,
+    agent_id: str = "",
+    workspace_root: Path | None = None,
+    group_id: str = "",
+    channel: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    return unregister_pm_workspace(
+        config_path=config_path,
+        agent_id=agent_id,
+        workspace_root=workspace_root,
+        group_id=group_id,
+        channel=channel,
+        dry_run=dry_run,
+    )
+
+
 def register_main_digest_source(
     *,
     openclaw_config_path: Path,
@@ -671,6 +711,7 @@ def register_nightly_review_job(
     enabled: bool = True,
     dry_run: bool = False,
     cron_expr: str = "0 6 * * *",
+    stagger_minutes: int = 0,
     timezone_name: str = "Asia/Shanghai",
     since: str = "yesterday 00:00",
     until: str = "today 00:00",
@@ -689,6 +730,7 @@ def register_nightly_review_job(
         enabled=enabled,
         dry_run=dry_run,
         cron_expr=cron_expr,
+        stagger_minutes=stagger_minutes,
         timezone_name=timezone_name,
         since=since,
         until=until,
@@ -696,4 +738,34 @@ def register_nightly_review_job(
         auto_fix_mode=auto_fix_mode,
         send_if_possible=send_if_possible,
         include_dirty=include_dirty,
+    )
+
+
+def unregister_main_digest_source(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    source_key: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    return unregister_pm_main_digest_source(
+        openclaw_config_path=openclaw_config_path,
+        repo_root=repo_root,
+        source_key=source_key,
+        dry_run=dry_run,
+    )
+
+
+def unregister_nightly_review_job(
+    *,
+    openclaw_config_path: Path,
+    repo_root: Path,
+    project_name: str = "",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    return unregister_pm_nightly_review_job(
+        openclaw_config_path=openclaw_config_path,
+        repo_root=repo_root,
+        project_name=project_name,
+        dry_run=dry_run,
     )
