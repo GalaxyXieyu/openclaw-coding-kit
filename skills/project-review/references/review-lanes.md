@@ -8,7 +8,7 @@
 
 - 不要把 `code-review`
 - 不要把 docs review
-- 不要把 `ui-ux-test`
+- 不要把 UI/UX 验证能力
 
 做成几个平级、分散的日常入口。
 
@@ -33,6 +33,11 @@
 - P0 / P1 / P2 分级
 - 长函数 / 长文件 / 重复代码 / 测试缺口 / API 风险
 
+资源：
+
+- `scripts/code_review_lane.py`
+- `references/code-review-standards/*.md`
+
 ### 3. `docs-review`
 
 负责：
@@ -49,6 +54,17 @@
 - 修复之后的 UI 定向验证
 - 页面/组件/交互 smoke
 - 截图和证据回填
+
+资源：
+
+- `scripts/init_uiux_plan.js`
+- `scripts/generate_uiux_report.js`
+- `scripts/uiux_preflight.sh`
+- `scripts/resolve_miniapp_target.js`
+- `scripts/miniapp_smoke.js`
+- `assets/templates/*.csv`
+- `references/ui-ux-playbook.md`
+- `references/ui-ux-miniapp-broker.md`
 
 ### 5. `graph-observe`
 
@@ -93,7 +109,7 @@
 
 所以：
 
-- 可以参考外部 `code-review` 和 `ui-ux-test`
+- 可以参考外部 `code-review` 和既有 UI/UX 验证方法
 - 但不要让它们成为日常主入口
 - 日常主入口只保留 `project-review`
 

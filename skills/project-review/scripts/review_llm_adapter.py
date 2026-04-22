@@ -6,7 +6,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 from typing import Any
+
+
+PROJECT_REVIEW_ROOT = Path(__file__).resolve().parents[1]
+CODE_REVIEW_STANDARDS_ROOT = PROJECT_REVIEW_ROOT / "references" / "code-review-standards"
 
 
 def _normalize_items(items: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -50,6 +55,43 @@ def _schema_for_lane(lane: str) -> dict[str, Any]:
     }
 
 
+def _load_code_review_standards() -> list[dict[str, Any]]:
+    if not CODE_REVIEW_STANDARDS_ROOT.exists():
+        return []
+
+    result: list[dict[str, Any]] = []
+    for path in sorted(CODE_REVIEW_STANDARDS_ROOT.glob("*.md")):
+        if path.name.lower() == "readme.md":
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        title = path.stem
+        highlights: list[str] = []
+        for raw in text.splitlines():
+            line = raw.strip()
+            if not line:
+                continue
+            if line.startswith("# "):
+                title = line[2:].strip() or title
+                continue
+            if line.startswith("- [ ] "):
+                highlights.append(line[6:].strip())
+            elif line.startswith("- "):
+                highlights.append(line[2:].strip())
+            if len(highlights) >= 6:
+                break
+        result.append(
+            {
+                "file": f"references/code-review-standards/{path.name}",
+                "title": title,
+                "highlights": highlights,
+            }
+        )
+    return result
+
+
 def build_llm_review_request(bundle: dict[str, Any], lane: str) -> dict[str, Any]:
     lane_name = str(lane or "").strip()
     if lane_name not in {"code-review", "docs-review"}:
@@ -87,6 +129,13 @@ def build_llm_review_request(bundle: dict[str, Any], lane: str) -> dict[str, Any
             "Each `next_actions` item should be an imperative sentence in plain Chinese, ideally within 18 Chinese characters.",
         ],
     }
+    if lane_name == "code-review":
+        request["lane_references"] = {
+            "code_review_standards": _load_code_review_standards(),
+        }
+        request["instructions"].append(
+            "Review the bundled code-review standards first, then combine them with the repo evidence before deciding which risks are real."
+        )
     return request
 
 

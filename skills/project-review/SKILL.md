@@ -21,8 +21,10 @@ When this skill is installed under the OpenClaw runtime root, treat the OpenClaw
 - monthly review generation
 - key event alert generation
 - code health review generation
+- code-review standards library
 - docs hygiene review generation
 - UI/UX verification routing
+- UI/UX execution assets and evidence templates
 - graph-based structure observation routing
 - plain-language per-project summaries
 - risk card payload structure
@@ -56,6 +58,26 @@ Inside `project-review`, organize daily review work as indexed lanes:
 
 These are internal sub-flows, not separate truth owners.
 External skills can be inspiration sources, but the operational contract should live here.
+
+## Lane Assets
+
+Keep the lane resources bundled under `skills/project-review/` so the user only needs one top-level skill:
+
+- `code-review`
+  - `scripts/code_review_lane.py`
+  - `references/code-review-standards/*.md`
+- `ui-ux-review`
+  - `scripts/init_uiux_plan.js`
+  - `scripts/generate_uiux_report.js`
+  - `scripts/uiux_preflight.sh`
+  - `scripts/resolve_miniapp_target.js`
+  - `scripts/miniapp_smoke.js`
+  - `assets/templates/*.csv`
+  - `references/ui-ux-playbook.md`
+  - `references/ui-ux-miniapp-broker.md`
+  - `references/ui-ux-profile.template.yaml`
+
+If a task needs board truth, reusable scenario contracts, or screenshot evidence packages, `project-review` may route into `product-canvas`, but the review entrypoint should still stay here.
 
 ## MVP Scope
 
@@ -134,6 +156,34 @@ Run one code-health review with Codex end to end:
 python3 skills/project-review/scripts/review_orchestrator.py codex \
   --payload @/tmp/project-review/code-health.json \
   --model codex
+```
+
+Initialize one `ui-ux-review` execution pack:
+
+```bash
+node skills/project-review/scripts/init_uiux_plan.js \
+  --run-id demo-ui-review \
+  --out-dir out/project-review/ui-ux/demo-ui-review
+```
+
+Generate one `ui-ux-review` report:
+
+```bash
+node skills/project-review/scripts/generate_uiux_report.js \
+  --execution-csv out/project-review/ui-ux/demo-ui-review/04_execution_log.csv \
+  --bugs-csv out/project-review/ui-ux/demo-ui-review/05_bug_list.csv \
+  --output out/project-review/ui-ux/demo-ui-review/ui-ux-review-report.md \
+  --title "UI/UX 定向验证报告" \
+  --project demo \
+  --run-id demo-ui-review
+```
+
+Run one miniapp smoke under the `ui-ux-review` lane:
+
+```bash
+node skills/project-review/scripts/miniapp_smoke.js \
+  --path /abs/path/to/project-or-worktree \
+  --json-output out/project-review/ui-ux/miniapp-smoke.json
 ```
 
 ## Global Runtime Layout

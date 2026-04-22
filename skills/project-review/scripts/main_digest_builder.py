@@ -74,7 +74,6 @@ def _clean_task_text(text: str) -> str:
             (r"主Agent", "主Agent"),
             (r"knowledge|wiki", "知识整理"),
             (r"interaction-board", "交互看板"),
-            (r"Eggturtle", "选育项目"),
             (r"build", "补"),
             (r"skill", "技能"),
             (r"sample", "样例"),

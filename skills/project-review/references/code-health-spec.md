@@ -40,6 +40,16 @@
 - API / 状态码 / 错误处理不一致
 - 性能和资源使用问题
 
+参考标准库：
+
+- `references/code-review-standards/performance.md`
+- `references/code-review-standards/batch_robustness.md`
+- `references/code-review-standards/api_status_codes.md`
+- `references/code-review-standards/api_response_format.md`
+- `references/code-review-standards/api_error_handling.md`
+- `references/code-review-standards/testability.md`
+- `references/code-review-standards/code_style.md`
+
 ## Phase 3: `docs-review` lane
 
 这部分是 daily quality retro 必须补上的治理检查。
@@ -104,13 +114,24 @@
 
 ## `ui-ux-review` lane 的接入边界
 
-这里参考 `ui-ux-test` 的方法，但运行时仍归 `project-review` 调度。
+这里参考既有 UI/UX smoke 和证据回填方法，但运行时仍归 `project-review` 调度。
 
 建议规则：
 
 - 只有当改动命中 UI 文件时才触发
 - 优先做定向 smoke
 - 失败结果写成证据，不直接自动判定为产品问题
+
+执行资产：
+
+- `scripts/init_uiux_plan.js`
+- `scripts/generate_uiux_report.js`
+- `scripts/uiux_preflight.sh`
+- `scripts/resolve_miniapp_target.js`
+- `scripts/miniapp_smoke.js`
+- `assets/templates/*.csv`
+- `references/ui-ux-playbook.md`
+- `references/ui-ux-miniapp-broker.md`
 
 常见 UI 命中信号：
 

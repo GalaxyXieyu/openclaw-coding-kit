@@ -1,0 +1,3 @@
+case_id,priority,module,user_journey,preconditions,steps,api_expectation,ui_expectation,ux_checks,ui_checks
+TC-001,P0,Auth,password login success,valid account,"open login -> input -> submit",200 + session set,redirect to app,loading + retry path,layout and spacing consistent
+TC-002,P0,Auth,password login failure,invalid password,"open login -> input -> submit",401/4xx,show error and stay,error understandable,error state style consistent

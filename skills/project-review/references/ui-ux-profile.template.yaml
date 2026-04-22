@@ -1,0 +1,36 @@
+project: <project-name>
+owner: <owner-name>
+
+services:
+  web:
+    base_url: <web-base-url>
+    health_url: <web-login-or-health-url>
+  admin:
+    base_url: <admin-base-url>
+    health_url: <admin-login-or-health-url>
+  api:
+    base_url: <api-base-url>
+    health_url: <api-health-url>
+
+inputs:
+  workbook_path: <path-to-xlsx-or-folder>
+  test_cases_csv: <path-to-03_test_cases.csv>
+  execution_log_csv: <path-to-04_execution_log.csv>
+  bug_list_csv: <path-to-05_bug_list.csv>
+  summary_csv: <path-to-06_summary.csv>
+  taskboard: <taskboard-path>
+  template_dir: assets/templates
+
+evidence:
+  screenshots_root: <screenshots-root>
+  report_path: <markdown-report-output>
+
+gates:
+  p0_pass_rate: 1.0
+  p1_pass_rate: 0.9
+  mobile_required: true
+
+failure_labels:
+  - PRODUCT
+  - ENV
+  - GAP
