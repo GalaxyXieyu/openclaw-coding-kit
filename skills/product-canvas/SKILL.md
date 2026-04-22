@@ -7,12 +7,6 @@ description: Use this skill to manage product flow boards, reusable UI scenarios
 
 `product-canvas` is the unified entrypoint for product flow mapping, board generation, reusable scenario assets, screenshot evidence, and review reporting.
 
-During the compatibility window:
-
-- `interaction-board` remains the board truth/render layer
-- `product-canvas` becomes the orchestration surface the agent should prefer
-- old `ui-ux-test` behavior is vendored here as repo-local scripts/templates
-
 Do not default back to agent-browser style exploration for repeatable UI work.
 Prefer:
 
@@ -34,26 +28,19 @@ If the work is tracked, update task state through `pm`.
 
 ## Default Workflow
 
-1. Build or refresh the board truth with:
-
-```bash
-python3 skills/product-canvas/scripts/product_canvas.py build-miniapp-sample \
-  --repo-root /abs/path/to/repo \
-  --out-dir docs/interaction-board/sample
-```
+1. Refresh the board truth assets under the repo docs area, for example `docs/interaction-board/`.
+   Keep the board manifest and screenshots file-based so scenarios and reports can reuse the same source of truth.
 
 2. Store reusable scenario contracts under the board docs area, for example:
 
 - `docs/interaction-board/scenarios/*.json`
 - `docs/interaction-board/scenarios/*.spec.ts`
 
-3. For Web scenarios, render or update Playwright specs from the scenario contract:
+3. For Web scenarios, keep the Playwright spec next to the scenario contract, for example:
 
-```bash
-python3 skills/product-canvas/scripts/product_canvas.py render-scenario-spec \
-  --scenario docs/interaction-board/scenario.example.json \
-  --output docs/interaction-board/scenarios/products-to-detail.spec.ts
-```
+- `docs/interaction-board/scenarios/products-to-detail.spec.ts`
+
+Generate or update that spec with the repo's current Web test workflow.
 
 4. For miniapp scenarios, replay the saved contract through `auto-miniprogram`:
 
@@ -99,8 +86,6 @@ node skills/product-canvas/scripts/generate_product_canvas_report.js \
 
 ## Scripts
 
-- `scripts/product_canvas.py`
-  - thin wrapper to the existing board truth/render commands
 - `scripts/init_product_canvas_plan.js`
 - `scripts/generate_product_canvas_report.js`
 - `scripts/resolve_miniapp_target.js`
@@ -111,7 +96,7 @@ node skills/product-canvas/scripts/generate_product_canvas_report.js \
 
 Load only what you need:
 
-- `references/workflow.md`: product-canvas layering and compatibility boundary
+- `references/workflow.md`: product-canvas layering and asset boundary
 - `references/scenario-contract.md`: unified scenario JSON contract and engine split
 - `references/reporting.md`: CSV/report workflow and evidence rules
 

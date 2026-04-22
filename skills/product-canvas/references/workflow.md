@@ -2,9 +2,9 @@
 
 `product-canvas` 负责统一“产品流转画布 + 场景资产 + 截图证据 + 报告”。
 
-当前兼容阶段的分层如下：
+当前分层如下：
 
-1. `interaction-board`
+1. board assets
    - 页面真值
    - manifest / draw.io / HTML board
    - 页面节点与关系
