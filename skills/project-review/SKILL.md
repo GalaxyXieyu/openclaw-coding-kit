@@ -41,7 +41,7 @@ Use this contract consistently:
 
 - `pm` owns task intake, task/doc truth, and repo-local context.
 - `project-review` owns review logic, copy generation, card composition, callback semantics, and archive state.
-- `openclaw-lark-bridge` or another delivery adapter owns the actual Feishu tool invocation.
+- the official `lark-cli` (or another delivery adapter) owns the actual Feishu tool invocation.
 
 Do not make `project-review` responsible for task creation truth.
 Do not make `pm` responsible for review card behavior.

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 from pathlib import Path
 
 
@@ -14,23 +16,13 @@ from pm_cli import build_parser
 
 def _build_handlers() -> dict[str, object]:
     names = (
-        "auth",
-        "auth_link",
-        "permission_bundle",
         "init",
-        "sync_gsd_docs",
-        "sync_gsd_progress",
-        "materialize_gsd_tasks",
-        "route_gsd",
-        "plan_phase",
-        "board",
-        "board_task",
+        "lark",
         "context",
         "next",
         "plan",
         "refine",
         "coder_context",
-        "run",
         "create",
         "get",
         "comment",
@@ -47,23 +39,54 @@ def _build_handlers() -> dict[str, object]:
 
 
 class PmCliParserTest(unittest.TestCase):
-    def test_workspace_init_keeps_init_handler_and_deprecated_marker(self) -> None:
+    def test_init_parser_accepts_repo_local_binding_args(self) -> None:
         handlers = _build_handlers()
         parser = build_parser(handlers=handlers)
         args = parser.parse_args(
             [
-                "workspace-init",
+                "init",
                 "--project-name",
                 "demo",
-                "--group-id",
-                "group-1",
                 "--repo-root",
                 ".",
+                "--task-backend",
+                "local",
+                "--doc-backend",
+                "repo",
             ]
         )
-        self.assertEqual(args.command, "workspace-init")
+        self.assertEqual(args.command, "init")
+        self.assertEqual(args.project_name, "demo")
+        self.assertEqual(args.task_backend, "local")
+        self.assertEqual(args.doc_backend, "repo")
         self.assertIs(args.func, handlers["init"])
-        self.assertEqual(args._deprecated_command, "workspace-init")
+
+    def test_lark_parser_accepts_status_doctor_and_login(self) -> None:
+        handlers = _build_handlers()
+        parser = build_parser(handlers=handlers)
+        status = parser.parse_args(["lark", "status"])
+        doctor = parser.parse_args(["lark", "doctor"])
+        login = parser.parse_args(["lark", "login", "--exec"])
+        self.assertEqual(status.action, "status")
+        self.assertEqual(doctor.action, "doctor")
+        self.assertEqual(login.action, "login")
+        self.assertTrue(login.exec)
+        self.assertIs(status.func, handlers["lark"])
+
+    def test_removed_openclaw_and_dispatch_commands_are_not_accepted(self) -> None:
+        parser = build_parser(handlers=_build_handlers())
+        removed = [
+            ["workspace-init", "--project-name", "demo"],
+            ["workspace-delete", "--repo-root", "."],
+            ["auth"],
+            ["auth-link", "--scopes", "drive:drive"],
+            ["permission-bundle", "--list-presets"],
+            ["run", "--task-id", "T1"],
+        ]
+        with redirect_stderr(StringIO()):
+            for argv in removed:
+                with self.assertRaises(SystemExit, msg=str(argv)):
+                    parser.parse_args(argv)
 
     def test_upload_attachments_parser_still_accepts_task_and_file(self) -> None:
         handlers = _build_handlers()
@@ -81,25 +104,6 @@ class PmCliParserTest(unittest.TestCase):
         self.assertEqual(args.task_id, "T1")
         self.assertEqual(args.file, ["evidence.txt"])
         self.assertIs(args.func, handlers["upload_attachments"])
-
-    def test_board_task_parser_accepts_task_ref_and_limits(self) -> None:
-        handlers = _build_handlers()
-        parser = build_parser(handlers=handlers)
-        args = parser.parse_args(
-            [
-                "board-task",
-                "--task-id",
-                "T9",
-                "--include-completed",
-                "--comment-limit",
-                "15",
-            ]
-        )
-        self.assertEqual(args.command, "board-task")
-        self.assertEqual(args.task_id, "T9")
-        self.assertTrue(args.include_completed)
-        self.assertEqual(args.comment_limit, 15)
-        self.assertIs(args.func, handlers["board_task"])
 
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ def main() -> int:
         args.repo_root = repo_root()
     if hasattr(args, "kind") and not getattr(args, "kind", ""):
         args.kind = task_kind()
-    if command_name not in {"init", "workspace-init"} and hasattr(args, "tasklist_name") and not getattr(args, "tasklist_name", ""):
+    if command_name != "init" and hasattr(args, "tasklist_name") and not getattr(args, "tasklist_name", ""):
         args.tasklist_name = tasklist_name()
     return int(args.func(args))
 

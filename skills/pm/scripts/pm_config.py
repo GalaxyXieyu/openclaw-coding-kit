@@ -111,6 +111,11 @@ def default_config() -> dict[str, Any]:
             "roadmap_title": "ROADMAP",
             "state_title": "STATE",
         },
+        "feishu": {
+            "provider": "lark-cli",
+            "cli_profile": "",
+            "as": "bot",
+        },
         "coder": {
             "backend": "acp",
             "agent_id": "codex",

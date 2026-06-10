@@ -16,8 +16,6 @@ DEFAULT_CODEX_SKILLS = (
     "pm",
     "coder",
     "product-canvas",
-    "interaction-board",
-    "openclaw-lark-bridge",
     "project-review",
 )
 
@@ -25,7 +23,6 @@ DEFAULT_OPENCLAW_SKILLS = (
     "pm",
     "coder",
     "product-canvas",
-    "interaction-board",
 )
 
 DEFAULT_OPENCLAW_PLUGINS = (

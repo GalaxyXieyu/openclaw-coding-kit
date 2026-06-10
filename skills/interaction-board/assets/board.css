@@ -1,4 +1,0 @@
-/* Compatibility note:
- * board CSS sources now live in `assets/styles/*.css`.
- * The renderer concatenates those modules into the generated HTML.
- */

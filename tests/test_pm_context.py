@@ -82,7 +82,6 @@ class PmContextTest(unittest.TestCase):
             task_kind=lambda: "task",
             repo_scan=lambda repo_root: {"repo_root": str(repo_root), "docs": ["README.md"]},
             build_bootstrap_info=lambda repo_root: {"project_mode": "brownfield", "recommended_action": "map-codebase"},
-            detect_gsd_assets=lambda repo_root: {"state_doc": ".planning/STATE.md"},
             parse_task_summary=parse_task_summary,
             parse_task_id_from_description=lambda description: "T1",
             now_iso=lambda: "2026-04-07T10:10:00Z",

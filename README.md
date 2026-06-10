@@ -112,8 +112,8 @@ These screenshots show the kind of operator flow this repository is trying to su
 <table>
   <tr>
     <td width="50%">
-      <img src="./docs/screenshots/workspace-init.jpg" alt="Workspace initialization example" />
-      <p><strong>Structured initialization</strong><br/>Start from workspace, task context, and execution order, not a giant coding session.</p>
+      <img src="./docs/screenshots/workspace-init.jpg" alt="Repo-local initialization example" />
+      <p><strong>Repo-local initialization</strong><br/>Bind PM to the real repository directory, task context, and execution order, not a separate workspace layer.</p>
     </td>
     <td width="50%">
       <img src="./docs/screenshots/task-iteration.png" alt="Task iteration example" />
@@ -164,8 +164,7 @@ Skip this repository if you only need:
 | Task orchestration | `skills/pm` | task intake, context refresh, doc sync, GSD routing |
 | Execution worker | `skills/coder` | canonical ACP coding worker |
 | Product canvas | `skills/product-canvas` | unified product flow board, scenario assets, miniapp/web UI review entrypoint |
-| Board truth layer | `skills/interaction-board` | page inventory, draw.io board, HTML board, screenshot-ready manifest |
-| Feishu bridge reuse | `skills/openclaw-lark-bridge` | calls Feishu tools from a running OpenClaw gateway |
+| Feishu delivery | official `lark-cli` | PM invokes Feishu task/doc APIs through the official CLI |
 | Progress relay | `plugins/acp-progress-bridge` | sends child-session progress and completion back to the parent |
 | Config references | `examples/*` | minimal and extended config snippets |
 | Verification | `tests/*` | repo-local validation baseline |
@@ -254,7 +253,7 @@ Recommended order:
 
 1. install runtime prerequisites first
 2. verify repo-local smoke path
-3. deploy `pm`, `coder`, `openclaw-lark-bridge`, and `acp-progress-bridge`
+3. deploy `pm`, `coder`, and `acp-progress-bridge`
    preferred entrypoint: `python3 scripts/sync_local_skills.py --target both`
 4. wire `openclaw.json` and `pm.json`
 5. only then add Feishu bot, group, permissions, and OAuth when required
@@ -277,7 +276,6 @@ openclaw-coding-kit/
     acp-progress-bridge/
   skills/
     coder/
-    openclaw-lark-bridge/
     pm/
   tests/
   diagrams/

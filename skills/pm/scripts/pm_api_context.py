@@ -20,17 +20,12 @@ from pm_io import now_iso
 from pm_io import now_text
 from pm_io import write_repo_json
 from pm_scan import build_bootstrap_info
-from pm_scan import detect_gsd_assets
 from pm_scan import repo_scan
 from pm_worker import build_coder_handoff_contract as build_worker_handoff_contract
 from pm_worker import build_run_message as build_worker_run_message
 from pm_worker import persist_dispatch_side_effects as persist_worker_dispatch_side_effects
 from pm_worker import persist_run_side_effects as persist_worker_run_side_effects
 
-from pm_api_gsd import append_state_doc
-from pm_api_gsd import attach_gsd_contracts
-from pm_api_gsd import comment_task_guid
-from pm_api_gsd import route_gsd_work
 from pm_api_tasks import extract_task_number
 from pm_api_tasks import get_task_record
 from pm_api_tasks import get_task_record_by_guid
@@ -49,8 +44,6 @@ def persist_run_side_effects(bundle: dict[str, Any], agent_result: dict[str, Any
     return persist_worker_run_side_effects(
         bundle,
         agent_result,
-        comment_task_guid=comment_task_guid,
-        append_state_doc=append_state_doc,
         refresh_context_cache=refresh_context_cache,
         now_text=now_text,
     )
@@ -65,8 +58,6 @@ def persist_dispatch_side_effects(bundle: dict[str, Any], dispatch_result: dict[
         agent_id=agent_id,
         runtime=runtime,
         extract_dispatch_ids=extract_dispatch_ids,
-        comment_task_guid=comment_task_guid,
-        append_state_doc=append_state_doc,
         refresh_context_cache=refresh_context_cache,
         now_text=now_text,
     )
@@ -96,13 +87,11 @@ def build_context_payload(*, selected_task: dict[str, Any] | None = None) -> dic
         task_kind=task_kind,
         repo_scan=repo_scan,
         build_bootstrap_info=build_bootstrap_info,
-        detect_gsd_assets=detect_gsd_assets,
         parse_task_summary=parse_task_summary,
         parse_task_id_from_description=parse_task_id_from_description,
         now_iso=now_iso,
     )
-    payload["gsd_route"] = route_gsd_work(project_root_path(), prefer_pm_tasks=True)
-    return attach_gsd_contracts(payload)
+    return payload
 
 
 def refresh_context_cache(*, task_id: str = "", task_guid: str = "") -> dict[str, Any]:

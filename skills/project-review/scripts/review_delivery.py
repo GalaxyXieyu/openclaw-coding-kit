@@ -23,10 +23,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
 PM_SCRIPTS_ROOT = SKILLS_ROOT / "pm" / "scripts"
 DEFAULT_OPENCLAW_BIN = "openclaw"
-BRIDGE_SCRIPT_CANDIDATES = (
-    SKILLS_ROOT / "openclaw-lark-bridge" / "scripts" / "invoke_openclaw_tool.py",
-    Path.home() / ".codex" / "skills" / "openclaw-lark-bridge" / "scripts" / "invoke_openclaw_tool.py",
-)
 
 
 def _now_iso() -> str:
@@ -46,14 +42,6 @@ def _extract_last_json_object(raw: str) -> dict[str, Any]:
         if isinstance(parsed, dict):
             return parsed
     raise ValueError("bridge output does not contain a JSON object")
-
-
-def _resolve_bridge_script() -> Path | None:
-    for candidate in BRIDGE_SCRIPT_CANDIDATES:
-        expanded = candidate.expanduser()
-        if expanded.exists():
-            return expanded
-    return None
 
 
 def _bridge_details(payload: dict[str, Any]) -> dict[str, Any]:
@@ -157,61 +145,6 @@ def _invoke_openclaw_send(
     return {
         "tool": "openclaw.message.send",
         "chat_id": str(delivery.get("chatId") or chat_id).strip(),
-        "message_id": message_id,
-    }
-
-
-def _invoke_lark_bridge_user_send(
-    *,
-    chat_id: str,
-    card: dict[str, Any],
-    review_id: str,
-) -> dict[str, Any]:
-    bridge_script = _resolve_bridge_script()
-    if bridge_script is None:
-        raise RuntimeError("openclaw-lark-bridge script not found")
-
-    args = {
-        "receive_id_type": "chat_id",
-        "receive_id": chat_id,
-        "msg_type": "interactive",
-        "content": json.dumps(card, ensure_ascii=False),
-        "uuid": f"project-review-{review_id}",
-    }
-    command = [
-        sys.executable,
-        str(bridge_script),
-        "--tool",
-        "feishu_im_user_message",
-        "--action",
-        "send",
-        "--session-key",
-        "main",
-        "--args",
-        json.dumps(args, ensure_ascii=False),
-    ]
-    completed = subprocess.run(
-        command,
-        cwd=str(REPO_ROOT),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        raise RuntimeError(_best_error_message(completed.stdout, completed.stderr))
-
-    payload = _extract_last_json_object(completed.stdout)
-    details = _bridge_details(payload)
-    error_text = str(details.get("error") or "").strip()
-    if error_text:
-        raise RuntimeError(error_text)
-
-    message_id = str(details.get("message_id") or "").strip()
-    if not message_id:
-        raise RuntimeError("openclaw-lark bridge returned no message_id")
-    return {
-        "tool": "openclaw-lark.feishu_im_user_message.send",
-        "chat_id": str(details.get("chat_id") or chat_id).strip(),
         "message_id": message_id,
     }
 
@@ -350,27 +283,19 @@ def send_review_card(
         )
     except RuntimeError as direct_error:
         direct_message = str(direct_error).strip()
-        should_try_bridge = "out of the chat" in direct_message.lower()
-        if not should_try_bridge:
+        should_try_fallback = "out of the chat" in direct_message.lower()
+        if not should_try_fallback:
             raise
         try:
-            result = _invoke_lark_bridge_user_send(
+            result = _invoke_pm_user_token_send(
                 chat_id=chat_id,
                 card=card,
                 review_id=review_id,
             )
-        except RuntimeError as bridge_error:
-            bridge_message = str(bridge_error).strip()
-            try:
-                result = _invoke_pm_user_token_send(
-                    chat_id=chat_id,
-                    card=card,
-                    review_id=review_id,
-                )
-            except RuntimeError as pm_error:
-                raise RuntimeError(
-                    f"bot直发失败：{direct_message}；用户桥接补发失败：{bridge_message}；PM token直发失败：{str(pm_error).strip()}"
-                ) from pm_error
+        except RuntimeError as pm_error:
+            raise RuntimeError(
+                f"bot直发失败：{direct_message}；PM token直发失败：{str(pm_error).strip()}"
+            ) from pm_error
 
     normalized_now = str(now_iso or _now_iso())
     delivery = {

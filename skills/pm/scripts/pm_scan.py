@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 from pm_config import ACTIVE_CONFIG
-from pm_gsd import detect_gsd_assets
 
 
 def detect_project_mode(root: Path) -> str:

@@ -15,6 +15,12 @@ from pm_config import doc_config
 from pm_config import task_prefix
 from pm_config import tasklist_name
 from pm_io import now_iso
+from pm_lark_cli import create_task as create_lark_task
+from pm_lark_cli import create_task_comment as create_lark_task_comment
+from pm_lark_cli import get_task as get_lark_task
+from pm_lark_cli import list_tasklist_tasks as list_lark_tasklist_tasks
+from pm_lark_cli import search_tasklists as search_lark_tasklists
+from pm_lark_cli import update_task as update_lark_task
 from pm_io import now_text
 from pm_local_backend import add_attachments as add_local_task_attachments
 from pm_local_backend import create_comment as create_local_task_comment
@@ -59,7 +65,6 @@ from pm_api_support import build_auth_link
 from pm_api_support import details_of
 from pm_api_support import ensure_attachment_token
 from pm_api_support import feishu_credentials
-from pm_api_support import load_openclaw_gateway_user_token
 from pm_api_support import request_json
 from pm_api_support import request_user_oauth_link
 from pm_api_support import run_bridge
@@ -129,7 +134,8 @@ def detail_for_row(row: dict[str, Any]) -> dict[str, Any]:
     if task_backend_name() == "local":
         guid = str(row.get("guid") or "").strip()
         return get_local_task_by_guid(guid) if guid else {}
-    return load_pm_task_detail_for_row(row, run_bridge=run_bridge, details_of=details_of)
+    guid = str(row.get("guid") or "").strip()
+    return get_lark_task(guid) if guid else {}
 
 
 def normalize_task_titles(*, include_completed: bool) -> dict[str, Any]:
@@ -182,7 +188,6 @@ def create_task(
     tasklists: list[dict[str, Any]] | None = None,
     current_user_id: str = "",
     members: list[dict[str, Any]] | None = None,
-    gsd_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     task_cfg = ACTIVE_CONFIG.get("task")
     resolved_members = normalize_task_members(members) or resolve_default_task_members(
@@ -196,20 +201,15 @@ def create_task(
             tasklists=tasklists,
             current_user_id=current_user_id,
             members=resolved_members,
-            gsd_contract=gsd_contract,
         )
-    create_args: dict[str, Any] = {
-        "summary": summary,
-        "description": description,
-        "tasklists": [item for item in (tasklists or []) if isinstance(item, dict)],
-    }
-    if current_user_id:
-        create_args["current_user_id"] = current_user_id
-    if resolved_members:
-        create_args["members"] = resolved_members
-    payload = run_bridge("feishu_task_task", "create", create_args)
-    task = details_of(payload).get("task")
-    if not isinstance(task, dict):
+    task = create_lark_task(
+        summary=summary,
+        description=description,
+        tasklists=[item for item in (tasklists or []) if isinstance(item, dict)],
+        current_user_id=current_user_id,
+        members=resolved_members,
+    )
+    if not isinstance(task, dict) or not task:
         raise SystemExit("failed to create task")
     return task
 
@@ -218,9 +218,8 @@ def patch_task(task_guid: str, changes: dict[str, Any]) -> dict[str, Any]:
     cleaned = {str(key): value for key, value in (changes or {}).items() if str(key).strip()}
     if task_backend_name() == "local":
         return patch_local_task(task_guid, cleaned)
-    payload = run_bridge("feishu_task_task", "patch", {"task_guid": task_guid, **cleaned})
-    task = details_of(payload).get("task")
-    if isinstance(task, dict):
+    task = update_lark_task(task_guid, cleaned)
+    if isinstance(task, dict) and task:
         return task
     if cleaned:
         return get_task_record_by_guid(task_guid)
@@ -274,8 +273,7 @@ def create_task_comment(task_guid: str, content: str) -> dict[str, Any] | None:
         return None
     if task_backend_name() == "local":
         return create_local_task_comment(task_guid, cleaned)
-    payload = run_bridge("feishu_task_comment", "create", {"task_guid": task_guid, "content": cleaned})
-    return details_of(payload)
+    return create_lark_task_comment(task_guid, cleaned)
 
 
 def ensure_tasklist(name: str | None = None) -> dict[str, Any]:
@@ -286,13 +284,18 @@ def ensure_tasklist(name: str | None = None) -> dict[str, Any]:
     resolved_name = name or tasklist_name()
     if task_backend_name() == "local":
         return ensure_local_tasklist(name=str(resolved_name or "").strip(), configured_guid=configured_guid)
-    return ensure_pm_tasklist(
-        run_bridge,
-        details_of,
-        tasklist_name=tasklist_name,
-        name=resolved_name,
-        configured_guid=configured_guid,
-    )
+    tasklists = search_lark_tasklists()
+    if configured_guid:
+        for item in tasklists:
+            if str(item.get("guid") or "").strip() == configured_guid:
+                return item
+    resolved_text = str(resolved_name or "").strip()
+    matches = [item for item in tasklists if str(item.get("name") or "").strip() == resolved_text]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise SystemExit(f"multiple Feishu tasklists matched '{resolved_text}'")
+    raise SystemExit(f"tasklist not found: {resolved_text}; create is not supported in this lark-cli read-only step")
 
 
 def inspect_tasklist(name: str | None = None, *, configured_guid: str = "") -> dict[str, Any]:
@@ -304,19 +307,24 @@ def inspect_tasklist(name: str | None = None, *, configured_guid: str = "") -> d
     resolved_name = name or tasklist_name()
     if task_backend_name() == "local":
         return inspect_local_tasklist(name=str(resolved_name or "").strip(), configured_guid=guid_hint)
-    return inspect_pm_tasklist(
-        run_bridge,
-        details_of,
-        tasklist_name=tasklist_name,
-        name=resolved_name,
-        configured_guid=guid_hint,
-    )
+    tasklists = search_lark_tasklists()
+    if guid_hint:
+        for item in tasklists:
+            if str(item.get("guid") or "").strip() == guid_hint:
+                return {"status": "configured_match", "tasklist": item, "matches": [item], "resolved_name": str(resolved_name or "").strip()}
+    resolved_text = str(resolved_name or "").strip()
+    matches = [item for item in tasklists if str(item.get("name") or "").strip() == resolved_text]
+    if len(matches) == 1:
+        return {"status": "unique_match", "tasklist": matches[0], "matches": matches, "resolved_name": resolved_text}
+    if len(matches) > 1:
+        return {"status": "ambiguous", "tasklist": None, "matches": matches, "resolved_name": resolved_text}
+    return {"status": "missing", "tasklist": None, "matches": [], "resolved_name": resolved_text}
 
 
 def list_tasklist_tasks(tasklist_guid: str, *, completed: bool) -> list[dict[str, Any]]:
     if task_backend_name() == "local":
         return list_local_tasklist_tasks(tasklist_guid, completed=completed)
-    return list_pm_tasklist_tasks(run_bridge, details_of, tasklist_guid, completed=completed)
+    return list_lark_tasklist_tasks(tasklist_guid, completed=completed)
 
 
 def task_pool(
@@ -347,7 +355,7 @@ def task_pool(
         list_tasklist_tasks_fn=list_tasklist_tasks,
         maybe_normalize_task_summary=maybe_normalize_task_summary,
         normalize_titles_before_list=normalize_titles_before_list,
-        fetch_description_if_needed=fetch_description_if_needed,
+        fetch_description_if_needed=False,
     )
 
 
@@ -403,12 +411,10 @@ def get_task_record_by_guid(task_guid: str) -> dict[str, Any]:
         task = get_local_task_by_guid(task_guid)
         maybe_normalize_task_summary(task, fetch_description_if_needed=False, allow_patch=False)
         return task
-    return get_pm_task_record_by_guid(
-        task_guid,
-        run_bridge=run_bridge,
-        details_of=details_of,
-        maybe_normalize_task_summary=maybe_normalize_task_summary,
-    )
+    task = get_lark_task(task_guid)
+    if task:
+        maybe_normalize_task_summary(task, fetch_description_if_needed=False, allow_patch=False)
+    return task
 
 
 def find_existing_task_by_summary(summary: str, *, include_completed: bool = True) -> dict[str, Any] | None:
@@ -570,25 +576,18 @@ def add_task_members(task: dict[str, Any], task_id: str, members: list[dict[str,
         except SystemExit as exc:
             bridge_error = str(exc)
 
-    gateway_user_id = ""
-    for item in normalized_new_members:
-        if str(item.get("role") or "") == "assignee":
-            gateway_user_id = str(item.get("id") or "").strip()
-            if gateway_user_id:
-                break
-    gateway_auth = load_openclaw_gateway_user_token(gateway_user_id)
     result = add_pm_task_members(
         task,
         task_id,
         normalized_new_members,
         task_id_for_output_fn=task_id_for_output,
-        auth_result_fn=(lambda: gateway_auth) if gateway_auth else task_assignment_auth_result,
+        auth_result_fn=task_assignment_auth_result,
         feishu_credentials=feishu_credentials,
         request_json=request_json,
     )
     if bridge_error:
         result["bridge_error"] = bridge_error
-        result["backend"] = "gateway_keychain_fallback" if gateway_auth else "direct_api_fallback"
+        result["backend"] = "direct_api_fallback"
     return result
 
 

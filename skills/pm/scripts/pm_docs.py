@@ -219,7 +219,7 @@ def ensure_project_docs(
         doc_statuses[status_key] = "created"
 
     project_md = f"# {project_name}\n\n- 仓库：`{root}`\n- 项目模式：{project_mode}\n"
-    requirements_md = f"# {project_name} REQUIREMENTS\n\n- 当前状态：等待 GSD requirements 同步。\n"
+    requirements_md = f"# {project_name} REQUIREMENTS\n\n- 当前状态：等待 requirements 同步。\n"
     roadmap_md = f"# {project_name} ROADMAP\n\n- 当前建议动作：{bootstrap_action}\n- 后续可在此沉淀阶段规划与里程碑。\n"
     state_md = f"# {project_name} STATE\n\n- 当前状态：已初始化 PM\n- next：{bootstrap_action}\n"
     ensure_named_doc("project", titles["project"], project_md)

@@ -16,7 +16,6 @@ TaskPrefixFn = Callable[[], str]
 TaskKindFn = Callable[[], str]
 RepoScanFn = Callable[[Path], dict[str, Any]]
 BootstrapInfoFn = Callable[[Path], dict[str, Any]]
-GsdAssetsFn = Callable[[Path], dict[str, Any]]
 ParseTaskSummaryFn = Callable[[str], Optional[dict[str, Any]]]
 ParseTaskIdFromDescriptionFn = Callable[[str], str]
 NowIsoFn = Callable[[], str]
@@ -70,7 +69,6 @@ def build_context_payload(
     task_kind: TaskKindFn,
     repo_scan: RepoScanFn,
     build_bootstrap_info: BootstrapInfoFn,
-    detect_gsd_assets: GsdAssetsFn,
     parse_task_summary: ParseTaskSummaryFn,
     parse_task_id_from_description: ParseTaskIdFromDescriptionFn,
     now_iso: NowIsoFn,
@@ -119,7 +117,6 @@ def build_context_payload(
             "state_doc_token": str(doc_cfg.get("state_doc_token") or "") if isinstance(doc_cfg, dict) else "",
             "state_doc_url": str(doc_cfg.get("state_doc_url") or "") if isinstance(doc_cfg, dict) else "",
         },
-        "gsd": detect_gsd_assets(root),
         "open_tasks": [task_brief(item, parse_task_summary=parse_task_summary) for item in open_rows[:20]],
         "next_task": task_brief(next_task, parse_task_summary=parse_task_summary) if isinstance(next_task, dict) else None,
         "current_task": None,
@@ -160,8 +157,8 @@ def refresh_context_cache(
     payload = build_context_payload_fn(selected_task=selected_task)
     context_path = pm_file("current-context.json")
     write_repo_json(context_path, payload)
-    write_repo_json(pm_file("project-scan.json"), {"generated_at": payload["generated_at"], "repo_scan": payload["repo_scan"], "gsd": payload["gsd"]})
-    write_repo_json(pm_file("bootstrap.json"), {"generated_at": payload["generated_at"], "project": payload.get("project") or {}, "bootstrap": payload.get("bootstrap") or {}, "gsd": payload.get("gsd") or {}})
+    write_repo_json(pm_file("project-scan.json"), {"generated_at": payload["generated_at"], "repo_scan": payload["repo_scan"]})
+    write_repo_json(pm_file("bootstrap.json"), {"generated_at": payload["generated_at"], "project": payload.get("project") or {}, "bootstrap": payload.get("bootstrap") or {}})
     write_repo_json(pm_file("doc-index.json"), {"generated_at": payload["generated_at"], "doc_index": payload.get("doc_index") or {}})
     return payload
 
@@ -234,7 +231,6 @@ def build_coder_context(
         "project": context.get("project") or {},
         "repo_scan": context.get("repo_scan") or {},
         "bootstrap": bootstrap,
-        "gsd": context.get("gsd") or {},
         "current_task": current,
         "next_task": next_task,
         "recent_comments": context.get("recent_comments") or [],

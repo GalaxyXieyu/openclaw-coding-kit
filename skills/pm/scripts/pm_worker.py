@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import Any, Callable, Optional
 
 ExtractDispatchIdsFn = Callable[[dict[str, Any]], tuple[str, str]]
-CommentTaskFn = Callable[[str, str], Optional[dict[str, Any]]]
-AppendStateFn = Callable[[str], Optional[dict[str, Any]]]
 RefreshContextFn = Callable[..., dict[str, Any]]
 NowTextFn = Callable[[], str]
 
@@ -90,14 +88,8 @@ def build_coder_handoff_contract(bundle: dict[str, Any]) -> dict[str, Any]:
     task = effective_task(bundle)
     active_task_source = "current_task" if current else "next_task" if next_task else ""
     description = str(task.get("description") or "").strip()
-    structured_contract = task.get("gsd_contract") if isinstance(task.get("gsd_contract"), dict) else {}
-    gsd_plan_path = str(structured_contract.get("plan_path") or "").strip() or extract_description_field(description, "GSD Plan Path")
-    gsd_context_path = str(structured_contract.get("context_path") or "").strip() or extract_description_field(description, "GSD Context Path")
-    gsd_required_reads = [str(item).strip() for item in (structured_contract.get("required_reads") or []) if str(item).strip()]
-    if not gsd_required_reads:
-        gsd_required_reads = extract_bullet_section(description, "GSD Required Reads:")
     bundle_required_reads = [str(item).strip() for item in (bundle.get("required_reads") or []) if str(item).strip()]
-    required_reads = unique_reads(bundle_required_reads, [gsd_plan_path, gsd_context_path], gsd_required_reads)
+    required_reads = unique_reads(bundle_required_reads)
 
     source_of_truth: list[str] = [
         "pm.json and .pm/coder-context.json define runtime/config context.",
@@ -106,20 +98,12 @@ def build_coder_handoff_contract(bundle: dict[str, Any]) -> dict[str, Any]:
         source_of_truth.append(f"{active_task_source} description is the execution index card.")
     else:
         source_of_truth.append("No active task is selected yet; create or activate a task before coding.")
-    if gsd_plan_path or gsd_context_path or gsd_required_reads:
-        source_of_truth.append("GSD Plan Path and GSD Required Reads define phase-specific execution context.")
-    else:
-        source_of_truth.append("If no GSD fields are present, fall back to PM task/doc context.")
 
     return {
         "active_task_source": active_task_source,
         "active_task_id": str(task.get("task_id") or "").strip(),
         "active_task_summary": str(task.get("summary") or "").strip(),
         "task_description_present": bool(description),
-        "gsd_contract_present": bool(structured_contract),
-        "gsd_plan_path": gsd_plan_path,
-        "gsd_context_path": gsd_context_path,
-        "gsd_required_reads": gsd_required_reads,
         "required_reads": required_reads,
         "source_of_truth": source_of_truth,
     }
@@ -129,8 +113,6 @@ def persist_run_side_effects(
     bundle: dict[str, Any],
     agent_result: dict[str, Any],
     *,
-    comment_task_guid: CommentTaskFn,
-    append_state_doc: AppendStateFn,
     refresh_context_cache: RefreshContextFn,
     now_text: NowTextFn,
 ) -> dict[str, Any]:
@@ -141,24 +123,11 @@ def persist_run_side_effects(
     summary_lines = texts[:6]
     joined = "\n".join(summary_lines).strip()
     summary_one_line = joined.replace("\n", " / ") if joined else ""
-    comment_result = None
-    state_result = None
-    if joined:
-        comment_body = joined
-        if task_id:
-            comment_body = f"执行进展 {task_id}：\n" + comment_body
-        comment_result = comment_task_guid(task_guid, comment_body)
-        state_lines = ["", "", "## PM Run Update", f"- 时间：{now_text()}"]
-        if task_id:
-            state_lines.append(f"- 任务：{task_id}")
-        state_lines.append(f"- 摘要：{summary_one_line}")
-        state_md = "\n".join(state_lines)
-        state_result = append_state_doc(state_md)
+    if joined and task_guid:
         refresh_context_cache(task_guid=task_guid)
     return {
         "payload_texts": texts,
-        "comment_result": comment_result,
-        "state_doc_result": state_result,
+        "summary": summary_one_line,
     }
 
 
@@ -169,8 +138,6 @@ def persist_dispatch_side_effects(
     agent_id: str,
     runtime: str,
     extract_dispatch_ids: ExtractDispatchIdsFn,
-    comment_task_guid: CommentTaskFn,
-    append_state_doc: AppendStateFn,
     refresh_context_cache: RefreshContextFn,
     now_text: NowTextFn,
 ) -> dict[str, Any]:
@@ -180,35 +147,9 @@ def persist_dispatch_side_effects(
     session_key, run_id = extract_dispatch_ids(dispatch_result)
     status, error = extract_dispatch_status(dispatch_result, session_key=session_key, run_id=run_id)
     failed = status in {"error", "failed"} or bool(error)
-    lines = [f"{runtime} {agent_id} 派发失败。"] if failed else [f"已派发 {runtime} {agent_id} 异步执行。"]
-    if task_id:
-        lines.append(f"任务：{task_id}")
-    if error:
-        lines.append(f"error: {error}")
-    if session_key:
-        lines.append(f"session_key: {session_key}")
-    if run_id:
-        lines.append(f"run_id: {run_id}")
-    comment_result = comment_task_guid(task_guid, "\n".join(lines)) if task_guid else None
-    state_md = "\n".join([
-        "",
-        "",
-        "## PM Dispatch Update",
-        f"- 时间：{now_text()}",
-        f"- 状态：{'失败' if failed else '已派发'}",
-        f"- runtime：{runtime}",
-        f"- agent：{agent_id}",
-        *([f"- 任务：{task_id}"] if task_id else []),
-        *([f"- error：{error}"] if error else []),
-        *([f"- session_key：{session_key}"] if session_key else []),
-        *([f"- run_id：{run_id}"] if run_id else []),
-    ])
-    state_result = append_state_doc(state_md)
     if task_guid:
         refresh_context_cache(task_guid=task_guid)
     return {
-        "comment_result": comment_result,
-        "state_doc_result": state_result,
         "status": status or ("error" if failed else "accepted"),
         "error": error,
         "session_key": session_key,
@@ -249,16 +190,8 @@ def build_run_message(bundle: dict[str, Any]) -> str:
     ])
     for item in contract.get("source_of_truth") or []:
         lines.append(f"Source of truth: {item}")
-    gsd_plan_path = str(contract.get("gsd_plan_path") or "").strip()
-    gsd_required_reads = [str(item).strip() for item in (contract.get("gsd_required_reads") or []) if str(item).strip()]
-    if gsd_plan_path:
-        lines.append(f"Read GSD plan first: {gsd_plan_path}")
-    if gsd_required_reads:
-        lines.append("Read the GSD-required files referenced by the handoff contract before coding.")
     required_reads = [str(item).strip() for item in (contract.get("required_reads") or []) if str(item).strip()]
     if required_reads:
         lines.append("Required reads:")
         lines.extend(f"- {item}" for item in required_reads)
-    if gsd_plan_path or gsd_required_reads:
-        lines.append("Do not guess the phase context from memory; use the handoff contract and .planning files as source of truth.")
     return "\n".join(str(x) for x in lines if str(x).strip())

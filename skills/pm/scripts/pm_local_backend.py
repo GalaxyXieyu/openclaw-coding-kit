@@ -153,7 +153,6 @@ def create_task(
     tasklists: list[dict[str, Any]] | None = None,
     current_user_id: str = "",
     members: list[dict[str, Any]] | None = None,
-    gsd_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     store = load_local_store()
     guid = f"local-task-{uuid.uuid4().hex[:12]}"
@@ -176,8 +175,6 @@ def create_task(
         "comments": [],
         "tasklists": [copy.deepcopy(item) for item in (tasklists or []) if isinstance(item, dict)],
     }
-    if isinstance(gsd_contract, dict) and gsd_contract:
-        task["gsd_contract"] = copy.deepcopy(gsd_contract)
     tasks = [item for item in store.get("tasks") or [] if isinstance(item, dict)]
     tasks.append(task)
     store["tasks"] = tasks

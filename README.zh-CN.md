@@ -110,8 +110,8 @@ python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 <table>
   <tr>
     <td width="50%">
-      <img src="./docs/screenshots/workspace-init.jpg" alt="项目初始化示例" />
-      <p><strong>结构化初始化</strong><br/>先把 workspace、任务上下文和执行顺序立起来，而不是直接开一条很长的 coding 会话。</p>
+      <img src="./docs/screenshots/workspace-init.jpg" alt="本地仓库初始化示例" />
+      <p><strong>本地仓库初始化</strong><br/>把 PM 绑定到真实代码目录、任务上下文和执行顺序，而不是额外的 workspace 层。</p>
     </td>
     <td width="50%">
       <img src="./docs/screenshots/task-iteration.png" alt="需求迭代示例" />
@@ -166,8 +166,7 @@ python3 skills/pm/scripts/pm.py route-gsd --repo-root .
 | 任务编排 | `skills/pm` | 任务接入、上下文刷新、文档同步、GSD 路由 |
 | 执行角色 | `skills/coder` | 标准 ACP coding worker |
 | 产品画布 | `skills/product-canvas` | 统一的产品流转画布、scenario 资产、Web/miniapp UI review 入口 |
-| Board 真值层 | `skills/interaction-board` | 页面矩阵、draw.io 草图、HTML 画布、截图位 manifest |
-| Feishu 桥接复用 | `skills/openclaw-lark-bridge` | 复用运行中 OpenClaw gateway 的 Feishu 工具 |
+| Feishu 投递 | 官方 `lark-cli` | PM 通过官方 CLI 调用 Feishu 任务/文档 API |
 | 进度回传 | `plugins/acp-progress-bridge` | 把子会话进度和完成态发回父流程 |
 | 配置参考 | `examples/*` | 最小与扩展示例配置 |
 | 验证基线 | `tests/*` | 仓库本地验证基础 |
@@ -256,7 +255,7 @@ flowchart LR
 
 1. 先装运行时依赖
 2. 先验证 repo-local smoke path
-3. 再部署 `pm`、`coder`、`openclaw-lark-bridge` 和 `acp-progress-bridge`
+3. 再部署 `pm`、`coder` 和 `acp-progress-bridge`
    推荐入口：`python3 scripts/sync_local_skills.py --target both`
 4. 再写 `openclaw.json` 和 `pm.json`
 5. 只有需要时再接 Feishu bot、群、权限和 OAuth
@@ -279,7 +278,6 @@ openclaw-coding-kit/
     acp-progress-bridge/
   skills/
     coder/
-    openclaw-lark-bridge/
     pm/
   tests/
   diagrams/

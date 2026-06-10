@@ -40,12 +40,12 @@
 
 如果你的目标已经不是“只验证 repo 能跑”，而是把整套链路真实装起来，按这 6 步走：
 
-1. 先装基础运行时：`python3 >= 3.9`、`node >= 22`、`openclaw = 2026.3.22`、`codex`、`gsd-tools`；如果要 ACP / bridge，再装 `acpx`
-2. 如果目标包含 Feishu，这一步就并行准备：安装 `@larksuite/openclaw-lark`、写 `channels.feishu`、准备飞书 app / bot / 群 / 权限、让用户完成 `/auth`；如果要附件上传，再补 attachment OAuth
-3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/interaction-board`、`skills/openclaw-lark-bridge` 放到 Codex；`skills/pm`、`skills/coder`、`skills/product-canvas`、`skills/interaction-board` 放到 OpenClaw workspace skills；`plugins/acp-progress-bridge`、`plugins/skill-router` 放到 OpenClaw plugins
-4. 写配置：先把 `openclaw.json` 和 `pm.json` 配好
-5. 再跑 smoke / runtime 验证：这时再跑 `py_compile`、`context --refresh`、`route-gsd`、`openclaw agents list --bindings`、`openclaw plugins list`
-6. 最后才做真实 backend 的 `init` 和 E2E；如果是 Feishu backend，必须等 bot / 群 / 权限都 ready 之后再跑真实 `pm init`
+1. 先装基础运行时：`python3 >= 3.9`、`node >= 22`、`codex`、`gsd-tools`、官方 `lark-cli`
+2. 如果目标包含 Feishu，先完成 `lark-cli auth login --recommend`，并用 `lark-cli auth status` 验证 bot/user 身份
+3. 部署仓库资产：`skills/pm`、`skills/coder`、`skills/product-canvas`、`project-review` 放到 Codex；Feishu 投递依赖官方 `lark-cli`
+4. 在业务仓库根目录写配置：先准备 `pm.json`，并让 `pm init` 更新 repo-local `AGENTS.md`
+5. 再跑 smoke / runtime 验证：这时再跑 `py_compile`、`context --refresh`、`pm next`
+6. 最后才做真实 backend 的 `init` 和 E2E；如果是 Feishu backend，必须等 `lark-cli` 登录和飞书权限 ready 之后再跑真实 `pm init`
 
 ### 1.1 这些步骤必须用户手动完成
 
@@ -251,11 +251,11 @@ export OPENCLAW_CONFIG=/home/openclaw/.openclaw-coding-kit/openclaw.json
 ### 4.1 CLI 与语法检查
 
 ```bash
-python3 -m py_compile skills/pm/scripts/*.py skills/coder/scripts/*.py skills/openclaw-lark-bridge/scripts/*.py
+python3 -m py_compile skills/pm/scripts/*.py skills/coder/scripts/*.py
 python3 skills/pm/scripts/pm.py --help
 python3 skills/pm/scripts/pm.py context --help
 python3 skills/coder/scripts/observe_acp_session.py --help
-python3 skills/openclaw-lark-bridge/scripts/invoke_openclaw_tool.py --help
+lark-cli auth status
 ```
 
 至少记录：
@@ -281,12 +281,12 @@ python3 skills/pm/scripts/pm.py init --project-name "测试项目" --english-nam
 
 - `status: "dry_run"`
 - `config_preview`
-- `workspace_bootstrap`
+- `repo_contract`
 
 说明：
 
 - 这一段只是在验证 repo-local CLI 形状，不等于你已经完成了真实安装
-- 不传 `--group-id` 时，`workspace_bootstrap: null` 是预期行为
+- `repo_contract: {"status": "dry_run"}` 表示真实执行时会写入或更新业务仓库 `AGENTS.md`
 - 非 ASCII 项目名未传 `--english-name` 会直接报错
 
 ### 4.3 刷新上下文并验证 GSD 路由
@@ -348,7 +348,6 @@ python3 skills/pm/scripts/pm.py get --task-id T1 --include-completed
 Codex / CODEX_HOME
 skills/pm                    -> ~/.codex/skills/pm
 skills/coder                 -> ~/.codex/skills/coder
-skills/openclaw-lark-bridge  -> ~/.codex/skills/openclaw-lark-bridge
 
 OpenClaw workspace
 plugins/acp-progress-bridge  -> $OPENCLAW_WORKSPACE/plugins/acp-progress-bridge
@@ -357,10 +356,10 @@ plugins/skill-router         -> $OPENCLAW_WORKSPACE/plugins/skill-router
 
 默认推荐：
 
-- `pm`、`coder`、`product-canvas`、`interaction-board`、`openclaw-lark-bridge` 先放到 Codex skills 目录
-- OpenClaw 侧默认同步 `pm`、`coder`、`product-canvas`、`interaction-board` 到 workspace skills
+- `pm`、`coder`、`product-canvas` 先放到 Codex skills 目录
+- OpenClaw 侧默认同步 `pm`、`coder`、`product-canvas` 到 workspace skills
 - `acp-progress-bridge`、`skill-router` 同步到 OpenClaw plugins 目录
-- `skills/openclaw-lark-bridge` 仍然不作为默认 OpenClaw workspace 资产
+- Feishu 投递依赖官方 `lark-cli`，不需要部署任何桥接 skill
 
 推荐直接使用仓库自带同步脚本：
 
@@ -370,8 +369,8 @@ python3 scripts/sync_local_skills.py --target both
 
 脚本行为：
 
-- `codex`：默认同步 `pm`、`coder`、`product-canvas`、`interaction-board`、`openclaw-lark-bridge`、`project-review`
-- `openclaw`：默认同步 `pm`、`coder`、`product-canvas`、`interaction-board`
+- `codex`：默认同步 `pm`、`coder`、`product-canvas`、`project-review`
+- `openclaw`：默认同步 `pm`、`coder`、`product-canvas`
 - `openclaw plugins`：默认同步 `acp-progress-bridge`、`skill-router`
 - 对未变化目录直接跳过，不再每次整目录备份重装
 - 会忽略 `__pycache__`、`.DS_Store`、`*.pyc`
@@ -383,25 +382,12 @@ python3 scripts/sync_local_skills.py --target codex --skill pm
 python3 scripts/sync_local_skills.py --target openclaw --skill pm --skill coder
 ```
 
-如果 OpenClaw front agent 确实也要直接加载 `openclaw-lark-bridge`：
-
-```bash
-python3 scripts/sync_local_skills.py --target openclaw --skill pm --skill coder --skill openclaw-lark-bridge
-```
-
 同步后立刻检查：
 
 - `~/.codex/skills/pm/SKILL.md` 是否存在
 - `~/.codex/skills/coder/SKILL.md` 是否存在
-- `~/.codex/skills/openclaw-lark-bridge/SKILL.md` 是否存在
 - `plugins/acp-progress-bridge` 主文件是否存在
 - `plugins/skill-router` 主文件是否存在
-
-这里仍然不建议默认复制：
-
-```text
-skills/openclaw-lark-bridge -> $OPENCLAW_WORKSPACE/skills/openclaw-lark-bridge
-```
 
 ### 5.2 最小 OpenClaw 配置
 
@@ -438,7 +424,6 @@ skills/openclaw-lark-bridge -> $OPENCLAW_WORKSPACE/skills/openclaw-lark-bridge
 - `front agent` 配的是你要直接对话的 agent
 - ACP worker 由 `acp.defaultAgent` 或运行时派发逻辑决定
 - 两者可以相同，也可以不同
-- `openclaw-lark-bridge` 默认是 Codex 侧 skill，不是 OpenClaw agent 必挂 skill
 
 验证：
 
@@ -863,7 +848,7 @@ Installation Summary
 - `upload-attachments` 一直返回 `authorization_required`：附件 OAuth 还没完成，不等于 PM 安装失败
 - `openclaw plugins info openclaw-lark` 不是 `Status: loaded`：插件未安装、未启用或版本不兼容
 - 群消息到了但机器人不回：优先检查 `groupAllowFrom` 是否写成了错误的用户 id
-- `invoke_openclaw_tool.py --dry-run` 失败：通常是 `openclaw.json`、gateway token 或 gateway URL 解析有问题
+- `lark-cli` 调用报 unauthorized：先跑 `lark-cli auth status`，必要时 `lark-cli auth login --recommend`
 
 ## 9. 运行态目录
 
